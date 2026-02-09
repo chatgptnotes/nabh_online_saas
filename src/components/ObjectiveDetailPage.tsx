@@ -4937,6 +4937,148 @@ Provide only the Hindi explanation, no English text. The explanation should be c
             </AccordionDetails>
           </Accordion>
 
+          {/* Certificate of Register Verification Section */}
+          <Accordion>
+            <AccordionSummary expandIcon={<Icon>expand_more</Icon>}>
+              <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Icon sx={{ color: '#7B1FA2' }}>verified</Icon>
+                <Typography fontWeight={600}>
+                  Certificate of Register Verification
+                </Typography>
+              </Box>
+            </AccordionSummary>
+            <AccordionDetails>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+                <Alert severity="info" icon={<Icon>info</Icon>}>
+                  <Typography variant="body2">
+                    Generate a printable Certificate of Register Verification for this objective.
+                    The certificate confirms that registers are maintained as per NABH documentation protocol.
+                  </Typography>
+                </Alert>
+
+                {/* Certificate Preview Card */}
+                <Paper variant="outlined" sx={{ p: 3, bgcolor: '#fafafa', border: '2px dashed #7B1FA2' }}>
+                  <Typography variant="h6" align="center" sx={{ fontWeight: 700, mb: 0.5 }}>
+                    CERTIFICATE OF REGISTER VERIFICATION
+                  </Typography>
+                  <Typography variant="body2" align="center" color="text.secondary" sx={{ mb: 2 }}>
+                    {objective?.code} — {chapter?.name}
+                  </Typography>
+                  <Divider sx={{ mb: 2 }} />
+
+                  {/* Row: Training Material Name & Certificate */}
+                  <Box sx={{ display: 'flex', gap: 2, mb: 2, flexWrap: 'wrap' }}>
+                    <Box sx={{ flex: 1, minWidth: 200 }}>
+                      <Typography variant="caption" color="text.secondary">Register / Training Material Name</Typography>
+                      <Typography variant="body2" fontWeight={600}>
+                        {objective?.title || 'Register for ' + objective?.code}
+                      </Typography>
+                    </Box>
+                    <Box sx={{ flex: 1, minWidth: 200 }}>
+                      <Typography variant="caption" color="text.secondary">Certificate Type</Typography>
+                      <Typography variant="body2" fontWeight={600}>Certificate of Register Verification</Typography>
+                    </Box>
+                  </Box>
+
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Department:</strong> {chapter?.name || '_______________'}
+                  </Typography>
+                  <Typography variant="body2" sx={{ mb: 1 }}>
+                    <strong>Hospital:</strong> {currentHospital.name}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
+                    Click "Generate & Print" to create the full certificate with all fields.
+                  </Typography>
+                </Paper>
+
+                <Button
+                  variant="contained"
+                  startIcon={<Icon>print</Icon>}
+                  onClick={() => {
+                    const hospitalInfo = getHospitalInfo(selectedHospital);
+                    const today = new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' });
+                    const certHtml = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Certificate of Register Verification - ${objective?.code}</title>
+  <style>
+    @page { size: A4; margin: 20mm 25mm; }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Times New Roman', Georgia, serif; color: #222; background: #fff; padding: 40px 50px; line-height: 1.7; }
+    .border-box { border: 3px double #333; padding: 45px 50px; min-height: 90vh; position: relative; }
+    .obj-title { font-size: 28px; font-weight: bold; text-align: center; color: #111; margin-top: 30px; margin-bottom: 30px; line-height: 1.3; }
+    .obj-code { font-size: 22px; font-weight: bold; text-align: center; color: #1a237e; margin-bottom: 20px; display: inline-block; border: 2px solid #1a237e; padding: 6px 24px; border-radius: 6px; background: #e8eaf6; }
+    .obj-code-wrapper { text-align: center; margin-bottom: 30px; }
+    .cert-heading { font-size: 20px; font-weight: bold; text-align: center; text-transform: uppercase; letter-spacing: 2px; text-decoration: underline; text-underline-offset: 6px; margin-bottom: 30px; }
+    .body-text { font-size: 15px; line-height: 2; margin: 18px 0; text-align: justify; }
+    .blank-line { display: inline-block; border-bottom: 1px solid #333; margin: 0 5px; padding: 0 10px; }
+    .blank-short { min-width: 80px; }
+    .signature-img { height: 70px; max-width: 160px; object-fit: contain; }
+    .signature-section { margin-top: 80px; display: flex; justify-content: space-between; }
+    .signature-block { text-align: center; min-width: 200px; }
+    .signature-line { border-top: 1px solid #333; margin-top: 10px; padding-top: 8px; }
+    .signature-label { font-size: 13px; font-weight: bold; }
+    .signature-sublabel { font-size: 11px; color: #555; }
+    @media print { body { padding: 0; } .border-box { border: 3px double #333; } }
+  </style>
+</head>
+<body>
+  <div class="border-box">
+
+    <div class="obj-title">${objective?.title || ''}</div>
+
+    <div class="obj-code-wrapper"><div class="obj-code">${objective?.code}</div></div>
+
+    <div class="cert-heading">Certificate of Register / File Verification</div>
+
+    <p class="body-text">
+      This is to certify that this register / file belongs to the Department of
+      <span class="blank-line">Quality and Patient Safety</span> and contains
+      entries from Page No. <span class="blank-line">1</span> to Page No. <span class="blank-line">17</span>.
+    </p>
+
+    <p class="body-text">
+      The entries in this register are to be maintained accurately and updated regularly as per the departmental
+      documentation protocol.
+    </p>
+
+    <p class="body-text">
+      This certificate is issued for official documentation and verification purposes.
+    </p>
+
+    <div class="signature-section">
+      <div class="signature-block">
+        <img class="signature-img" src="${window.location.origin}/Dr shiraz's signature.png" alt="Signature" />
+        <div class="signature-line">
+          <div class="signature-label">Dr. Shiraz Khan</div>
+          <div class="signature-sublabel">NABH Coordinator / Administrator</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</body>
+</html>`;
+                    const printWindow = window.open('', '_blank');
+                    if (printWindow) {
+                      printWindow.document.write(certHtml);
+                      printWindow.document.close();
+                      printWindow.onload = () => { printWindow.print(); };
+                    }
+                  }}
+                  sx={{
+                    bgcolor: '#7B1FA2',
+                    '&:hover': { bgcolor: '#6A1B9A' },
+                    alignSelf: 'flex-start',
+                  }}
+                >
+                  Generate & Print Certificate
+                </Button>
+              </Box>
+            </AccordionDetails>
+          </Accordion>
+
           {/* Generate Evidence from Documents Section */}
           <Accordion>
             <AccordionSummary expandIcon={<Icon>expand_more</Icon>}>
