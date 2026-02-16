@@ -1,10 +1,11 @@
 /// <reference types="vitest" />
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
+import { apiPlugin } from './vite-plugin-api'
 
 // https://vite.dev/config/
 export default defineConfig({
-  plugins: [react()],
+  plugins: [react(), apiPlugin()],
   server: {
     host: true, // Listen on all addresses (0.0.0.0)
     port: 5174, // New port to avoid conflicts

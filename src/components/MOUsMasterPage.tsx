@@ -35,6 +35,7 @@ import {
   OpenInNew as OpenIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 interface DocumentLink {
   id: string;
@@ -411,6 +412,7 @@ const DEFAULT_MOUS: MOU[] = [
 ];
 
 export default function MOUsMasterPage() {
+  const { selectedHospital } = useNABHStore();
   const [mous, setMous] = useState<MOU[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -429,6 +431,7 @@ export default function MOUsMasterPage() {
       const { data: mousData, error: mousError } = await supabase
         .from('mous')
         .select('*')
+        .eq('hospital_id', selectedHospital)
         .order('created_at', { ascending: false });
 
       if (mousError) throw mousError;
@@ -482,7 +485,7 @@ export default function MOUsMasterPage() {
 
   useEffect(() => {
     fetchMOUs();
-  }, []);
+  }, [selectedHospital]);
 
   // Form state for new/edit MOU
   const [mouForm, setMouForm] = useState<Partial<MOU>>({
@@ -687,7 +690,7 @@ export default function MOUsMasterPage() {
           renewal_required: mouForm.renewalRequired,
           financial_implications: mouForm.financialImplications,
           compliance_requirements: mouForm.complianceRequirements,
-          hospital_id: 'hope',
+          hospital_id: selectedHospital,
         })
         .select()
         .single();

@@ -28,11 +28,13 @@ import {
   searchPatients,
   deletePatient,
 } from '../services/patientStorage';
+import { useNABHStore } from '../store/nabhStore';
 import ImportPatientsModal from './patients/ImportPatientsModal';
 
 type StatusFilter = 'All' | 'Active' | 'Discharged' | 'Transferred';
 
 export default function PatientsPage() {
+  const { selectedHospital } = useNABHStore();
   const [patients, setPatients] = useState<Patient[]>([]);
   const [filteredPatients, setFilteredPatients] = useState<Patient[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -47,10 +49,10 @@ export default function PatientsPage() {
     severity: 'success' as 'success' | 'error' | 'info',
   });
 
-  // Load patients on mount
+  // Load patients on mount and when hospital changes
   useEffect(() => {
     loadPatients();
-  }, []);
+  }, [selectedHospital]);
 
   // Filter patients when search or status changes
   useEffect(() => {
@@ -79,7 +81,7 @@ export default function PatientsPage() {
   const loadPatients = async () => {
     setIsLoading(true);
     try {
-      const result = await loadAllPatients();
+      const result = await loadAllPatients(selectedHospital);
       if (result.success && result.data) {
         setPatients(result.data);
       } else {
@@ -106,7 +108,7 @@ export default function PatientsPage() {
 
     if (query.trim().length >= 2) {
       // Use backend search for better results
-      const result = await searchPatients(query);
+      const result = await searchPatients(query, selectedHospital);
       if (result.success && result.data) {
         // Filter by status if needed
         let filtered = result.data;
@@ -123,7 +125,7 @@ export default function PatientsPage() {
   const handleDeletePatient = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this patient?')) return;
 
-    const result = await deletePatient(id);
+    const result = await deletePatient(id, selectedHospital);
     if (result.success) {
       setPatients((prev) => prev.filter((p) => p.id !== id));
       setSnackbar({

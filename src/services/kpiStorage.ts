@@ -97,7 +97,8 @@ export async function saveKPIGraph(
   canvasDataUrl: string,
   graphData: KPIDataEntry[],
   promptUsed?: string,
-  aiModifications?: string
+  aiModifications?: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; id?: string; url?: string; error?: string }> {
   try {
     // First, mark any existing current graph as not current
@@ -121,7 +122,7 @@ export async function saveKPIGraph(
     }
 
     // Save graph record to database
-    const graphRecord = {
+    const graphRecord: Record<string, unknown> = {
       kpi_id: kpiId,
       kpi_number: kpiNumber,
       kpi_name: kpiName,
@@ -131,6 +132,7 @@ export async function saveKPIGraph(
       ai_modifications: aiModifications || null,
       is_current: true,
     };
+    if (hospitalId) graphRecord.hospital_id = hospitalId;
 
     const response = await fetch(
       `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs`,
@@ -167,11 +169,14 @@ export async function saveKPIGraph(
  * Load all graph history for a KPI
  */
 export async function loadKPIGraphHistory(
-  kpiId: string
+  kpiId: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: KPIGraphRecord[]; error?: string }> {
   try {
+    let url = `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?kpi_id=eq.${kpiId}&order=created_at.desc`;
+    if (hospitalId) url += `&hospital_id=eq.${hospitalId}`;
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?kpi_id=eq.${kpiId}&order=created_at.desc`,
+      url,
       {
         method: 'GET',
         headers: {
@@ -201,11 +206,14 @@ export async function loadKPIGraphHistory(
  * Load the current/latest graph for a KPI
  */
 export async function loadCurrentKPIGraph(
-  kpiId: string
+  kpiId: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: KPIGraphRecord; error?: string }> {
   try {
+    let url = `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?kpi_id=eq.${kpiId}&is_current=eq.true&limit=1`;
+    if (hospitalId) url += `&hospital_id=eq.${hospitalId}`;
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?kpi_id=eq.${kpiId}&is_current=eq.true&limit=1`,
+      url,
       {
         method: 'GET',
         headers: {
@@ -321,14 +329,16 @@ export async function restoreKPIGraph(
 /**
  * Load all KPI graphs for dashboard view
  */
-export async function loadAllKPIGraphs(): Promise<{
+export async function loadAllKPIGraphs(hospitalId?: string): Promise<{
   success: boolean;
   data?: Record<string, KPIGraphRecord>;
   error?: string;
 }> {
   try {
+    let url = `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?is_current=eq.true&order=kpi_number.asc`;
+    if (hospitalId) url += `&hospital_id=eq.${hospitalId}`;
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_kpi_graphs?is_current=eq.true&order=kpi_number.asc`,
+      url,
       {
         method: 'GET',
         headers: {

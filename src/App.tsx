@@ -47,6 +47,11 @@ import OldExtractedSOPsPage from './components/OldExtractedSOPsPage';
 import SOPDatabasePage from './components/SOPDatabasePage';
 import CustomSOPsPage from './components/CustomSOPsPage';
 import Footer from './components/Footer';
+import LoginPage from './components/auth/LoginPage';
+import SignupPage from './components/auth/SignupPage';
+import ProtectedRoute from './components/auth/ProtectedRoute';
+import SuperAdminPage from './components/admin/SuperAdminPage';
+import { AuthProvider } from './providers/AuthProvider';
 import { useNABHStore } from './store/nabhStore';
 
 // Modern theme with Hope Hospital colors (from logo: red and blue)
@@ -298,8 +303,13 @@ function MainContent() {
   const isCustomSOPsPage = location.pathname === '/custom-sops';
   const isDocumentLevelsPage = location.pathname === '/document-levels';
   const isOldExtractedSOPsPage = location.pathname === '/old-extracted-sops';
+  const isSuperAdminPage = location.pathname === '/super-admin';
   const isDashboardPage = location.pathname === '/dashboard';
   const isLandingPage = location.pathname === '/' && !selectedChapter;
+
+  if (isSuperAdminPage) {
+    return <SuperAdminPage />;
+  }
 
   if (isAIPage) {
     return <AIEvidenceGenerator />;
@@ -441,7 +451,7 @@ function MainContent() {
     return <OldExtractedSOPsPage />;
   }
 
-  if (isDashboardPage) {
+  if (isDashboardPage && !selectedChapter) {
     return <Dashboard />;
   }
 
@@ -456,12 +466,12 @@ function AppContent() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   const location = useLocation();
-  const { selectedChapter, loadDataFromSupabase } = useNABHStore();
+  const { selectedChapter, selectedHospital, loadDataFromSupabase } = useNABHStore();
 
-  // Load data from Supabase on app start
+  // Load data from Supabase on app start and when hospital changes
   useEffect(() => {
     loadDataFromSupabase();
-  }, [loadDataFromSupabase]);
+  }, [loadDataFromSupabase, selectedHospital]);
 
   // Scroll to top when route changes or chapter selection changes
   useEffect(() => {
@@ -473,7 +483,7 @@ function AppContent() {
   const isAIPage = location.pathname === '/ai-generator';
   const isObjectiveDetailPage = location.pathname.startsWith('/objective/');
   const isKPIDetailPage = location.pathname.startsWith('/kpi/');
-  const isManagementPage = ['/stationery', '/committees', '/surveys', '/cheat-sheets', '/search', '/kpis', '/presentations', '/nabh-master', '/migration', '/patients', '/employees', '/consultants', '/doctors', '/departments', '/equipment', '/programs', '/clinical-audits', '/manuals', '/licenses', '/mous', '/evidence-prompt', '/sop-prompt', '/emergency-codes', '/signage-generator', '/image-generator', '/call-center', '/sops', '/recent-sops', '/sop-database', '/custom-sops', '/old-extracted-sops', '/dashboard'].includes(location.pathname) || isKPIDetailPage;
+  const isManagementPage = ['/stationery', '/committees', '/surveys', '/cheat-sheets', '/search', '/kpis', '/presentations', '/nabh-master', '/migration', '/patients', '/employees', '/consultants', '/doctors', '/departments', '/equipment', '/programs', '/clinical-audits', '/manuals', '/licenses', '/mous', '/evidence-prompt', '/sop-prompt', '/emergency-codes', '/signage-generator', '/image-generator', '/call-center', '/sops', '/recent-sops', '/sop-database', '/custom-sops', '/old-extracted-sops', '/dashboard', '/super-admin'].includes(location.pathname) || isKPIDetailPage;
   const isLandingPage = location.pathname === '/' && !selectedChapter;
   const showSidebar = !isAIPage && !isLandingPage && !isObjectiveDetailPage || isManagementPage;
 
@@ -526,13 +536,20 @@ function App() {
     <ThemeProvider theme={theme}>
       <CssBaseline />
       <BrowserRouter>
-        <Routes>
-          <Route path="/evidence/:evidenceId" element={<SharedEvidencePage />} />
-          <Route path="/sop/:sopId" element={<SharedSOPPage />} />
-          <Route path="/objective/:chapterId/:objectiveId" element={<AppContent />} />
-          <Route path="/kpi/:kpiId" element={<AppContent />} />
-          <Route path="/*" element={<AppContent />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            {/* Public routes */}
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/login" element={<LoginPage />} />
+            <Route path="/signup" element={<SignupPage />} />
+            <Route path="/evidence/:evidenceId" element={<SharedEvidencePage />} />
+            <Route path="/sop/:sopId" element={<SharedSOPPage />} />
+            {/* Protected routes */}
+            <Route path="/objective/:chapterId/:objectiveId" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
+            <Route path="/kpi/:kpiId" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
+            <Route path="/*" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </ThemeProvider>
   );

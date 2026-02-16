@@ -119,8 +119,8 @@ const EmergencyCodesPage: React.FC = () => {
       try {
         setLoading(true);
         const [protocols, documents] = await Promise.all([
-          emergencyCodesStorage.getAllProtocols(),
-          emergencyCodesStorage.getAllDocuments()
+          emergencyCodesStorage.getAllProtocols(selectedHospital),
+          emergencyCodesStorage.getAllDocuments(selectedHospital)
         ]);
 
         if (protocols.length > 0) {
@@ -141,7 +141,7 @@ const EmergencyCodesPage: React.FC = () => {
     };
 
     loadData();
-  }, []);
+  }, [selectedHospital]);
 
   // Get protocols - from DB or mock
   const protocols = dataSource === 'database'
@@ -710,7 +710,7 @@ const EmergencyCodesPage: React.FC = () => {
         review_frequency: newDocument.review_frequency,
         mandatory_fields: [],
         nabh_standard: [],
-        hospital_id: 'hope'
+        hospital_id: selectedHospital
       });
 
       if (savedDoc) {

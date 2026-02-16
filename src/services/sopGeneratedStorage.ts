@@ -92,7 +92,8 @@ export const saveGeneratedSOP = async (
   sopData: SaveSOPRequest,
   pdfUrl?: string,
   pdfPath?: string,
-  pdfSize?: number
+  pdfSize?: number,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: GeneratedSOP; error?: string }> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
@@ -120,7 +121,8 @@ export const saveGeneratedSOP = async (
       review_date: reviewDate,
       status: 'Active' as const,
       created_by: userData?.user?.email || 'System',
-      tags: [sopData.chapter_code, sopData.objective_code, 'AI-Generated', 'NABH-3rd-Edition']
+      tags: [sopData.chapter_code, sopData.objective_code, 'AI-Generated', 'NABH-3rd-Edition'],
+      ...(hospitalId && { hospital_id: hospitalId }),
     };
 
     const { data, error } = await supabase
@@ -146,7 +148,8 @@ export const saveGeneratedSOP = async (
  */
 export const uploadAndSaveSOP = async (
   sopData: SaveSOPRequest,
-  pdfBlob?: Blob
+  pdfBlob?: Blob,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: GeneratedSOP; pdfUrl?: string; error?: string }> => {
   try {
     let pdfUrl: string | undefined;
@@ -166,7 +169,7 @@ export const uploadAndSaveSOP = async (
     }
 
     // Save to database
-    const saveResult = await saveGeneratedSOP(sopData, pdfUrl, pdfPath, pdfSize);
+    const saveResult = await saveGeneratedSOP(sopData, pdfUrl, pdfPath, pdfSize, hospitalId);
 
     if (!saveResult.success) {
       return { success: false, error: saveResult.error };
@@ -187,13 +190,18 @@ export const uploadAndSaveSOP = async (
  * Get all SOPs by chapter
  */
 export const getGeneratedSOPsByChapter = async (
-  chapterCode?: string
+  chapterCode?: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: GeneratedSOP[]; error?: string }> => {
   try {
     let query = supabase
       .from('nabh_generated_sops')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (hospitalId) {
+      query = query.eq('hospital_id', hospitalId);
+    }
 
     if (chapterCode) {
       query = query.eq('chapter_code', chapterCode);
@@ -221,50 +229,55 @@ export const getGeneratedSOPsByChapter = async (
  * 3. Match by chapter_code + standard number pattern
  */
 export const getGeneratedSOPByObjectiveCode = async (
-  objectiveCode: string
+  objectiveCode: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; data?: GeneratedSOP; error?: string }> => {
   try {
     // Strategy 1: Exact match
-    const { data: exactData } = await supabase
+    let q1 = supabase
       .from('nabh_generated_sops')
       .select('*')
       .eq('objective_code', objectiveCode)
       .order('created_at', { ascending: false })
       .limit(1);
+    if (hospitalId) q1 = q1.eq('hospital_id', hospitalId);
+    const { data: exactData } = await q1;
 
     if (exactData && exactData.length > 0) {
       return { success: true, data: exactData[0] };
     }
 
-    // Strategy 2: Try with ilike for fuzzy matching (e.g., "HIC.2.4" matches "HIC.2.4" or "hic.2.4")
-    const { data: fuzzyData } = await supabase
+    // Strategy 2: Try with ilike for fuzzy matching
+    let q2 = supabase
       .from('nabh_generated_sops')
       .select('*')
       .ilike('objective_code', objectiveCode)
       .order('created_at', { ascending: false })
       .limit(1);
+    if (hospitalId) q2 = q2.eq('hospital_id', hospitalId);
+    const { data: fuzzyData } = await q2;
 
     if (fuzzyData && fuzzyData.length > 0) {
       return { success: true, data: fuzzyData[0] };
     }
 
     // Strategy 3: Parse the code and try pattern matching
-    // "HIC.2.4" → search for anything matching "HIC" chapter + "2" standard
     const parts = objectiveCode.split('.');
     if (parts.length >= 2) {
       const chapterCode = parts[0];
       const standardNum = parts[1];
       const elementNum = parts[2] || '';
 
-      // Try matching by chapter_code and objective_code pattern
       const pattern = `${chapterCode}.${standardNum}.${elementNum}%`;
-      const { data: patternData } = await supabase
+      let q3 = supabase
         .from('nabh_generated_sops')
         .select('*')
         .eq('chapter_code', chapterCode)
         .ilike('objective_code', pattern)
         .order('created_at', { ascending: false })
         .limit(1);
+      if (hospitalId) q3 = q3.eq('hospital_id', hospitalId);
+      const { data: patternData } = await q3;
 
       if (patternData && patternData.length > 0) {
         return { success: true, data: patternData[0] };
@@ -275,21 +288,21 @@ export const getGeneratedSOPByObjectiveCode = async (
         let altElementNum = elementNum;
         const numVal = parseInt(elementNum, 10);
         if (!isNaN(numVal) && numVal >= 1 && numVal <= 26) {
-          // Numeric → try alphabetic: 4 → d
           altElementNum = String.fromCharCode(96 + numVal);
         } else if (/^[a-z]$/i.test(elementNum)) {
-          // Alphabetic → try numeric: d → 4
           altElementNum = String(elementNum.toLowerCase().charCodeAt(0) - 96);
         }
 
         if (altElementNum !== elementNum) {
           const altCode = `${chapterCode}.${standardNum}.${altElementNum}`;
-          const { data: altData } = await supabase
+          let q4 = supabase
             .from('nabh_generated_sops')
             .select('*')
             .eq('objective_code', altCode)
             .order('created_at', { ascending: false })
             .limit(1);
+          if (hospitalId) q4 = q4.eq('hospital_id', hospitalId);
+          const { data: altData } = await q4;
 
           if (altData && altData.length > 0) {
             return { success: true, data: altData[0] };

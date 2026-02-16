@@ -1,7 +1,10 @@
 /**
  * Hospital Configuration and Team Structure
- * Supports Multi-Hospital Architecture: Hope Hospital & Ayushman Hospital
+ * Supports Multi-Hospital Architecture with dynamic DB loading
  */
+
+import { supabase } from '../lib/supabase';
+import type { Hospital } from '../types/auth';
 
 export interface TeamMember {
   name: string;
@@ -12,7 +15,7 @@ export interface TeamMember {
 }
 
 export interface HospitalInfo {
-  id: 'hope' | 'ayushman';
+  id: string;
   name: string;
   address: string;
   phone: string;
@@ -21,7 +24,7 @@ export interface HospitalInfo {
   logo: string;
 }
 
-// Hospital Configurations
+// Fallback Hospital Configurations (used if DB is unavailable)
 export const HOSPITALS: Record<string, HospitalInfo> = {
   hope: {
     id: 'hope',
@@ -35,12 +38,55 @@ export const HOSPITALS: Record<string, HospitalInfo> = {
   ayushman: {
     id: 'ayushman',
     name: "Ayushman Hospital",
-    address: 'Shriwardhan Complex, Ramdaspeth, Nagpur',
+    address: 'Lokmat Square, Ramdaspeth, Nagpur, Maharashtra 440010',
     phone: '+91-70309-74619',
     email: 'ayushmanhos@gmail.com',
     website: 'www.ayushmannagpurhospital.com',
-    logo: '/hospital-logo.png', // Reuse logo or use different one if available
+    logo: '/ayushman-logo.png',
   }
+};
+
+// Cache for DB-loaded hospitals
+let _hospitalsCache: Record<string, HospitalInfo> | null = null;
+
+// Fetch hospitals from database and cache them
+export const fetchHospitalsFromDB = async (): Promise<Record<string, HospitalInfo>> => {
+  try {
+    const { data, error } = await supabase
+      .from('hospitals')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: true });
+
+    if (error || !data || data.length === 0) {
+      console.log('Using fallback hospital config');
+      return HOSPITALS;
+    }
+
+    const hospitalsMap: Record<string, HospitalInfo> = {};
+    data.forEach((h: Hospital) => {
+      hospitalsMap[h.slug] = {
+        id: h.slug,
+        name: h.name,
+        address: h.address || '',
+        phone: h.phone || '',
+        email: h.email || '',
+        website: h.website || '',
+        logo: h.logo_url || '/hospital-logo.png',
+      };
+    });
+
+    _hospitalsCache = hospitalsMap;
+    return hospitalsMap;
+  } catch {
+    console.log('Using fallback hospital config');
+    return HOSPITALS;
+  }
+};
+
+// Get all hospitals (from cache, DB, or fallback)
+export const getHospitalsMap = (): Record<string, HospitalInfo> => {
+  return _hospitalsCache || HOSPITALS;
 };
 
 // Default Hospital
@@ -48,7 +94,8 @@ export const DEFAULT_HOSPITAL_ID = 'hope';
 
 // Helper to get currently selected hospital (defaults to Hope)
 export const getHospitalInfo = (hospitalId: string = DEFAULT_HOSPITAL_ID): HospitalInfo => {
-  return HOSPITALS[hospitalId] || HOSPITALS[DEFAULT_HOSPITAL_ID];
+  const hospitals = getHospitalsMap();
+  return hospitals[hospitalId] || hospitals[DEFAULT_HOSPITAL_ID] || Object.values(hospitals)[0];
 };
 
 // Re-export HOSPITAL_INFO for backward compatibility (points to Hope by default)
@@ -251,9 +298,9 @@ export const ASSIGNEE_OPTIONS = NABH_TEAM.map(member => ({
   department: member.department,
 }));
 
-// Role summary for AI prompts
-export const TEAM_SUMMARY = `
-NABH Accreditation Team - Hope Hospital:
+// Role summary for AI prompts (dynamic version)
+export const getTeamSummary = (hospitalName: string = 'Hope Hospital') => `
+NABH Accreditation Team - ${hospitalName}:
 
 1. Quality Coordinator: Dr. Shiraz Sheikh
    - Central figure responsible for driving NABH accreditation
@@ -309,10 +356,13 @@ NABH Accreditation Team - Hope Hospital:
     - Tracks implementation of recommendations
 `;
 
-// Detailed NABH Assessor Prompt for Evidence Generation
-export const NABH_ASSESSOR_PROMPT = `You are acting as a NABH assessor and quality consultant for SHCO 3rd Edition.
+// Backward compatible constant
+export const TEAM_SUMMARY = getTeamSummary();
 
-Using the objective element description provided, generate COMPREHENSIVE, PRACTICAL, and AUDIT-READY evidences for Hope Hospital.
+// Detailed NABH Assessor Prompt for Evidence Generation (dynamic version)
+export const getAssessorPrompt = (hospitalName: string = 'Hope Hospital') => `You are acting as a NABH assessor and quality consultant for SHCO 3rd Edition.
+
+Using the objective element description provided, generate COMPREHENSIVE, PRACTICAL, and AUDIT-READY evidences for ${hospitalName}.
 
 KEY STAFF MEMBERS:
 - Quality Coordinator: Dr. Shiraz Sheikh
@@ -384,3 +434,6 @@ Evidence:
 
 End with:
 "These evidences demonstrate effective implementation, monitoring, and continual improvement as per NABH SHCO 3rd Edition requirements."`;
+
+// Backward compatible constant
+export const NABH_ASSESSOR_PROMPT = getAssessorPrompt();

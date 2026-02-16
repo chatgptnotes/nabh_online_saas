@@ -64,14 +64,14 @@ function patientToRecord(patient: Patient): Partial<PatientRecord> {
 /**
  * Load all patients from database
  */
-export async function loadAllPatients(): Promise<{
+export async function loadAllPatients(hospitalId: string): Promise<{
   success: boolean;
   data?: Patient[];
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?order=sr_no.asc.nullslast,created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?hospital_id=eq.${hospitalId}&order=sr_no.asc.nullslast,created_at.desc`,
       {
         method: 'GET',
         headers: {
@@ -101,14 +101,14 @@ export async function loadAllPatients(): Promise<{
 /**
  * Load a single patient by ID
  */
-export async function loadPatientById(id: string): Promise<{
+export async function loadPatientById(id: string, hospitalId: string): Promise<{
   success: boolean;
   data?: Patient;
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?id=eq.${id}&limit=1`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?id=eq.${id}&hospital_id=eq.${hospitalId}&limit=1`,
       {
         method: 'GET',
         headers: {
@@ -141,13 +141,13 @@ export async function loadPatientById(id: string): Promise<{
 /**
  * Save a patient (insert or update)
  */
-export async function savePatient(patient: Patient): Promise<{
+export async function savePatient(patient: Patient, hospitalId: string): Promise<{
   success: boolean;
   id?: string;
   error?: string;
 }> {
   try {
-    const record = patientToRecord(patient);
+    const record = { ...patientToRecord(patient), hospital_id: hospitalId };
 
     if (patient.id) {
       // Update existing patient
@@ -207,13 +207,13 @@ export async function savePatient(patient: Patient): Promise<{
 /**
  * Delete a patient by ID
  */
-export async function deletePatient(id: string): Promise<{
+export async function deletePatient(id: string, hospitalId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?id=eq.${id}`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?id=eq.${id}&hospital_id=eq.${hospitalId}`,
       {
         method: 'DELETE',
         headers: {
@@ -241,7 +241,7 @@ export async function deletePatient(id: string): Promise<{
 /**
  * Bulk import patients from Excel data
  */
-export async function bulkImportPatients(patients: Patient[]): Promise<{
+export async function bulkImportPatients(patients: Patient[], hospitalId: string): Promise<{
   success: boolean;
   imported: number;
   failed: number;
@@ -251,8 +251,8 @@ export async function bulkImportPatients(patients: Patient[]): Promise<{
   let imported = 0;
   let failed = 0;
 
-  // Convert all patients to records
-  const records = patients.map(patientToRecord);
+  // Convert all patients to records with hospital_id
+  const records = patients.map(p => ({ ...patientToRecord(p), hospital_id: hospitalId }));
 
   // Use batch insert with upsert on visit_id
   const batchSize = 100;
@@ -300,7 +300,7 @@ export async function bulkImportPatients(patients: Patient[]): Promise<{
 /**
  * Search patients by name or visit ID
  */
-export async function searchPatients(query: string): Promise<{
+export async function searchPatients(query: string, hospitalId: string): Promise<{
   success: boolean;
   data?: Patient[];
   error?: string;
@@ -309,7 +309,7 @@ export async function searchPatients(query: string): Promise<{
     // Search in patient_name or visit_id using ilike
     const encodedQuery = encodeURIComponent(`%${query}%`);
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?or=(patient_name.ilike.${encodedQuery},visit_id.ilike.${encodedQuery},diagnosis.ilike.${encodedQuery})&order=sr_no.asc.nullslast,created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?hospital_id=eq.${hospitalId}&or=(patient_name.ilike.${encodedQuery},visit_id.ilike.${encodedQuery},diagnosis.ilike.${encodedQuery})&order=sr_no.asc.nullslast,created_at.desc`,
       {
         method: 'GET',
         headers: {
@@ -339,14 +339,14 @@ export async function searchPatients(query: string): Promise<{
 /**
  * Get patients by status
  */
-export async function getPatientsByStatus(status: string): Promise<{
+export async function getPatientsByStatus(status: string, hospitalId: string): Promise<{
   success: boolean;
   data?: Patient[];
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?status=eq.${status}&order=sr_no.asc.nullslast,created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?hospital_id=eq.${hospitalId}&status=eq.${status}&order=sr_no.asc.nullslast,created_at.desc`,
       {
         method: 'GET',
         headers: {
@@ -376,14 +376,14 @@ export async function getPatientsByStatus(status: string): Promise<{
 /**
  * Get patient count
  */
-export async function getPatientCount(): Promise<{
+export async function getPatientCount(hospitalId: string): Promise<{
   success: boolean;
   count?: number;
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?select=id`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?hospital_id=eq.${hospitalId}&select=id`,
       {
         method: 'GET',
         headers: {
@@ -413,13 +413,13 @@ export async function getPatientCount(): Promise<{
 /**
  * Delete all patients (for reimport)
  */
-export async function deleteAllPatients(): Promise<{
+export async function deleteAllPatients(hospitalId: string): Promise<{
   success: boolean;
   error?: string;
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_patients?id=neq.00000000-0000-0000-0000-000000000000`,
+      `${SUPABASE_URL}/rest/v1/nabh_patients?hospital_id=eq.${hospitalId}&id=neq.00000000-0000-0000-0000-000000000000`,
       {
         method: 'DELETE',
         headers: {

@@ -34,6 +34,7 @@ import {
   Update as UpdateIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 // Database interface
 interface HospitalManualDB {
@@ -118,6 +119,7 @@ const dbToManual = (db: HospitalManualDB): HospitalManual => ({
 });
 
 export default function HospitalManualsMasterPage() {
+  const { selectedHospital } = useNABHStore();
   const [manuals, setManuals] = useState<HospitalManual[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -127,6 +129,7 @@ export default function HospitalManualsMasterPage() {
       try {
         const { data, error } = await (supabase.from('hospital_manuals') as any)
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('title', { ascending: true });
 
@@ -144,7 +147,7 @@ export default function HospitalManualsMasterPage() {
     };
 
     fetchManuals();
-  }, []);
+  }, [selectedHospital]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -205,6 +208,7 @@ export default function HospitalManualsMasterPage() {
           distribution_list: distributionList,
           implementation_date: manualForm.implementationDate,
           training_required: manualForm.trainingRequired,
+          hospital_id: selectedHospital,
         })
         .select()
         .single();

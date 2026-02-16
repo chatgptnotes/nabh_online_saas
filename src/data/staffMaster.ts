@@ -65,7 +65,7 @@ export const staffMaster: StaffMember[] = [
 /**
  * Function to sync staff to Supabase
  */
-export const syncStaffToDatabase = async () => {
+export const syncStaffToDatabase = async (hospitalId: string = 'hope') => {
   console.log('Syncing staff to database...');
   for (const staff of staffMaster) {
     try {
@@ -92,7 +92,8 @@ export const syncStaffToDatabase = async () => {
           role: staff.role,
           emp_id_no: staff.emp_id_no,
           is_active: staff.is_active,
-          responsibilities: []
+          responsibilities: [],
+          hospital_id: hospitalId,
         } as never);
 
       if (error) throw error;

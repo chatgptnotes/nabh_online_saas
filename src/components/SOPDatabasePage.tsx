@@ -23,9 +23,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { getGeneratedSOPsByChapter, deleteGeneratedSOP, type GeneratedSOP } from '../services/sopGeneratedStorage';
+import { useNABHStore } from '../store/nabhStore';
 
 export default function SOPDatabasePage() {
   const navigate = useNavigate();
+  const { selectedHospital } = useNABHStore();
   const [sops, setSOPs] = useState<GeneratedSOP[]>([]);
   const [loading, setLoading] = useState(true);
   const [chapters, setChapters] = useState<any[]>([]);
@@ -67,10 +69,10 @@ export default function SOPDatabasePage() {
     fetchChapters();
   }, []);
 
-  // Fetch SOPs when chapter filter changes
+  // Fetch SOPs when chapter filter or hospital changes
   useEffect(() => {
     fetchSOPs();
-  }, [selectedChapter]);
+  }, [selectedChapter, selectedHospital]);
 
   const fetchChapters = async () => {
     const { data, error } = await supabase
@@ -85,7 +87,7 @@ export default function SOPDatabasePage() {
   const fetchSOPs = async () => {
     setLoading(true);
     try {
-      const result = await getGeneratedSOPsByChapter(selectedChapter || undefined);
+      const result = await getGeneratedSOPsByChapter(selectedChapter || undefined, selectedHospital);
       if (result.success && result.data) {
         setSOPs(result.data);
       } else {

@@ -1,5 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { callGeminiAPI } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 import {
   Box,
   Paper,
@@ -57,6 +59,8 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
   onSOPUpdate,
   onFeedbackSave,
 }) => {
+  const { selectedHospital } = useNABHStore();
+  const hospitalName = getHospitalInfo(selectedHospital).name;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -69,12 +73,12 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
   const improvementPhases = [
     {
       category: 'hospital-specific',
-      question: `🏥 **Hope Hospital Context Review**\n\nI've analyzed this SOP for "${sopTitle}". Let me ask some specific questions:\n\n1. Does this SOP mention Hope Hospital's specific departments, staff roles, or locations?\n2. Are there any Hope Hospital-specific policies or procedures that should be included?\n3. Do we need to reference specific equipment, software, or systems used at Hope Hospital?\n4. Should we include contact information for specific personnel or departments?`,
-      followUp: 'Please share any Hope Hospital-specific details that should be added to make this SOP more relevant to our operations.'
+      question: `🏥 **${hospitalName} Context Review**\n\nI've analyzed this SOP for "${sopTitle}". Let me ask some specific questions:\n\n1. Does this SOP mention ${hospitalName}'s specific departments, staff roles, or locations?\n2. Are there any ${hospitalName}-specific policies or procedures that should be included?\n3. Do we need to reference specific equipment, software, or systems used at ${hospitalName}?\n4. Should we include contact information for specific personnel or departments?`,
+      followUp: 'Please share any ${hospitalName}-specific details that should be added to make this SOP more relevant to our operations.'
     },
     {
       category: 'previous-rules',
-      question: `📚 **Previous SOP Rules Analysis**\n\nNow let's check if we've missed any important rules from previous SOPs:\n\n1. Are there any specific approval workflows that Hope Hospital has been following?\n2. Do we have established timeframes for processes that should be mentioned?\n3. Are there any safety protocols or emergency procedures specific to this process?\n4. Should we reference any existing forms, checklists, or documentation?`,
+      question: `📚 **Previous SOP Rules Analysis**\n\nNow let's check if we've missed any important rules from previous SOPs:\n\n1. Are there any specific approval workflows that ${hospitalName} has been following?\n2. Do we have established timeframes for processes that should be mentioned?\n3. Are there any safety protocols or emergency procedures specific to this process?\n4. Should we reference any existing forms, checklists, or documentation?`,
       followUp: 'What rules or procedures from previous SOPs should we incorporate?'
     },
     {
@@ -106,7 +110,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
     const welcomeMessage: Message = {
       id: `bot-${Date.now()}`,
       type: 'bot',
-      content: `🤖 **SOP Improvement Assistant**\n\nHi! I'm here to help improve your SOP: **"${sopTitle}"**\n\nI'll guide you through a systematic review to ensure this SOP:\n✅ Includes Hope Hospital-specific details\n✅ Incorporates relevant rules from previous SOPs\n✅ Meets NABH 3rd Edition standards\n✅ Is clear and user-friendly\n\nLet's start with the first review phase!`,
+      content: `🤖 **SOP Improvement Assistant**\n\nHi! I'm here to help improve your SOP: **"${sopTitle}"**\n\nI'll guide you through a systematic review to ensure this SOP:\n✅ Includes ${hospitalName}-specific details\n✅ Incorporates relevant rules from previous SOPs\n✅ Meets NABH 3rd Edition standards\n✅ Is clear and user-friendly\n\nLet's start with the first review phase!`,
       timestamp: new Date(),
       category: 'hospital-specific'
     };
@@ -143,7 +147,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
     const summaryMessage: Message = {
       id: `bot-${Date.now()}`,
       type: 'bot',
-      content: `🎉 **Improvement Review Complete!**\n\nGreat job! We've completed the systematic review of your SOP. Based on your feedback, I can:\n\n1. **Generate an improved version** of the SOP\n2. **Update the master prompt** with your specific requirements\n3. **Save this feedback** to Hope Hospital's knowledge base\n\nWould you like me to create an improved version now?`,
+      content: `🎉 **Improvement Review Complete!**\n\nGreat job! We've completed the systematic review of your SOP. Based on your feedback, I can:\n\n1. **Generate an improved version** of the SOP\n2. **Update the master prompt** with your specific requirements\n3. **Save this feedback** to ${hospitalName}'s knowledge base\n\nWould you like me to create an improved version now?`,
       timestamp: new Date(),
       suggestions: [
         'Generate improved SOP',
@@ -238,7 +242,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
       const successMessage: Message = {
         id: `bot-${Date.now()}`,
         type: 'bot',
-        content: `✅ **SOP Successfully Improved!**\n\nI've generated an enhanced version of your SOP incorporating all the feedback. The improved SOP has been updated with:\n\n• Hope Hospital-specific details\n• Previous SOP rules and procedures\n• Enhanced NABH compliance\n• Improved clarity and usability\n\nYou can now review and save the improved version!`,
+        content: `✅ **SOP Successfully Improved!**\n\nI've generated an enhanced version of your SOP incorporating all the feedback. The improved SOP has been updated with:\n\n• ${hospitalName}-specific details\n• Previous SOP rules and procedures\n• Enhanced NABH compliance\n• Improved clarity and usability\n\nYou can now review and save the improved version!`,
         timestamp: new Date()
       };
 
@@ -274,7 +278,7 @@ IMPROVEMENT INSTRUCTIONS:
 1. **Preserve the original HTML structure and styling**
 2. **Incorporate all relevant feedback into the SOP content**
 3. **Ensure NABH 3rd Edition compliance standards**
-4. **Add Hope Hospital-specific details where mentioned**
+4. **Add ${hospitalName}-specific details where mentioned**
 5. **Improve clarity and readability based on suggestions**
 6. **Maintain professional medical document formatting**
 7. **Update version number in the document header**

@@ -185,7 +185,7 @@ export const useNABHStore = create<NABHStore>()(
           });
 
           // Then load objectives data
-          const objectivesResult = await loadAllObjectiveEditsFromSupabase();
+          const objectivesResult = await loadAllObjectiveEditsFromSupabase(get().selectedHospital);
           if (objectivesResult.success && objectivesResult.data) {
             // Build chapters structure only for allowed chapters
             const chaptersMap = new Map<string, Chapter>();
@@ -270,7 +270,7 @@ export const useNABHStore = create<NABHStore>()(
           // Load normalized schema data and edits in parallel
           const [result, editsResult] = await Promise.all([
             loadAllNormalizedData(),
-            loadAllObjectiveEditsFromSupabase()
+            loadAllObjectiveEditsFromSupabase(get().selectedHospital)
           ]);
 
           if (!result.success || !result.data) {

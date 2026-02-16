@@ -23,6 +23,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Chip from '@mui/material/Chip';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 import { staffMaster, syncStaffToDatabase } from '../data/staffMaster';
 
 interface Employee {
@@ -53,6 +54,7 @@ const initialFormData: EmployeeFormData = {
 };
 
 export default function EmployeesPage() {
+  const { selectedHospital } = useNABHStore();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filteredEmployees, setFilteredEmployees] = useState<Employee[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -71,7 +73,7 @@ export default function EmployeesPage() {
 
   useEffect(() => {
     loadEmployees();
-  }, []);
+  }, [selectedHospital]);
 
   useEffect(() => {
     if (searchQuery.trim()) {
@@ -96,6 +98,7 @@ export default function EmployeesPage() {
       const { data, error } = await supabase
         .from('nabh_team_members')
         .select('*')
+        .eq('hospital_id', selectedHospital)
         .order('name', { ascending: true });
 
       if (error) throw error;
@@ -191,6 +194,7 @@ export default function EmployeesPage() {
           emp_id_no: formData.emp_id_no.trim(),
           is_active: true,
           responsibilities: [] as string[],
+          hospital_id: selectedHospital,
         };
         const { error } = await supabase.from('nabh_team_members').insert(insertData as never);
 
@@ -260,7 +264,7 @@ export default function EmployeesPage() {
           startIcon={<Icon>sync</Icon>}
           sx={{ mr: 1 }}
           onClick={async () => {
-            await syncStaffToDatabase();
+            await syncStaffToDatabase(selectedHospital);
             loadEmployees();
           }}
         >

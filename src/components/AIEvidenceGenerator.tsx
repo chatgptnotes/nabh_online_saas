@@ -36,7 +36,7 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { useNABHStore } from '../store/nabhStore';
-import { getHospitalInfo, getNABHCoordinator, NABH_ASSESSOR_PROMPT } from '../config/hospitalConfig';
+import { getHospitalInfo, getNABHCoordinator, getAssessorPrompt } from '../config/hospitalConfig';
 import { getClaudeApiKey, callGeminiAPI, getGeminiApiKey } from '../lib/supabase';
 import { generateDocumentNumber, getFormattedDate, getReviewDate } from '../utils/documentNumbering';
 import {
@@ -86,7 +86,10 @@ const nabhCoordinator = getNABHCoordinator();
 // NOTE: We don't initialize this statically anymore because the selected hospital can change.
 // Instead, we initialize state in the component.
 
-const defaultListPrompt = NABH_ASSESSOR_PROMPT;
+const getLogoUrl = (config: HospitalConfig) => {
+  const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online';
+  return `${base}${config.logo || '/hospital-logo.png'}`;
+};
 
 const getContentPrompt = (config: HospitalConfig, objectiveCode: string) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.
 
@@ -137,7 +140,7 @@ Use this HTML template structure:
 </head>
 <body>
   <div class="header">
-    <div class="logo-area"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="${config.name} Logo" /></div>
+    <div class="logo-area"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" /></div>
   </div>
 
   <div class="objective-line">[OBJECTIVE_CODE_AND_TITLE]</div>
@@ -238,7 +241,7 @@ Use this structure:
 <!-- DOCUMENT 1: TRAINING CIRCULAR -->
 <div class="page">
   <div class="doc-label">DOCUMENT 1: TRAINING CIRCULAR</div>
-  <div class="header"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="Hope Hospital Logo" class="logo"></div>
+  <div class="header"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" class="logo"></div>
   <div class="title">Circular For Training</div>
   <div class="subtitle">[TRAINING TOPIC]</div>
   <div class="date-line">Date: [CIRCULAR DATE - 1 day before training]</div>
@@ -254,7 +257,7 @@ Use this structure:
 <!-- DOCUMENT 2: ATTENDANCE SHEET -->
 <div class="page">
   <div class="doc-label">DOCUMENT 2: ATTENDANCE SHEET</div>
-  <div class="header"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="Hope Hospital Logo" class="logo"></div>
+  <div class="header"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" class="logo"></div>
   <div class="title">Attendance sheet</div>
   <div class="info-block">
     <p><strong>Date:</strong> [TRAINING DATE] &nbsp;&nbsp; <strong>Time:</strong> 11:30 AM</p>
@@ -297,7 +300,7 @@ Use this structure:
 <!-- DOCUMENT 3: TRAINING CONTENT -->
 <div class="page">
   <div class="doc-label">DOCUMENT 3: TRAINING CONTENT</div>
-  <div class="header"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="Hope Hospital Logo" class="logo"></div>
+  <div class="header"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" class="logo"></div>
   <div class="title">Training Content</div>
   <div class="info-block">
     <p><strong>Topic:</strong> [TRAINING TOPIC] | <strong>Date:</strong> [TRAINING DATE] | <strong>Duration:</strong> 1.5 Hours</p>
@@ -329,7 +332,7 @@ Use this structure:
 <!-- DOCUMENT 4: ASSESSMENT -->
 <div class="page">
   <div class="doc-label">DOCUMENT 4: TRAINING ASSESSMENT</div>
-  <div class="header"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="Hope Hospital Logo" class="logo"></div>
+  <div class="header"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" class="logo"></div>
   <div class="title">Training Assessment</div>
   <div class="info-block">
     <p><strong>Topic:</strong> [TRAINING TOPIC] | <strong>Date:</strong> [TRAINING DATE] | <strong>Pass Criteria:</strong> ≥70% (7/10)</p>
@@ -356,7 +359,7 @@ Use this structure:
 <!-- DOCUMENT 5: COMPLETION REPORT -->
 <div class="page">
   <div class="doc-label">DOCUMENT 5: TRAINING COMPLETION REPORT</div>
-  <div class="header"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="Hope Hospital Logo" class="logo"></div>
+  <div class="header"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" class="logo"></div>
   <div class="title">Training Completion Report</div>
   <div class="date-line"><strong>Report Date:</strong> [1 day after training date]</div>
   <div class="highlight-box">
@@ -695,7 +698,7 @@ export default function AIEvidenceGenerator() {
   const [selectedChapter, setSelectedChapter] = useState('');
   const [selectedObjective, setSelectedObjective] = useState('');
   const [description, setDescription] = useState('');
-  const [listPrompt, setListPrompt] = useState(defaultListPrompt);
+  const [listPrompt, setListPrompt] = useState(() => getAssessorPrompt(currentHospital.name));
   
   // Initialize config from store instead of static default
   const [hospitalConfig, setHospitalConfig] = useState<HospitalConfig>({
@@ -971,7 +974,7 @@ export default function AIEvidenceGenerator() {
             : getContentPrompt(hospitalConfig, objectiveCode);
 
           // Fetch real patient/staff data from nabh_patients table
-          const relevantData = await getRelevantData(item.text);
+          const relevantData = await getRelevantData(item.text, selectedHospital);
 
           // Build data context with real patient data
           let dataContext = '';
@@ -1740,7 +1743,7 @@ ${trimmed}
           qualityCoordinator: hospitalConfig.qualityCoordinator,
           qualityCoordinatorDesignation: hospitalConfig.qualityCoordinatorDesignation,
         },
-      });
+      }, selectedHospital);
 
       if (result.success && result.id) {
         // Store the saved document ID
@@ -2113,7 +2116,7 @@ ${trimmed}
                     <Button
                       size="small"
                       startIcon={<Icon>refresh</Icon>}
-                      onClick={() => setListPrompt(defaultListPrompt)}
+                      onClick={() => setListPrompt(getAssessorPrompt(currentHospital.name))}
                       sx={{ mt: 1 }}
                     >
                       Reset to Default

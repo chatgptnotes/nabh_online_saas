@@ -17,6 +17,7 @@ import Collapse from '@mui/material/Collapse';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useNABHStore } from '../store/nabhStore';
 import { getChapterStats } from '../data/nabhData';
+import { useAuth } from '../providers/AuthProvider';
 
 const DOCUMENT_LEVELS = [
   { id: 'level-1', label: 'Level 1: Mission & Vision', icon: 'flag', path: '/document-levels?level=1', color: '#1565C0' },
@@ -110,13 +111,14 @@ interface SidebarProps {
 
 export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const { chapters, selectedChapter, setSelectedChapter } = useNABHStore();
+  const { user } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedLevel, setExpandedLevel] = useState<string | null>('level-2');
 
   const handleChapterClick = (chapterId: string) => {
     setSelectedChapter(chapterId);
-    navigate('/');
+    navigate('/dashboard');
     onClose();
   };
 
@@ -193,6 +195,30 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
         </ListItemButton>
       </Box>
       
+      {/* Super Admin Section - only for superadmin */}
+      {user?.role === 'superadmin' && (
+        <>
+          <Divider sx={{ my: 1 }} />
+          <Box sx={{ px: 2, py: 1 }}>
+            <ListItemButton
+              selected={location.pathname === '/super-admin'}
+              onClick={() => handleSectionClick('/super-admin')}
+              sx={{
+                borderRadius: 2,
+                bgcolor: location.pathname === '/super-admin' ? 'error.main' : 'rgba(211,47,47,0.08)',
+                color: location.pathname === '/super-admin' ? 'white' : 'error.main',
+                '&:hover': { bgcolor: 'error.main', color: 'white' },
+              }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <Icon sx={{ color: location.pathname === '/super-admin' ? 'white' : 'error.main' }}>admin_panel_settings</Icon>
+              </ListItemIcon>
+              <ListItemText primary="Super Admin" slotProps={{ primary: { sx: { fontWeight: 600 } } }} />
+            </ListItemButton>
+          </Box>
+        </>
+      )}
+
       <Divider sx={{ my: 1 }} />
 
       {/* Document Levels Section */}

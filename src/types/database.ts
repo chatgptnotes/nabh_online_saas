@@ -1024,6 +1024,97 @@ export interface Database {
           updated_at?: string;
         };
       };
+      hospitals: {
+        Row: {
+          id: string;
+          name: string;
+          slug: string;
+          address: string | null;
+          city: string | null;
+          state: string | null;
+          phone: string | null;
+          email: string | null;
+          website: string | null;
+          logo_url: string | null;
+          bed_count: number | null;
+          is_active: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          slug: string;
+          address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          website?: string | null;
+          logo_url?: string | null;
+          bed_count?: number | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          slug?: string;
+          address?: string | null;
+          city?: string | null;
+          state?: string | null;
+          phone?: string | null;
+          email?: string | null;
+          website?: string | null;
+          logo_url?: string | null;
+          bed_count?: number | null;
+          is_active?: boolean;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
+      nabh_users: {
+        Row: {
+          id: string;
+          name: string;
+          email: string;
+          password_hash: string;
+          phone: string | null;
+          role: string;
+          hospital_id: string;
+          is_active: boolean;
+          last_login_at: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: {
+          id?: string;
+          name: string;
+          email: string;
+          password_hash: string;
+          phone?: string | null;
+          role?: string;
+          hospital_id?: string;
+          is_active?: boolean;
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+        Update: {
+          id?: string;
+          name?: string;
+          email?: string;
+          password_hash?: string;
+          phone?: string | null;
+          role?: string;
+          hospital_id?: string;
+          is_active?: boolean;
+          last_login_at?: string | null;
+          created_at?: string;
+          updated_at?: string;
+        };
+      };
     };
     Views: {
       [_ in never]: never;

@@ -240,7 +240,7 @@ export default function SharedEvidencePage() {
         }}
       >
         <Typography variant="caption" color="text.secondary">
-          NABH.online - Hope Hospital
+          NABH.online - {evidence.hospital_config?.name || 'Hospital'}
         </Typography>
       </Box>
     </Box>

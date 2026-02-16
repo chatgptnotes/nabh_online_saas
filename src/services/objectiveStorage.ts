@@ -96,7 +96,8 @@ async function uploadInfographicToStorage(
  */
 export async function saveObjectiveToSupabase(
   chapterId: string,
-  objective: ObjectiveElement
+  objective: ObjectiveElement,
+  hospitalId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     let infographicUrl = objective.infographicDataUrl || null;
@@ -136,13 +137,14 @@ export async function saveObjectiveToSupabase(
       sop_documents: objective.sopDocuments || [],
       auditor_priority_items: objective.auditorPriorityItems || [],
       interpretations2: objective.interpretations2 || null,
+      hospital_id: hospitalId,
     };
 
     console.log('Saving to Supabase, payload size:', JSON.stringify(editData).length, 'bytes');
 
     // Use direct REST API with proper headers
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?on_conflict=objective_code`,
+      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?on_conflict=objective_code,hospital_id`,
       {
         method: 'POST',
         headers: {
@@ -249,7 +251,8 @@ export async function saveObjectiveToSupabase(
  * Load a single objective's edits from Supabase
  */
 export async function loadObjectiveFromSupabase(
-  objectiveCode: string
+  objectiveCode: string,
+  hospitalId: string
 ): Promise<{
   success: boolean;
   data?: Partial<ObjectiveElement>;
@@ -257,7 +260,7 @@ export async function loadObjectiveFromSupabase(
 }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?objective_code=eq.${encodeURIComponent(objectiveCode)}&limit=1`,
+      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?objective_code=eq.${encodeURIComponent(objectiveCode)}&hospital_id=eq.${hospitalId}&limit=1`,
       {
         method: 'GET',
         headers: {
@@ -316,7 +319,7 @@ export async function loadObjectiveFromSupabase(
 /**
  * Load all objective edits from Supabase
  */
-export async function loadAllObjectiveEditsFromSupabase(): Promise<{
+export async function loadAllObjectiveEditsFromSupabase(hospitalId: string): Promise<{
   success: boolean;
   data?: Record<string, Partial<ObjectiveElement>>;
   error?: string;
@@ -382,11 +385,12 @@ export async function loadAllObjectiveEditsFromSupabase(): Promise<{
  * Delete an objective's edits from Supabase
  */
 export async function deleteObjectiveFromSupabase(
-  objectiveCode: string
+  objectiveCode: string,
+  hospitalId: string
 ): Promise<{ success: boolean; error?: string }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?objective_code=eq.${encodeURIComponent(objectiveCode)}`,
+      `${SUPABASE_URL}/rest/v1/nabh_objective_edits?objective_code=eq.${encodeURIComponent(objectiveCode)}&hospital_id=eq.${hospitalId}`,
       {
         method: 'DELETE',
         headers: {
@@ -445,12 +449,13 @@ export interface GeneratedEvidence {
  * If evidence with same objective_code and evidence_title exists, it will be updated
  */
 export async function saveGeneratedEvidence(
-  evidence: Omit<GeneratedEvidence, 'id' | 'created_at'>
+  evidence: Omit<GeneratedEvidence, 'id' | 'created_at'>,
+  hospitalId: string
 ): Promise<{ success: boolean; id?: string; error?: string }> {
   try {
     // First check if evidence already exists for this objective_code + evidence_title
     const existingResponse = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=eq.${encodeURIComponent(evidence.objective_code)}&evidence_title=eq.${encodeURIComponent(evidence.evidence_title)}&select=id`,
+      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=eq.${encodeURIComponent(evidence.objective_code)}&evidence_title=eq.${encodeURIComponent(evidence.evidence_title)}&hospital_id=eq.${hospitalId}&select=id`,
       {
         method: 'GET',
         headers: {
@@ -520,6 +525,7 @@ export async function saveGeneratedEvidence(
             html_content: evidence.html_content,
             evidence_type: evidence.evidence_type,
             hospital_config: evidence.hospital_config,
+            hospital_id: hospitalId,
           }),
         }
       );
@@ -582,11 +588,12 @@ export async function updateGeneratedEvidence(
  * Load all generated evidences for a specific objective
  */
 export async function loadGeneratedEvidences(
-  objectiveCode: string
+  objectiveCode: string,
+  hospitalId: string
 ): Promise<{ success: boolean; data?: GeneratedEvidence[]; error?: string }> {
   try {
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=eq.${encodeURIComponent(objectiveCode)}&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=eq.${encodeURIComponent(objectiveCode)}&hospital_id=eq.${hospitalId}&order=created_at.desc`,
       {
         method: 'GET',
         headers: {
@@ -655,7 +662,8 @@ export async function loadEvidenceById(
  * Returns a map of objective_code -> array of evidence documents (only 'document' type, not 'custom')
  */
 export async function loadEvidenceCountsForObjectives(
-  objectiveCodes: string[]
+  objectiveCodes: string[],
+  hospitalId: string
 ): Promise<{ success: boolean; data?: Record<string, GeneratedEvidence[]>; error?: string }> {
   if (objectiveCodes.length === 0) {
     return { success: true, data: {} };
@@ -665,7 +673,7 @@ export async function loadEvidenceCountsForObjectives(
     // Fetch all document-type evidences for the given objective codes
     const codesParam = objectiveCodes.map(c => `"${c}"`).join(',');
     const response = await fetch(
-      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=in.(${codesParam})&evidence_type=eq.document&select=id,objective_code,evidence_title,evidence_type,created_at&order=created_at.desc`,
+      `${SUPABASE_URL}/rest/v1/nabh_ai_generated_evidence?objective_code=in.(${codesParam})&hospital_id=eq.${hospitalId}&evidence_type=eq.document&select=id,objective_code,evidence_title,evidence_type,created_at&order=created_at.desc`,
       {
         method: 'GET',
         headers: {
@@ -1461,7 +1469,7 @@ export async function loadAllObjectiveElements(): Promise<{
 /**
  * Load objective edits by chapter code (for SOP Generator)
  */
-export async function loadObjectiveEditsByChapter(chapterCode: string): Promise<{
+export async function loadObjectiveEditsByChapter(chapterCode: string, hospitalId: string): Promise<{
   success: boolean;
   data?: Array<{ title: string | null; interpretations2: string | null; objective_code: string }>;
   error?: string;

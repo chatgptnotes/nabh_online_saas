@@ -38,6 +38,7 @@ import {
 } from '@mui/icons-material';
 // NABH_TEAM import removed - now fetching from Supabase nabh_team_members table
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 import LinkMetadataDialog from './shared/LinkMetadataDialog';
 import type { LinkMetadata } from '../types/linkMetadata';
 
@@ -227,6 +228,7 @@ const NABH_MANDATORY_COMMITTEES = [
 ];
 
 export default function CommitteesPageEnhanced() {
+  const { selectedHospital } = useNABHStore();
   const [committees, setCommittees] = useState<Committee[]>([]);
   const [doctorsData, setDoctorsData] = useState<MasterPersonData[]>([]);
   const [employeesData, setEmployeesData] = useState<MasterPersonData[]>([]);
@@ -333,6 +335,7 @@ export default function CommitteesPageEnhanced() {
         const { data, error } = await supabase
           .from('rmo_doctors')
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('sr_no', { ascending: true });
 
@@ -366,6 +369,7 @@ export default function CommitteesPageEnhanced() {
         const { data, error } = await supabase
           .from('nabh_team_members')
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('name', { ascending: true });
 
@@ -399,6 +403,7 @@ export default function CommitteesPageEnhanced() {
         const { data, error } = await supabase
           .from('visiting_consultants')
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('sr_no', { ascending: true });
 
@@ -433,6 +438,7 @@ export default function CommitteesPageEnhanced() {
         const { data: rawCommitteesData, error: committeesError } = await supabase
           .from('committees')
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('created_at', { ascending: true });
 
@@ -538,6 +544,7 @@ export default function CommitteesPageEnhanced() {
             meeting_frequency: committee.meetingFrequency,
             objectives: committee.objectives,
             min_meetings_required: committee.minMeetingsRequired,
+            hospital_id: selectedHospital,
           } as any)
           .select()
           .single();
@@ -591,6 +598,7 @@ export default function CommitteesPageEnhanced() {
           meeting_frequency: newCommittee.meetingFrequency,
           objectives: newCommittee.objectives.split('\n').filter(obj => obj.trim()),
           min_meetings_required: newCommittee.minMeetingsRequired,
+          hospital_id: selectedHospital,
         } as any)
         .select()
         .single();

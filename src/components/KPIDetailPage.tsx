@@ -119,7 +119,7 @@ export default function KPIDetailPage() {
         }
 
         // Load graph history from Supabase
-        loadKPIGraphHistory(kpiId).then(result => {
+        loadKPIGraphHistory(kpiId, selectedHospital).then(result => {
           if (result.success && result.data) {
             setGraphHistory(result.data);
           }
@@ -673,13 +673,14 @@ export default function KPIDetailPage() {
         dataUrl,
         kpiData,
         lastAIModification || undefined,
-        lastAIModification ? 'AI Modified' : undefined
+        lastAIModification ? 'AI Modified' : undefined,
+        selectedHospital
       );
 
       if (result.success) {
         setSnackbar({ open: true, message: 'Graph saved to Supabase successfully', severity: 'success' });
         // Reload graph history
-        const historyResult = await loadKPIGraphHistory(kpi.id);
+        const historyResult = await loadKPIGraphHistory(kpi.id, selectedHospital);
         if (historyResult.success && historyResult.data) {
           setGraphHistory(historyResult.data);
         }
@@ -772,7 +773,7 @@ export default function KPIDetailPage() {
       await restoreKPIGraph(kpi.id, graph.id);
 
       // Reload history
-      const historyResult = await loadKPIGraphHistory(kpi.id);
+      const historyResult = await loadKPIGraphHistory(kpi.id, selectedHospital);
       if (historyResult.success && historyResult.data) {
         setGraphHistory(historyResult.data);
       }
@@ -794,7 +795,7 @@ export default function KPIDetailPage() {
 
       if (result.success) {
         // Reload history
-        const historyResult = await loadKPIGraphHistory(kpi.id);
+        const historyResult = await loadKPIGraphHistory(kpi.id, selectedHospital);
         if (historyResult.success && historyResult.data) {
           setGraphHistory(historyResult.data);
         }

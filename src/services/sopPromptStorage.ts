@@ -31,7 +31,7 @@ export interface SOPPromptInput {
 /**
  * Load all SOP prompts from the database
  */
-export async function loadAllSOPPrompts(): Promise<{ success: boolean; data?: SOPPrompt[]; error?: string }> {
+export async function loadAllSOPPrompts(hospitalId: string): Promise<{ success: boolean; data?: SOPPrompt[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_prompts')
@@ -164,7 +164,7 @@ export async function getSOPPromptById(id: string): Promise<{ success: boolean; 
 /**
  * Search SOP prompts by keyword
  */
-export async function searchSOPPrompts(query: string): Promise<{ success: boolean; data?: SOPPrompt[]; error?: string }> {
+export async function searchSOPPrompts(query: string, hospitalId: string): Promise<{ success: boolean; data?: SOPPrompt[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_prompts')

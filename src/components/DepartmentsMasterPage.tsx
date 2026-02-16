@@ -42,6 +42,7 @@ import {
   Delete
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 // Types
 type DepartmentCategory = 'Clinical Speciality' | 'Super Speciality' | 'Support Services' | 'Administration';
@@ -90,6 +91,7 @@ const initialFormState = {
 };
 
 const DepartmentsMasterPage: React.FC = () => {
+  const { selectedHospital } = useNABHStore();
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<DepartmentCategory | 'All'>('All');
   const [typeFilter, setTypeFilter] = useState<DepartmentType | 'All'>('All');
@@ -126,6 +128,7 @@ const DepartmentsMasterPage: React.FC = () => {
         const { data, error } = await (supabase.from('departments') as any)
           .select('*')
           .eq('is_active', true)
+          .eq('hospital_id', selectedHospital)
           .order('dept_id', { ascending: true });
 
         if (error) {
@@ -141,7 +144,7 @@ const DepartmentsMasterPage: React.FC = () => {
     };
 
     fetchDepartments();
-  }, []);
+  }, [selectedHospital]);
 
   // Calculate statistics from fetched data
   const complianceStats = useMemo(() => {
@@ -294,7 +297,7 @@ const DepartmentsMasterPage: React.FC = () => {
         services: servicesArray.length > 0 ? servicesArray : null,
         nabh_is_active: true,
         nabh_compliance_status: 'Not Assessed',
-        hospital_id: 'hope-hospital',
+        hospital_id: selectedHospital,
         is_active: true,
       };
 

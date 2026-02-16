@@ -145,7 +145,7 @@ const formatSOPTitle = (title: string): string => {
 
 export default function SearchPage() {
   const navigate = useNavigate();
-  const { chapters } = useNABHStore();
+  const { chapters, selectedHospital } = useNABHStore();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -234,11 +234,13 @@ export default function SearchPage() {
     const results: SearchResult[] = [];
 
     // Search nabh_sop_documents (uploaded SOPs)
-    const { data, error } = await supabase
+    let sopQuery = supabase
       .from('nabh_sop_documents')
       .select('id, title, description, chapter_code')
       .or(`title.ilike.${q},description.ilike.${q},chapter_code.ilike.${q}`)
       .limit(50);
+    if (selectedHospital) sopQuery = sopQuery.eq('hospital_id', selectedHospital);
+    const { data, error } = await sopQuery;
 
     if (!error && data) {
       data.forEach((sop: any) => {
@@ -259,11 +261,13 @@ export default function SearchPage() {
     }
 
     // Search nabh_generated_sops (AI-generated SOPs)
-    const { data: genData, error: genError } = await supabase
+    let genQuery = supabase
       .from('nabh_generated_sops')
       .select('id, objective_code, objective_title, chapter_code')
       .or(`objective_title.ilike.${q},objective_code.ilike.${q},chapter_code.ilike.${q}`)
       .limit(50);
+    if (selectedHospital) genQuery = genQuery.eq('hospital_id', selectedHospital);
+    const { data: genData, error: genError } = await genQuery;
 
     if (!genError && genData) {
       genData.forEach((sop: any) => {
@@ -289,11 +293,13 @@ export default function SearchPage() {
     const chapterQ = `%${chapterPrefix}%`;
     const fallbackResults: SearchResult[] = [];
 
-    const { data: fallbackData, error: fallbackError } = await supabase
+    let fallbackSopQ = supabase
       .from('nabh_sop_documents')
       .select('id, title, description, chapter_code')
       .or(`title.ilike.${chapterQ},chapter_code.ilike.${chapterQ}`)
       .limit(50);
+    if (selectedHospital) fallbackSopQ = fallbackSopQ.eq('hospital_id', selectedHospital);
+    const { data: fallbackData, error: fallbackError } = await fallbackSopQ;
 
     if (!fallbackError && fallbackData) {
       fallbackData.forEach((sop: any) => {
@@ -313,11 +319,13 @@ export default function SearchPage() {
       });
     }
 
-    const { data: genFallback } = await supabase
+    let genFallbackQ = supabase
       .from('nabh_generated_sops')
       .select('id, objective_code, objective_title, chapter_code')
       .or(`objective_title.ilike.${chapterQ},chapter_code.ilike.${chapterQ}`)
       .limit(50);
+    if (selectedHospital) genFallbackQ = genFallbackQ.eq('hospital_id', selectedHospital);
+    const { data: genFallback } = await genFallbackQ;
 
     if (genFallback) {
       genFallback.forEach((sop: any) => {
@@ -344,11 +352,13 @@ export default function SearchPage() {
     const results: SearchResult[] = [];
 
     // Search nabh_ai_generated_evidence
-    const { data: aiData } = await supabase
+    let aiQ = supabase
       .from('nabh_ai_generated_evidence')
       .select('id, evidence_title, objective_code')
       .or(`evidence_title.ilike.${q},objective_code.ilike.${q}`)
       .limit(50);
+    if (selectedHospital) aiQ = aiQ.eq('hospital_id', selectedHospital);
+    const { data: aiData } = await aiQ;
 
     if (aiData) {
       aiData.forEach((ev: any) => {
@@ -366,11 +376,13 @@ export default function SearchPage() {
     }
 
     // Search nabh_document_evidence
-    const { data: docData } = await supabase
+    let docQ = supabase
       .from('nabh_document_evidence')
       .select('id, title, objective_code')
       .or(`title.ilike.${q},objective_code.ilike.${q}`)
       .limit(50);
+    if (selectedHospital) docQ = docQ.eq('hospital_id', selectedHospital);
+    const { data: docData } = await docQ;
 
     if (docData) {
       docData.forEach((ev: any) => {
@@ -397,11 +409,13 @@ export default function SearchPage() {
     const chapterQ = `%${chapterPrefix}%`;
     const fallbackResults: SearchResult[] = [];
 
-    const { data: aiFallback } = await supabase
+    let aiFallbackQ = supabase
       .from('nabh_ai_generated_evidence')
       .select('id, evidence_title, objective_code')
       .or(`evidence_title.ilike.${chapterQ},objective_code.ilike.${chapterQ}`)
       .limit(50);
+    if (selectedHospital) aiFallbackQ = aiFallbackQ.eq('hospital_id', selectedHospital);
+    const { data: aiFallback } = await aiFallbackQ;
 
     if (aiFallback) {
       aiFallback.forEach((ev: any) => {
@@ -418,11 +432,13 @@ export default function SearchPage() {
       });
     }
 
-    const { data: docFallback } = await supabase
+    let docFallbackQ = supabase
       .from('nabh_document_evidence')
       .select('id, title, objective_code')
       .or(`title.ilike.${chapterQ},objective_code.ilike.${chapterQ}`)
       .limit(50);
+    if (selectedHospital) docFallbackQ = docFallbackQ.eq('hospital_id', selectedHospital);
+    const { data: docFallback } = await docFallbackQ;
 
     if (docFallback) {
       docFallback.forEach((ev: any) => {
@@ -448,11 +464,13 @@ export default function SearchPage() {
     const results: SearchResult[] = [];
 
     // Search nabh_sop_documents by extracted_content
-    const { data } = await supabase
+    let contentQ = supabase
       .from('nabh_sop_documents')
       .select('id, title, chapter_code, extracted_content')
       .ilike('extracted_content', q)
       .limit(30);
+    if (selectedHospital) contentQ = contentQ.eq('hospital_id', selectedHospital);
+    const { data } = await contentQ;
 
     if (data) {
       data.forEach((sop: any) => {
@@ -474,11 +492,13 @@ export default function SearchPage() {
     }
 
     // Search nabh_generated_sops by sop_html_content (sop_text_content is not populated)
-    const { data: genData } = await supabase
+    let genContentQ = supabase
       .from('nabh_generated_sops')
       .select('id, objective_code, objective_title, chapter_code, sop_html_content')
       .ilike('sop_html_content', q)
       .limit(30);
+    if (selectedHospital) genContentQ = genContentQ.eq('hospital_id', selectedHospital);
+    const { data: genData } = await genContentQ;
 
     if (genData) {
       genData.forEach((sop: any) => {
@@ -505,11 +525,13 @@ export default function SearchPage() {
     const results: SearchResult[] = [];
 
     // Search nabh_ai_generated_evidence by generated_content (plain text)
-    const { data: aiData } = await supabase
+    let aiContentQ = supabase
       .from('nabh_ai_generated_evidence')
       .select('id, evidence_title, objective_code, generated_content')
       .ilike('generated_content', q)
       .limit(30);
+    if (selectedHospital) aiContentQ = aiContentQ.eq('hospital_id', selectedHospital);
+    const { data: aiData } = await aiContentQ;
 
     if (aiData) {
       aiData.forEach((ev: any) => {
@@ -528,11 +550,13 @@ export default function SearchPage() {
     }
 
     // Search nabh_document_evidence by html_content (only content field available)
-    const { data: docData } = await supabase
+    let docContentQ = supabase
       .from('nabh_document_evidence')
       .select('id, title, objective_code, html_content')
       .ilike('html_content', q)
       .limit(30);
+    if (selectedHospital) docContentQ = docContentQ.eq('hospital_id', selectedHospital);
+    const { data: docData } = await docContentQ;
 
     if (docData) {
       docData.forEach((ev: any) => {

@@ -322,7 +322,7 @@ export default function ObjectiveDetailPage() {
 
       setIsLoadingFromDb(true);
       try {
-        const result = await loadObjectiveFromSupabase(objective.code);
+        const result = await loadObjectiveFromSupabase(objective.code, selectedHospital);
         if (result.success && result.data && chapter) {
           // Merge Supabase data with local state
           const updates: Partial<typeof objective> = {};
@@ -402,7 +402,7 @@ export default function ObjectiveDetailPage() {
 
       setIsLoadingEvidences(true);
       try {
-        const result = await loadGeneratedEvidences(objective.code);
+        const result = await loadGeneratedEvidences(objective.code, selectedHospital);
         if (result.success && result.data) {
           setSavedEvidences(result.data);
 
@@ -715,7 +715,7 @@ export default function ObjectiveDetailPage() {
 
     setSaveStatus('saving');
     try {
-      const result = await saveObjectiveToSupabase(chapter.id, updatedObjective);
+      const result = await saveObjectiveToSupabase(chapter.id, updatedObjective, selectedHospital);
       if (result.success) {
         setSaveStatus('saved');
         setLastSaved(new Date());
@@ -1209,7 +1209,7 @@ Start directly with the numbered list, no introduction or explanation.`;
             qualityCoordinator: coordinator.name,
             qualityCoordinatorDesignation: coordinator.designation,
           }
-        });
+        }, selectedHospital);
         setEvidenceItemsAutoSaved(true);
         setSnackbarMessage('8 evidence items generated and auto-saved!');
         setSnackbarOpen(true);
@@ -1444,7 +1444,7 @@ Start directly with the numbered list, no introduction or explanation.`;
     };
 
     // Save to Supabase
-    const result = await saveObjectiveToSupabase(chapterId, updatedObjective);
+    const result = await saveObjectiveToSupabase(chapterId, updatedObjective, selectedHospital);
     if (result.success) {
       const item = updatedItems.find(i => i.id === itemId);
       const isNowPriority = item?.isAuditorPriority;
@@ -1695,7 +1695,7 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
           package_id: packageId,
           package_sequence: docIndex + 1,
           package_total: documentsToGenerate.length,
-        });
+        }, selectedHospital);
 
         if (result.success && result.id) {
           console.log(`✅ Saved: ${doc.title} (ID: ${result.id})`);
@@ -1753,23 +1753,23 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
   const effectiveDate = getFormattedDate(documentDate);
   const reviewDate = getFormattedDate(new Date(documentDate.getFullYear() + 1, documentDate.getMonth(), documentDate.getDate()));
 
-  // Logo URL - use production URL for generated documents stored in database
+  // Logo URL - use hospital config's logo path
   const logoUrl = window.location.hostname === 'localhost'
-    ? `${window.location.origin}${hospitalConfig.name === 'Ayushman Hospital' ? '/ayushman-logo.png' : '/hospital-logo.png'}`
-    : `https://www.nabh.online${hospitalConfig.name === 'Ayushman Hospital' ? '/ayushman-logo.png' : '/hospital-logo.png'}`;
+    ? `${window.location.origin}${hospitalConfig.logo || '/hospital-logo.png'}`
+    : `https://www.nabh.online${hospitalConfig.logo || '/hospital-logo.png'}`;
 
   // Get the HTML template for evidence documents
   const getEvidenceDocumentPrompt = async (evidenceItem?: string) => {
-    // Get relevant Hope Hospital data based on evidence type
-    const relevantData = evidenceItem ? await getRelevantData(evidenceItem) : {};
+    // Get relevant hospital data based on evidence type
+    const relevantData = evidenceItem ? await getRelevantData(evidenceItem, selectedHospital) : {};
 
     // Format data for prompt
-    const dataContext = hospitalConfig.name === 'Hope Hospital' ? `
+    const dataContext = `
 
-CRITICAL: Use these ACTUAL Hope Hospital records in your evidence generation. This is real data from our database:
+CRITICAL: Use these ACTUAL ${hospitalConfig.name} records in your evidence generation. This is real data from our database:
 
 ${relevantData.patients && relevantData.patients.length > 0 ? `
-=== PATIENT RECORDS (Hope Hospital Database) ===
+=== PATIENT RECORDS (${hospitalConfig.name} Database) ===
 ${relevantData.patients.map((p, idx) => `
 Patient ${idx + 1}:
 - Visit ID/UHID: ${p.visit_id}
@@ -1784,7 +1784,7 @@ NOTE: Use these EXACT patient names and Visit IDs. Do not modify them. If you ne
 ` : ''}
 
 ${relevantData.staff && relevantData.staff.length > 0 ? `
-=== STAFF RECORDS (Hope Hospital Database) ===
+=== STAFF RECORDS (${hospitalConfig.name} Database) ===
 ${relevantData.staff.map((s, idx) => `
 Staff ${idx + 1}:
 - Name: ${s.name}
@@ -1799,7 +1799,7 @@ NOTE: Use these EXACT staff names and designations for any staff-related documen
 ` : ''}
 
 ${relevantData.consultants && relevantData.consultants.length > 0 ? `
-=== VISITING CONSULTANTS / DOCTORS (Hope Hospital Database) ===
+=== VISITING CONSULTANTS / DOCTORS (${hospitalConfig.name} Database) ===
 ${relevantData.consultants.map((c, idx) => `
 Doctor ${idx + 1}:
 - Sr. No: ${c.sr_no}
@@ -1814,7 +1814,7 @@ NOTE: Use these EXACT doctor names and credentials for any doctor/consultant/phy
 ` : ''}
 
 ${relevantData.equipment && relevantData.equipment.length > 0 ? `
-=== EQUIPMENT RECORDS (Hope Hospital Database) ===
+=== EQUIPMENT RECORDS (${hospitalConfig.name} Database) ===
 ${relevantData.equipment.map((e, idx) => `
 Equipment ${idx + 1}:
 - Equipment ID: ${e.equipmentId}
@@ -1830,7 +1830,7 @@ Equipment ${idx + 1}:
 ` : ''}
 
 ${relevantData.incidents && relevantData.incidents.length > 0 ? `
-=== INCIDENT RECORDS (Hope Hospital Database) ===
+=== INCIDENT RECORDS (${hospitalConfig.name} Database) ===
 ${relevantData.incidents.map((i, idx) => `
 Incident ${idx + 1}:
 - Incident ID: ${i.incidentId}
@@ -1854,7 +1854,7 @@ CRITICAL INSTRUCTIONS FOR USING THIS DATA:
 7. Include specific dates, numbers, and details from the database
 8. Create various types of filled formats: registers, forms, reports, logs, checklists
 9. If a form requires 20 employees but only 15 are provided, show only 15 entries OR repeat some employees with different assessment periods/dates - but NEVER invent new names
-` : '';
+`;
 
     return `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${hospitalConfig.name}.
 ${dataContext}
@@ -2003,8 +2003,8 @@ Use EXACTLY this HTML template structure (fill in the content sections):
 
 Generate the complete HTML with all sections filled in appropriately based on the evidence item provided. Make the content detailed, practical, and ready for NABH assessment.
 
-${hospitalConfig.name === 'Hope Hospital' ? `
-SPECIFIC INSTRUCTIONS FOR HOPE HOSPITAL EVIDENCE:
+${`
+SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
 1. Create FILLED formats, NOT blank templates
 2. Use the patient/staff/equipment data provided above
 3. Generate realistic completed forms like:
@@ -2021,7 +2021,7 @@ SPECIFIC INSTRUCTIONS FOR HOPE HOSPITAL EVIDENCE:
 6. Use proper formatting: tables, checkboxes (✓), signatures, stamps
 7. Add realistic handwritten-style notes where appropriate
 8. Include serial numbers, page numbers, reference numbers
-` : ''}
+`}
 `;
   };
 
@@ -2091,17 +2091,16 @@ SPECIFIC INSTRUCTIONS FOR HOPE HOSPITAL EVIDENCE:
   const postProcessHTML = (html: string): string => {
     let processed = html;
 
-    // 0. FIRST - Replace ALL variations of "Dr. Murali's Hope Hospital" with "Hope Hospital" EVERYWHERE
-    // This must happen FIRST before any other processing
-    processed = processed.replace(/Dr\.?\s*Murali'?s?\s+Hope\s+Hospital/gi, 'Hope Hospital');
-    processed = processed.replace(/Dr\.?\s*Murali'?s?\s*Hope\s*Hospital/gi, 'Hope Hospital');
-    processed = processed.replace(/DR\.?\s*MURALI'?S?\s+HOPE\s+HOSPITAL/gi, 'HOPE HOSPITAL');
-    processed = processed.replace(/DR\.?\s*MURALI'?S?\s*HOPE\s*HOSPITAL/gi, 'HOPE HOSPITAL');
+    // 0. FIRST - Replace ALL variations of "Dr. Murali's Hope Hospital" with correct hospital name
+    processed = processed.replace(/Dr\.?\s*Murali'?s?\s+Hope\s+Hospital/gi, hospitalConfig.name);
+    processed = processed.replace(/Dr\.?\s*Murali'?s?\s*Hope\s*Hospital/gi, hospitalConfig.name);
+    processed = processed.replace(/DR\.?\s*MURALI'?S?\s+HOPE\s+HOSPITAL/gi, hospitalConfig.name.toUpperCase());
+    processed = processed.replace(/DR\.?\s*MURALI'?S?\s*HOPE\s*HOSPITAL/gi, hospitalConfig.name.toUpperCase());
 
-    // 0. SECOND - If Ayushman Hospital is selected, replace Hope Hospital mentions
-    if (hospitalConfig.name === 'Ayushman Hospital') {
-      processed = processed.replace(/Hope\s+Hospital/gi, 'Ayushman Hospital');
-      processed = processed.replace(/HOPE\s+HOSPITAL/gi, 'AYUSHMAN HOSPITAL');
+    // 0. SECOND - If not Hope Hospital, replace any remaining Hope Hospital mentions
+    if (hospitalConfig.name !== 'Hope Hospital') {
+      processed = processed.replace(/Hope\s+Hospital/gi, hospitalConfig.name);
+      processed = processed.replace(/HOPE\s+HOSPITAL/gi, hospitalConfig.name.toUpperCase());
     }
 
     // 1. REMOVE the tagline div completely (handles nested divs issue)
@@ -2405,7 +2404,7 @@ SPECIFIC INSTRUCTIONS FOR HOPE HOSPITAL EVIDENCE:
 Evidence Item to Generate:
 ${item.text}
 
-Generate complete, ready-to-use FILLED EVIDENCE with actual data from Hope Hospital database (NOT blank templates). Use the patient records, staff records, equipment records provided in the system prompt. Make it look like real hospital documentation with specific entries, dates, names, and numbers.`;
+Generate complete, ready-to-use FILLED EVIDENCE with actual data from ${hospitalConfig.name} database (NOT blank templates). Use the patient records, staff records, equipment records provided in the system prompt. Make it look like real hospital documentation with specific entries, dates, names, and numbers.`;
 
         let rawContent: string = '';
 
@@ -2465,7 +2464,7 @@ Generate complete, ready-to-use FILLED EVIDENCE with actual data from Hope Hospi
             html_content: htmlContent,
             evidence_type: 'document',
             hospital_config: hospitalConfig,
-          });
+          }, selectedHospital);
 
           if (result.success && result.id) {
             console.log('✓ Successfully saved evidence:', result.id);
@@ -2581,7 +2580,7 @@ OBJECTIVE: ${objective?.code} - ${objective?.title}
 
 USER REQUEST: ${customEvidencePrompt}
 
-Generate a complete, professional HTML document for the above requirement. Use ACTUAL data from Hope Hospital database provided in the system prompt (patient records, staff records, equipment records). Create FILLED formats with real entries, NOT blank templates. Make it look like authentic hospital documentation.`;
+Generate a complete, professional HTML document for the above requirement. Use ACTUAL data from ${hospitalConfig.name} database provided in the system prompt (patient records, staff records, equipment records). Create FILLED formats with real entries, NOT blank templates. Make it look like authentic hospital documentation.`;
 
       const data = await callGeminiAPI(prompt, 0.7, 8192);
       const rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
@@ -2599,7 +2598,7 @@ Generate a complete, professional HTML document for the above requirement. Use A
           html_content: htmlContent,
           evidence_type: 'custom',
           hospital_config: hospitalConfig,
-        });
+        }, selectedHospital);
 
         if (result.success && result.id) {
           const newEvidence: GeneratedEvidence = {
@@ -2649,7 +2648,7 @@ Generate a complete, professional HTML document for the above requirement. Use A
 
     try {
       // Fetch real consultant and staff data from database
-      const relevantData = await getRelevantData('register staff doctor consultant');
+      const relevantData = await getRelevantData('register staff doctor consultant', selectedHospital);
       const consultantNames = relevantData.consultants && relevantData.consultants.length > 0
         ? relevantData.consultants.map(c => c.name).join(', ')
         : 'Dr. Shiraz Sheikh, Dr. Murali BK';
@@ -2677,7 +2676,7 @@ Create a professional, print-ready HTML document with:
 6. Footer with "${hospitalConfig.name.toUpperCase()} - QUALITY MANAGEMENT SYSTEM - Controlled Document"
 
 MANDATORY - Use ONLY these names for entries:
-Patient names: Use real patient names from Hope Hospital database or generic Indian names like Rajesh Kumar, Priya Sharma, Amit Patel, Sunita Devi
+Patient names: Use real patient names from ${hospitalConfig.name} database or generic Indian names like Rajesh Kumar, Priya Sharma, Amit Patel, Sunita Devi
 Staff names: ${staffNames}
 Doctor names (use ONLY these - DO NOT invent doctors): ${consultantNames}
 
@@ -2711,7 +2710,7 @@ Generate complete HTML with embedded CSS styling. Do NOT use markdown code block
             html_content: htmlContent,
             evidence_type: 'register',
             hospital_config: hospitalConfig,
-          });
+          }, selectedHospital);
 
           if (result.success && result.id) {
             const newEvidence: GeneratedEvidence = {
@@ -2867,7 +2866,7 @@ Generate complete HTML with embedded CSS. Do NOT use markdown or code blocks. St
           html_content: htmlContent,
           evidence_type: 'document',
           hospital_config: hospitalConfig,
-        });
+        }, selectedHospital);
 
         if (result.success && result.id) {
           const newEvidence: GeneratedEvidence = {
@@ -2982,7 +2981,7 @@ Provide only the Hindi explanation, no English text. The explanation should be c
         ...objective,
         infographicSvg: '', // We're using image now, not SVG
         infographicDataUrl: imageDataUrl,
-      });
+      }, selectedHospital);
 
       if (result.success) {
         setInfographicSaveStatus('saved');
@@ -3702,7 +3701,7 @@ Provide only the Hindi explanation, no English text. The explanation should be c
                 onClick={async () => {
                   setIsSavingInterpretation(true);
                   try {
-                    const result = await saveObjectiveToSupabase(chapter.id, objective);
+                    const result = await saveObjectiveToSupabase(chapter.id, objective, selectedHospital);
                     if (result.success) {
                       // Save generated evidence items if they exist
                       if (interpretationEvidenceItems.length > 0) {
@@ -3728,7 +3727,7 @@ Provide only the Hindi explanation, no English text. The explanation should be c
                             qualityCoordinator: coordinator.name,
                             qualityCoordinatorDesignation: coordinator.designation,
                           }
-                        });
+                        }, selectedHospital);
                       }
 
                       // Mark as saved

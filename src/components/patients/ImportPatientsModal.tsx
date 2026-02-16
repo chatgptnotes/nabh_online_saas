@@ -24,6 +24,7 @@ import StepLabel from '@mui/material/StepLabel';
 import * as XLSX from 'xlsx';
 import type { Patient, PatientImportRow } from '../../types/patient';
 import { bulkImportPatients, deleteAllPatients } from '../../services/patientStorage';
+import { useNABHStore } from '../../store/nabhStore';
 
 interface ImportPatientsModalProps {
   open: boolean;
@@ -38,6 +39,7 @@ export default function ImportPatientsModal({
   onClose,
   onImportComplete,
 }: ImportPatientsModalProps) {
+  const { selectedHospital } = useNABHStore();
   const [activeStep, setActiveStep] = useState(0);
   const [parsedData, setParsedData] = useState<Patient[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -381,11 +383,11 @@ export default function ImportPatientsModal({
     try {
       // Delete existing data first
       setImportProgress(10);
-      await deleteAllPatients();
+      await deleteAllPatients(selectedHospital);
 
       // Import new data
       setImportProgress(20);
-      const result = await bulkImportPatients(parsedData);
+      const result = await bulkImportPatients(parsedData, selectedHospital);
       setImportProgress(100);
 
       setImportResult(result);

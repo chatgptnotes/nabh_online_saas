@@ -61,7 +61,7 @@ export const getRMODoctorByEmpId = (empId: string): RMODoctor | undefined => {
 /**
  * Function to sync RMO doctors to Supabase
  */
-export const syncRMODoctorsToDatabase = async () => {
+export const syncRMODoctorsToDatabase = async (hospitalId: string = 'hope') => {
   console.log('Syncing RMO doctors to database...');
 
   for (const doctor of rmoDoctorsMaster) {
@@ -73,7 +73,7 @@ export const syncRMODoctorsToDatabase = async () => {
       designation: doctor.designation,
       registration_no: doctor.registration_no,
       doctor_type: doctor.doctor_type,
-      hospital_id: 'hope-hospital',
+      hospital_id: hospitalId,
       is_active: true,
     };
 
@@ -106,12 +106,12 @@ export const syncRMODoctorsToDatabase = async () => {
 /**
  * Fetch RMO doctors from Supabase
  */
-export const fetchRMODoctorsFromDatabase = async (): Promise<RMODoctor[]> => {
+export const fetchRMODoctorsFromDatabase = async (hospitalId: string = 'hope'): Promise<RMODoctor[]> => {
   try {
     const { data, error } = await supabase
       .from('rmo_doctors')
       .select('*')
-      .eq('hospital_id', 'hope-hospital')
+      .eq('hospital_id', hospitalId)
       .eq('is_active', true)
       .order('sr_no', { ascending: true });
 

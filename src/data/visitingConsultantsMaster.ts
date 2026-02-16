@@ -69,7 +69,7 @@ export const getConsultantsByDepartment = (department: string): VisitingConsulta
 /**
  * Function to sync consultants to Supabase (visiting_consultants table)
  */
-export const syncConsultantsToDatabase = async () => {
+export const syncConsultantsToDatabase = async (hospitalId: string = 'hope') => {
   console.log('Syncing visiting consultants to database...');
 
   for (const consultant of visitingConsultantsMaster) {
@@ -80,7 +80,7 @@ export const syncConsultantsToDatabase = async () => {
       qualification: consultant.qualification,
       registration_no: consultant.registration_no,
       registered_council: consultant.registered_council,
-      hospital_id: 'hope-hospital',
+      hospital_id: hospitalId,
       is_active: true,
     };
 
@@ -114,12 +114,12 @@ export const syncConsultantsToDatabase = async () => {
 /**
  * Fetch visiting consultants from Supabase
  */
-export const fetchConsultantsFromDatabase = async (): Promise<VisitingConsultant[]> => {
+export const fetchConsultantsFromDatabase = async (hospitalId: string = 'hope'): Promise<VisitingConsultant[]> => {
   try {
     const { data, error } = await supabase
       .from('visiting_consultants')
       .select('*')
-      .eq('hospital_id', 'hope-hospital')
+      .eq('hospital_id', hospitalId)
       .eq('is_active', true)
       .order('sr_no', { ascending: true });
 

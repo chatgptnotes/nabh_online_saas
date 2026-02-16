@@ -42,16 +42,17 @@ export interface CreateSOPRequest {
 /**
  * Save a generated SOP to the database
  */
-export const saveSOPDocument = async (sopData: CreateSOPRequest): Promise<{ success: boolean; data?: SOPDocument; error?: string }> => {
+export const saveSOPDocument = async (sopData: CreateSOPRequest, hospitalId?: string): Promise<{ success: boolean; data?: SOPDocument; error?: string }> => {
   try {
     const { data: userData } = await supabase.auth.getUser();
-    
+
     const sopRecord = {
       ...sopData,
       version: sopData.version || '1.0',
       status: sopData.status || 'Active' as const,
       is_public: sopData.is_public ?? false,
       created_by: userData?.user?.email || 'system',
+      ...(hospitalId && { hospital_id: hospitalId }),
     };
 
     const { data, error } = await supabase
@@ -99,12 +100,16 @@ export const updateSOPDocument = async (id: string, sopData: Partial<CreateSOPRe
 /**
  * Fetch SOPs by chapter
  */
-export const getSOPsByChapter = async (chapterCode?: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> => {
+export const getSOPsByChapter = async (chapterCode?: string, hospitalId?: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> => {
   try {
     let query = supabase
       .from('nabh_sop_documents')
       .select('*')
       .order('created_at', { ascending: false });
+
+    if (hospitalId) {
+      query = query.eq('hospital_id', hospitalId);
+    }
 
     if (chapterCode) {
       query = query.eq('chapter_code', chapterCode);
@@ -172,13 +177,19 @@ export const deleteSOPDocument = async (id: string): Promise<{ success: boolean;
 /**
  * Search SOPs by text
  */
-export const searchSOPs = async (searchTerm: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> => {
+export const searchSOPs = async (searchTerm: string, hospitalId?: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('nabh_sop_documents')
       .select('*')
       .or(`title.ilike.%${searchTerm}%,description.ilike.%${searchTerm}%,extracted_content.ilike.%${searchTerm}%`)
       .order('created_at', { ascending: false });
+
+    if (hospitalId) {
+      query = query.eq('hospital_id', hospitalId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error searching SOPs:', error);
@@ -195,11 +206,17 @@ export const searchSOPs = async (searchTerm: string): Promise<{ success: boolean
 /**
  * Get SOPs statistics
  */
-export const getSOPsStats = async (): Promise<{ success: boolean; data?: { total: number; byStatus: Record<string, number>; byChapter: Record<string, number> }; error?: string }> => {
+export const getSOPsStats = async (hospitalId?: string): Promise<{ success: boolean; data?: { total: number; byStatus: Record<string, number>; byChapter: Record<string, number> }; error?: string }> => {
   try {
-    const { data, error } = await supabase
+    let query = supabase
       .from('nabh_sop_documents')
       .select('status, chapter_code');
+
+    if (hospitalId) {
+      query = query.eq('hospital_id', hospitalId);
+    }
+
+    const { data, error } = await query;
 
     if (error) {
       console.error('Error fetching SOP stats:', error);

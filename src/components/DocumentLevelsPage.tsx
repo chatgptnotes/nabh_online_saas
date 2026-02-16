@@ -26,6 +26,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import TablePagination from '@mui/material/TablePagination';
 import type { DocumentLevelItem } from '../services/documentLevelStorage';
+import { useNABHStore } from '../store/nabhStore';
 import {
   loadDocumentsByLevel,
   saveDocument,
@@ -109,6 +110,7 @@ const INITIAL_FORM_DATA = {
 };
 
 export default function DocumentLevelsPage() {
+  const { selectedHospital } = useNABHStore();
   const [searchParams] = useSearchParams();
   const levelParam = searchParams.get('level');
   const [tabValue, setTabValue] = useState(levelParam ? parseInt(levelParam) - 1 : 0);
@@ -159,7 +161,7 @@ export default function DocumentLevelsPage() {
     try {
       setIsLoading(true);
       const currentLevel = tabValue + 1;
-      const result = await loadDocumentsByLevel(currentLevel);
+      const result = await loadDocumentsByLevel(currentLevel, selectedHospital);
       if (result.success && result.data) {
         setDocuments(result.data);
       } else {
@@ -332,7 +334,7 @@ export default function DocumentLevelsPage() {
         version: formData.version,
         status: formData.status,
         images: uploadedImageUrls,
-      });
+      }, selectedHospital);
 
       if (result.success) {
         showSnackbar('Document added successfully', 'success');

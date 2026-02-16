@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 import {
   Box,
   Container,
@@ -40,7 +42,7 @@ const defaultPrompts: EvidencePrompt[] = [
     id: 'nabh-evidence-master',
     title: 'NABH Evidence Generation Master',
     description: 'Comprehensive prompt for generating NABH Third Edition compliant evidence documents',
-    prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant evidence documents for Hope Hospital. Follow these mandatory requirements:
+    prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant evidence documents for {{HOSPITAL_NAME}}. Follow these mandatory requirements:
 
 📋 REGISTER & DOCUMENTATION REQUIREMENTS
 
@@ -105,7 +107,11 @@ This evidence generation is for NABH AUDIT FEB 13-14, 2026. Every piece of evide
 ];
 
 export default function EvidencePromptMasterPage() {
-  const [prompts, setPrompts] = useState<EvidencePrompt[]>(defaultPrompts);
+  const { selectedHospital } = useNABHStore();
+  const hospitalName = getHospitalInfo(selectedHospital).name;
+  const [prompts, setPrompts] = useState<EvidencePrompt[]>(() =>
+    defaultPrompts.map(p => ({ ...p, prompt: p.prompt.replace(/\{\{HOSPITAL_NAME\}\}/g, hospitalName) }))
+  );
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Partial<EvidencePrompt>>({});

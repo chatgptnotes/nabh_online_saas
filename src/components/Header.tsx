@@ -10,9 +10,11 @@ import Tooltip from '@mui/material/Tooltip';
 import Divider from '@mui/material/Divider';
 import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import Avatar from '@mui/material/Avatar';
 import { useNABHStore } from '../store/nabhStore';
-import { HOSPITALS, getHospitalInfo } from '../config/hospitalConfig';
+import { getHospitalInfo, fetchHospitalsFromDB, type HospitalInfo } from '../config/hospitalConfig';
+import { useAuth } from '../providers/AuthProvider';
 
 interface HeaderProps {
   onMenuClick: () => void;
@@ -22,8 +24,17 @@ export default function Header({ onMenuClick }: HeaderProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const { setSelectedChapter, selectedHospital, setSelectedHospital } = useNABHStore();
+  const { user, logout } = useAuth();
   const isGeneratorPage = location.pathname === '/ai-generator';
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [userMenuAnchor, setUserMenuAnchor] = useState<null | HTMLElement>(null);
+  const [hospitalsList, setHospitalsList] = useState<HospitalInfo[]>([]);
+
+  useEffect(() => {
+    fetchHospitalsFromDB().then((hospitalsMap) => {
+      setHospitalsList(Object.values(hospitalsMap));
+    });
+  }, []);
 
   const handleHomeClick = () => {
     setSelectedChapter(null);
@@ -74,46 +85,65 @@ export default function Header({ onMenuClick }: HeaderProps) {
           </Typography>
         </Box>
         
-        {/* Hospital Switcher */}
+        {/* Hospital Name (locked) or Switcher (superadmin only) */}
         <Box sx={{ ml: { xs: 1, sm: 4 }, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-          <Button
-            color="inherit"
-            onClick={handleHospitalMenuOpen}
-            endIcon={<Icon>arrow_drop_down</Icon>}
-            sx={{
-              textTransform: 'none',
-              fontSize: { xs: '0.8rem', sm: '1rem' },
-              fontWeight: 500,
-              bgcolor: 'rgba(255,255,255,0.1)',
-              '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
-              px: { xs: 1, sm: 2 },
-              whiteSpace: 'nowrap',
-            }}
-          >
-            {currentHospital.name}
-          </Button>
-          <Menu
-            anchorEl={anchorEl}
-            open={Boolean(anchorEl)}
-            onClose={handleHospitalMenuClose}
-            PaperProps={{
-              elevation: 4,
-              sx: { mt: 1.5, minWidth: 200 }
-            }}
-          >
-            {Object.values(HOSPITALS).map((hospital) => (
-              <MenuItem
-                key={hospital.id}
-                selected={selectedHospital === hospital.id}
-                onClick={() => handleHospitalSelect(hospital.id)}
+          {user?.role === 'superadmin' ? (
+            <>
+              <Button
+                color="inherit"
+                onClick={handleHospitalMenuOpen}
+                endIcon={<Icon>arrow_drop_down</Icon>}
+                sx={{
+                  textTransform: 'none',
+                  fontSize: { xs: '0.8rem', sm: '1rem' },
+                  fontWeight: 500,
+                  bgcolor: 'rgba(255,255,255,0.1)',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.2)' },
+                  px: { xs: 1, sm: 2 },
+                  whiteSpace: 'nowrap',
+                }}
               >
-                <Icon sx={{ mr: 1, fontSize: 20, color: selectedHospital === hospital.id ? 'primary.main' : 'text.secondary' }}>
-                  {selectedHospital === hospital.id ? 'check_circle' : 'radio_button_unchecked'}
-                </Icon>
-                {hospital.name}
-              </MenuItem>
-            ))}
-          </Menu>
+                {currentHospital.name}
+              </Button>
+              <Menu
+                anchorEl={anchorEl}
+                open={Boolean(anchorEl)}
+                onClose={handleHospitalMenuClose}
+                PaperProps={{
+                  elevation: 4,
+                  sx: { mt: 1.5, minWidth: 200 }
+                }}
+              >
+                {hospitalsList.map((hospital) => (
+                  <MenuItem
+                    key={hospital.id}
+                    selected={selectedHospital === hospital.id}
+                    onClick={() => handleHospitalSelect(hospital.id)}
+                  >
+                    <Icon sx={{ mr: 1, fontSize: 20, color: selectedHospital === hospital.id ? 'primary.main' : 'text.secondary' }}>
+                      {selectedHospital === hospital.id ? 'check_circle' : 'radio_button_unchecked'}
+                    </Icon>
+                    {hospital.name}
+                  </MenuItem>
+                ))}
+              </Menu>
+            </>
+          ) : (
+            <Typography
+              variant="body1"
+              sx={{
+                fontWeight: 500,
+                bgcolor: 'rgba(255,255,255,0.1)',
+                px: { xs: 1, sm: 2 },
+                py: 0.5,
+                borderRadius: 1,
+                fontSize: { xs: '0.8rem', sm: '1rem' },
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {currentHospital.name}
+            </Typography>
+          )}
         </Box>
 
         <Box sx={{ flexGrow: 1 }} />
@@ -195,6 +225,65 @@ export default function Header({ onMenuClick }: HeaderProps) {
             SHCO 3rd Edition
           </Typography>
         </Box>
+
+        {/* Super Admin Button */}
+        {user?.role === 'superadmin' && (
+          <>
+            <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.3)', mx: 1, display: { xs: 'none', md: 'block' } }} />
+            <Tooltip title="Super Admin Panel">
+              <Button
+                color="inherit"
+                startIcon={<Icon>admin_panel_settings</Icon>}
+                onClick={() => navigate('/super-admin')}
+                sx={{
+                  bgcolor: location.pathname === '/super-admin' ? 'rgba(255,255,255,0.2)' : 'transparent',
+                  '&:hover': { bgcolor: 'rgba(255,255,255,0.25)' },
+                  display: { xs: 'none', md: 'flex' },
+                }}
+              >
+                Admin
+              </Button>
+            </Tooltip>
+          </>
+        )}
+
+        {/* User Menu */}
+        {user && (
+          <>
+            <Divider orientation="vertical" flexItem sx={{ bgcolor: 'rgba(255,255,255,0.3)', mx: 1, display: { xs: 'none', md: 'block' } }} />
+            <Tooltip title={`${user.name} (${user.role})`}>
+              <IconButton color="inherit" onClick={(e) => setUserMenuAnchor(e.currentTarget)}>
+                <Avatar sx={{ width: 32, height: 32, bgcolor: 'secondary.main', fontSize: 14 }}>
+                  {user.name.charAt(0).toUpperCase()}
+                </Avatar>
+              </IconButton>
+            </Tooltip>
+            <Menu
+              anchorEl={userMenuAnchor}
+              open={Boolean(userMenuAnchor)}
+              onClose={() => setUserMenuAnchor(null)}
+              PaperProps={{ elevation: 4, sx: { mt: 1.5, minWidth: 200 } }}
+            >
+              <MenuItem disabled>
+                <Box>
+                  <Typography variant="subtitle2">{user.name}</Typography>
+                  <Typography variant="caption" color="text.secondary">{user.email}</Typography>
+                </Box>
+              </MenuItem>
+              <Divider />
+              <MenuItem
+                onClick={() => {
+                  setUserMenuAnchor(null);
+                  logout();
+                  navigate('/login');
+                }}
+              >
+                <Icon sx={{ mr: 1, fontSize: 20 }}>logout</Icon>
+                Logout
+              </MenuItem>
+            </Menu>
+          </>
+        )}
       </Toolbar>
     </AppBar>
   );

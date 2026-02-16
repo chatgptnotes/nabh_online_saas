@@ -205,11 +205,12 @@ const HOPE_HOSPITAL_INCIDENTS: IncidentRecord[] = [
 /**
  * Fetch real patient data from Supabase nabh_patients table
  */
-export async function fetchRealPatients(limit: number = 20): Promise<PatientRecord[]> {
+export async function fetchRealPatients(hospitalId: string, limit: number = 20): Promise<PatientRecord[]> {
   try {
     const { data, error } = await supabase
       .from('nabh_patients')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .order('created_at', { ascending: false })
       .limit(limit);
 
@@ -229,11 +230,12 @@ export async function fetchRealPatients(limit: number = 20): Promise<PatientReco
  * Fetch real staff data from Supabase nabh_team_members table
  * Fetches ALL active employees to ensure evidence documents use only real names
  */
-export async function fetchRealStaff(): Promise<StaffRecord[]> {
+export async function fetchRealStaff(hospitalId: string): Promise<StaffRecord[]> {
   try {
     const { data, error } = await supabase
       .from('nabh_team_members')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .eq('is_active', true)
       .order('created_at', { ascending: false });
 
@@ -254,7 +256,7 @@ export async function fetchRealStaff(): Promise<StaffRecord[]> {
  * Fetch visiting consultants/doctors from Supabase visiting_consultants table
  * Falls back to master data if Supabase is empty or fails
  */
-export async function fetchVisitingConsultants(): Promise<VisitingConsultantRecord[]> {
+export async function fetchVisitingConsultants(hospitalId: string): Promise<VisitingConsultantRecord[]> {
   // Helper function to convert master data to VisitingConsultantRecord format
   const convertMasterToRecord = (): VisitingConsultantRecord[] => {
     return visitingConsultantsMaster.map(c => ({
@@ -263,7 +265,7 @@ export async function fetchVisitingConsultants(): Promise<VisitingConsultantReco
       qualification: c.qualification || null,
       registration_no: c.registration_no || null,
       registered_council: c.registered_council || null,
-      hospital_id: 'hope-hospital',
+      hospital_id: hospitalId,
       is_active: true,
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString(),
@@ -274,6 +276,7 @@ export async function fetchVisitingConsultants(): Promise<VisitingConsultantReco
     const { data, error } = await supabase
       .from('visiting_consultants')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .eq('is_active', true)
       .order('sr_no', { ascending: true });
 
@@ -335,7 +338,7 @@ export function getRandomIncidents(count: number = 2): IncidentRecord[] {
  * Get relevant data based on evidence type
  * This function now fetches REAL data from Supabase
  */
-export async function getRelevantData(evidenceType: string): Promise<{
+export async function getRelevantData(evidenceType: string, hospitalId: string): Promise<{
   patients?: PatientRecord[];
   staff?: StaffRecord[];
   equipment?: EquipmentRecord[];
@@ -355,16 +358,16 @@ export async function getRelevantData(evidenceType: string): Promise<{
   if (type.includes('patient') || type.includes('admission') || type.includes('discharge') ||
       type.includes('care') || type.includes('record') || type.includes('assessment') ||
       type.includes('consent') || type.includes('medication') || type.includes('treatment')) {
-    const realPatients = await fetchRealPatients(20);
+    const realPatients = await fetchRealPatients(hospitalId, 20);
     data.patients = getRandomPatients(realPatients, 8);
   }
 
   // ALWAYS fetch ALL staff data - needed for evidence documents to use only real names
-  const realStaff = await fetchRealStaff();
+  const realStaff = await fetchRealStaff(hospitalId);
   data.staff = realStaff.length > 0 ? realStaff : HOPE_HOSPITAL_STAFF;
 
   // ALWAYS fetch visiting consultants/doctors - needed for doctor signatures, approvals, clinical documentation
-  const consultants = await fetchVisitingConsultants();
+  const consultants = await fetchVisitingConsultants(hospitalId);
   data.consultants = consultants;
 
   // Equipment-related evidence (hardcoded for now)

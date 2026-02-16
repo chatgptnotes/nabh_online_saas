@@ -33,6 +33,7 @@ import {
   Schedule as ScheduleIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 interface ClinicalAudit {
   id: string;
@@ -120,6 +121,7 @@ const dbToAudit = (db: ClinicalAuditDB): ClinicalAudit => ({
 });
 
 export default function ClinicalAuditsMasterPage() {
+  const { selectedHospital } = useNABHStore();
   const [audits, setAudits] = useState<ClinicalAudit[]>([]);
   const [loading, setLoading] = useState(true);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -137,7 +139,7 @@ export default function ClinicalAuditsMasterPage() {
           .from('clinical_audits')
           .select('*')
           .eq('is_active', true)
-          .eq('hospital_id', 'hope-hospital')
+          .eq('hospital_id', selectedHospital)
           .order('created_at', { ascending: false });
 
         if (error) throw error;
@@ -151,7 +153,7 @@ export default function ClinicalAuditsMasterPage() {
     };
 
     fetchAudits();
-  }, []);
+  }, [selectedHospital]);
 
   // Form state
   const [auditForm, setAuditForm] = useState<Partial<ClinicalAudit>>({
@@ -200,7 +202,7 @@ export default function ClinicalAuditsMasterPage() {
         priority: auditForm.priority || 'Medium',
         follow_up_date: auditForm.followUpDate || null,
         documents_link: auditForm.documentsLink || null,
-        hospital_id: 'hope-hospital',
+        hospital_id: selectedHospital,
         is_active: true,
       };
 

@@ -33,6 +33,8 @@ import {
   deleteSOPPrompt,
   type SOPPrompt,
 } from '../services/sopPromptStorage';
+import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 
 interface SOPPromptUI extends SOPPrompt {
   createdAt: string;
@@ -42,7 +44,7 @@ interface SOPPromptUI extends SOPPrompt {
 const defaultPrompt: Omit<SOPPromptUI, 'id' | 'createdAt' | 'lastModified'> = {
   title: 'SOP Generation Master',
   description: 'Comprehensive prompt for generating NABH compliant Standard Operating Procedures',
-  prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant Standard Operating Procedures (SOPs) for Hope Hospital. Follow these mandatory requirements:
+  prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant Standard Operating Procedures (SOPs) for {{HOSPITAL_NAME}}. Follow these mandatory requirements:
 
 📋 SOP DOCUMENT STRUCTURE
 
@@ -111,7 +113,7 @@ const defaultPrompt: Omit<SOPPromptUI, 'id' | 'createdAt' | 'lastModified'> = {
 🎯 FORMATTING REQUIREMENTS
 
 - Use professional medical document formatting
-- Include Hope Hospital logo placeholder
+- Include {{HOSPITAL_NAME}} logo placeholder
 - Footer with document control information
 - Clear section numbering (1.0, 1.1, 1.2, etc.)
 - Tables for complex information
@@ -136,6 +138,8 @@ function mapToUI(prompt: SOPPrompt): SOPPromptUI {
 }
 
 export default function SOPPromptMasterPage() {
+  const { selectedHospital } = useNABHStore();
+  const hospitalName = getHospitalInfo(selectedHospital).name;
   const [prompts, setPrompts] = useState<SOPPromptUI[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
@@ -150,15 +154,16 @@ export default function SOPPromptMasterPage() {
 
   useEffect(() => {
     loadPrompts();
-  }, []);
+  }, [selectedHospital]);
 
   const loadPrompts = async () => {
     setIsLoading(true);
-    const result = await loadAllSOPPrompts();
+    const result = await loadAllSOPPrompts(selectedHospital);
     if (result.success && result.data) {
       if (result.data.length === 0) {
         // If no prompts in DB, save the default one
-        const saveResult = await saveSOPPrompt(defaultPrompt);
+        const promptWithHospital = { ...defaultPrompt, prompt: defaultPrompt.prompt.replace(/\{\{HOSPITAL_NAME\}\}/g, hospitalName), hospital_id: selectedHospital };
+        const saveResult = await saveSOPPrompt(promptWithHospital);
         if (saveResult.success && saveResult.data) {
           setPrompts([mapToUI(saveResult.data)]);
           showSnackbar('Default prompt initialized', 'info');
@@ -233,6 +238,7 @@ export default function SOPPromptMasterPage() {
         prompt: editForm.prompt,
         category: editForm.category || '',
         tags: editForm.tags || [],
+        hospital_id: selectedHospital,
       });
 
       if (result.success && result.data) {

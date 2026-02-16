@@ -35,8 +35,10 @@ import SOPImprovementChat from './SOPImprovementChat';
 import { uploadAndSaveSOP, getGeneratedSOPsByChapter, type GeneratedSOP } from '../services/sopGeneratedStorage';
 import { callGeminiAPI } from '../lib/supabase';
 import { useNavigate } from 'react-router-dom';
+import { useNABHStore } from '../store/nabhStore';
 
 export default function RecentSOPsPage() {
+  const { selectedHospital } = useNABHStore();
   const navigate = useNavigate();
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' }>({
     open: false,
@@ -112,7 +114,7 @@ export default function RecentSOPsPage() {
   // Load AI Filter Prompt and SOP Prompts from database on mount
   useEffect(() => {
     const fetchPrompts = async () => {
-      const result = await loadAllSOPPrompts();
+      const result = await loadAllSOPPrompts(selectedHospital);
       if (result.success && result.data && result.data.length > 0) {
         setSOPPrompts(result.data);
 
@@ -212,7 +214,7 @@ export default function RecentSOPsPage() {
   }, [selectedChapterCode]);
 
   const loadChapterObjectives = async (chapterCode: string) => {
-    const result = await loadObjectiveEditsByChapter(chapterCode);
+    const result = await loadObjectiveEditsByChapter(chapterCode, selectedHospital);
     if (result.success && result.data) {
       setObjectives(result.data);
       setSelectedObjective('');
@@ -248,6 +250,7 @@ export default function RecentSOPsPage() {
           .select('*')
           .eq('chapter_code', selectedChapterCode)
           .eq('objective_code', objectiveCode)
+          .eq('hospital_id', selectedHospital)
           .order('created_at', { ascending: false })
           .limit(1)
           .single();
@@ -280,7 +283,7 @@ export default function RecentSOPsPage() {
     setOldSOPText('');
 
     try {
-      const result = await loadSOPsByChapter(selectedChapterCode);
+      const result = await loadSOPsByChapter(selectedChapterCode, selectedHospital);
       if (!result.success || !result.data) {
         showSnackbar(result.error || 'Failed to load SOPs', 'error');
         setExtractingOldSOP(false);
@@ -408,7 +411,8 @@ export default function RecentSOPsPage() {
         selectedChapterCode,
         getChapterName(selectedChapterId),
         finalPrompt,
-        selectedObjective // Pass objective code for document naming
+        selectedObjective, // Pass objective code for document naming
+        selectedHospital
       );
 
       if (result.success && result.sop) {
@@ -469,7 +473,7 @@ export default function RecentSOPsPage() {
         f3_title: objectiveTitle,
         f4_interpretation: interpretation,
         sop_html_content: finalSOP,
-      }, pdfBlob);
+      }, pdfBlob, selectedHospital);
 
       if (result.success) {
         showSnackbar(`SOP saved successfully!${result.pdfUrl ? ' PDF uploaded.' : ''}`, 'success');

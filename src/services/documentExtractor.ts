@@ -6,6 +6,7 @@
 
 import { callGeminiAPI, callGeminiVisionAPI } from '../lib/supabase';
 import { fetchRealPatients, fetchRealStaff, fetchVisitingConsultants } from './hopeHospitalDatabase';
+import { getHospitalInfo } from '../config/hospitalConfig';
 
 export interface ExtractionResult {
   success: boolean;
@@ -565,7 +566,8 @@ export const generateSOPFromContent = async (
   chapterCode: string,
   chapterName: string,
   customPrompt?: string,
-  objectiveCode?: string
+  objectiveCode?: string,
+  hospitalId?: string
 ): Promise<{ success: boolean; sop: string; error?: string }> => {
   console.log('[generateSOPFromContent] Starting SOP generation for chapter:', chapterCode);
 
@@ -579,9 +581,11 @@ export const generateSOPFromContent = async (
 
   const docNo = `SOP-${chapterCode}-${objectiveCode ? objectiveCode.replace(/\./g, '-') : '001'}`;
 
-  // Use actual Hope Hospital logo and signature images - relative paths work in iframe
+  // Use hospital-specific logo and signature images - relative paths work in iframe
   const baseUrl = typeof window !== 'undefined' ? window.location.origin : '';
-  const logoUrl = `${baseUrl}/assets/hope-hospital-logo.png`;
+  const hId = hospitalId || 'hope';
+  const hospitalInfo = getHospitalInfo(hId);
+  const logoUrl = `${baseUrl}${hospitalInfo.logo}`;
   const sonaliSignature = `${baseUrl}/Sonali's signature.png`;
   const gauravSignature = `${baseUrl}/Gaurav's signature.png`;
   const shirazSignature = `${baseUrl}/Dr shiraz's signature.png`;
@@ -592,9 +596,9 @@ export const generateSOPFromContent = async (
 
   // Fetch real patient, staff, and doctor data from database - fetch more for variety
   const [realPatients, realStaff, realDoctorsRaw] = await Promise.all([
-    fetchRealPatients(30),
-    fetchRealStaff(),
-    fetchVisitingConsultants(),
+    fetchRealPatients(hId, 30),
+    fetchRealStaff(hId),
+    fetchVisitingConsultants(hId),
   ]);
 
   // Shuffle doctors array so different doctors appear at top each time (prevents AI from always picking first 3-4)
@@ -616,7 +620,7 @@ export const generateSOPFromContent = async (
     : 'No doctor data available';
 
   try {
-    const prompt = `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for Hope Hospital.
+    const prompt = `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${hospitalInfo.name}.
 
 ## CRITICAL RULE - REAL DATA ONLY (STRICTLY ENFORCED):
 You MUST use ONLY the real data provided below from the hospital database. This is NON-NEGOTIABLE:
@@ -675,7 +679,7 @@ Use EXACTLY this HTML template structure (fill in the content sections):
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SOP - ${objectiveCode || chapterCode} - Hope Hospital</title>
+  <title>SOP - ${objectiveCode || chapterCode} - ${hospitalInfo.name}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; line-height: 1.6; color: #333; padding: 0 15px 15px; width: 100%; max-width: 800px; margin-left: auto !important; margin-right: auto !important; }
@@ -715,8 +719,8 @@ Use EXACTLY this HTML template structure (fill in the content sections):
 <body>
   <div style="font-size: 28px; font-weight: bold; color: #1565C0; margin-bottom: 10px;">SOP</div>
   <div class="header">
-    <img src="${logoUrl}" alt="Dr. Murali's Hope Hospital" class="logo" style="width: 180px; height: auto; display: block; margin: 0 auto !important; padding: 0 !important; vertical-align: top;">
-    <div class="hospital-address">2, Teka Naka, Nagpur, Maharashtra 440022 | Phone: +91 9823555053 | Email: info@hopehospital.com</div>
+    <img src="${logoUrl}" alt="${hospitalInfo.name}" class="logo" style="width: 180px; height: auto; display: block; margin: 0 auto !important; padding: 0 !important; vertical-align: top;">
+    <div class="hospital-address">${hospitalInfo.address} | Phone: ${hospitalInfo.phone} | Email: ${hospitalInfo.email}</div>
   </div>
 
   <div class="doc-title">SOP-${objectiveCode || chapterCode} - ${objectiveTitle}</div>
@@ -811,7 +815,7 @@ Map each SOP responsibility to the closest matching real staff member above. If 
   </div>
 
   <div class="footer">
-    <strong>Hope Hospital</strong> | 2, Teka Naka, Nagpur | Phone: +91 9823555053 | Email: info@hopehospital.com<br>
+    <strong>${hospitalInfo.name}</strong> | ${hospitalInfo.address} | Phone: ${hospitalInfo.phone} | Email: ${hospitalInfo.email}<br>
     This is a controlled document. Unauthorized copying is prohibited.
   </div>
 </body>

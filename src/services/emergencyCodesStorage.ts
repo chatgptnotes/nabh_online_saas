@@ -90,14 +90,20 @@ export const emergencyCodesStorage = {
   },
 
   // Get documents by code type
-  async getDocumentsByCodeType(codeType: string): Promise<EmergencyCodeDocument[]> {
+  async getDocumentsByCodeType(codeType: string, hospitalId?: string): Promise<EmergencyCodeDocument[]> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('emergency_code_documents')
         .select('*')
         .eq('code_type', codeType)
         .eq('is_active', true)
         .order('document_type');
+
+      if (hospitalId) {
+        query = query.eq('hospital_id', hospitalId);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       return data || [];
@@ -108,13 +114,18 @@ export const emergencyCodesStorage = {
   },
 
   // Get single protocol
-  async getProtocol(codeType: string): Promise<EmergencyCodeProtocol | null> {
+  async getProtocol(codeType: string, hospitalId?: string): Promise<EmergencyCodeProtocol | null> {
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('emergency_code_protocols')
         .select('*')
-        .eq('code_type', codeType)
-        .single();
+        .eq('code_type', codeType);
+
+      if (hospitalId) {
+        query = query.eq('hospital_id', hospitalId);
+      }
+
+      const { data, error } = await query.single();
 
       if (error) throw error;
       return data;

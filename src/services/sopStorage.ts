@@ -77,7 +77,7 @@ export async function createSOPTable() {
 /**
  * Save SOP document to Supabase
  */
-export async function saveSOPDocument(sop: Omit<SOPDocument, 'id' | 'created_at' | 'updated_at'>): Promise<{ success: boolean; data?: SOPDocument; error?: string }> {
+export async function saveSOPDocument(sop: Omit<SOPDocument, 'id' | 'created_at' | 'updated_at'>, hospitalId: string): Promise<{ success: boolean; data?: SOPDocument; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_documents')
@@ -103,6 +103,7 @@ export async function saveSOPDocument(sop: Omit<SOPDocument, 'id' | 'created_at'
         pdf_filename: sop.pdf_filename,
         pdf_urls: sop.pdf_urls,
         pdf_filenames: sop.pdf_filenames,
+        hospital_id: hospitalId,
       }])
       .select()
       .single();
@@ -119,11 +120,12 @@ export async function saveSOPDocument(sop: Omit<SOPDocument, 'id' | 'created_at'
 /**
  * Load all SOPs
  */
-export async function loadAllSOPs(): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
+export async function loadAllSOPs(hospitalId: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_documents')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .order('chapter_code', { ascending: true })
       .order('title', { ascending: true });
 
@@ -139,11 +141,12 @@ export async function loadAllSOPs(): Promise<{ success: boolean; data?: SOPDocum
 /**
  * Load SOPs by chapter
  */
-export async function loadSOPsByChapter(chapterCode: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
+export async function loadSOPsByChapter(chapterCode: string, hospitalId: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_documents')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .eq('chapter_code', chapterCode)
       .order('title', { ascending: true });
 
@@ -225,11 +228,12 @@ export async function deleteSOPDocument(id: string): Promise<{ success: boolean;
 /**
  * Search SOPs by keyword
  */
-export async function searchSOPs(query: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
+export async function searchSOPs(query: string, hospitalId: string): Promise<{ success: boolean; data?: SOPDocument[]; error?: string }> {
   try {
     const { data, error } = await supabase
       .from('nabh_sop_documents')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .or(`title.ilike.%${query}%,description.ilike.%${query}%,extracted_content.ilike.%${query}%`)
       .order('title', { ascending: true });
 

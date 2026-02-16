@@ -28,6 +28,7 @@ import {
 import { loadSOPById } from '../services/sopStorage';
 import { getGeneratedSOPById, getGeneratedSOPByObjectiveCode } from '../services/sopGeneratedStorage';
 import { highlightSearchTerms } from '../utils/highlightHtml';
+import { useNABHStore } from '../store/nabhStore';
 
 // Unified SOP data for display
 interface SOPDisplayData {
@@ -98,6 +99,7 @@ export default function SharedSOPPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const searchQuery = searchParams.get('q') || '';
+  const { selectedHospital } = useNABHStore();
   const [sopData, setSOPData] = useState<SOPDisplayData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -132,7 +134,7 @@ export default function SharedSOPPage() {
         console.log('[SharedSOPPage] Extracted objective code:', objectiveCode);
         // Try to find the real generated SOP by objective code
         if (objectiveCode) {
-          const genResult = await getGeneratedSOPByObjectiveCode(objectiveCode);
+          const genResult = await getGeneratedSOPByObjectiveCode(objectiveCode, selectedHospital);
           console.log('[SharedSOPPage] Generated SOP lookup result:', genResult.success, genResult.error, genResult.data?.id);
           if (genResult.success && genResult.data && genResult.data.sop_html_content && !isTemplateContent(genResult.data.sop_html_content)) {
             // Found a real generated SOP - use it instead

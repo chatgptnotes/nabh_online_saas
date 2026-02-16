@@ -64,13 +64,7 @@ export default function LandingPage() {
   const hospitalConfig = getHospitalInfo(selectedHospital);
 
   const handleGetStarted = () => {
-    if (chapters.length > 0) {
-      setSelectedChapter(chapters[0].id);
-      navigate('/dashboard');
-    } else {
-      // If chapters not loaded yet, navigate to dashboard anyway
-      navigate('/dashboard');
-    }
+    navigate('/login');
   };
 
   const handleGenerator = () => {

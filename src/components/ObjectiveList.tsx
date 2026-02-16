@@ -66,6 +66,7 @@ export default function ObjectiveList() {
     setFilterPriority,
     getFilteredObjectives,
     setSelectedObjective,
+    selectedHospital,
   } = useNABHStore();
 
   // State for evidence counts per objective
@@ -87,7 +88,7 @@ export default function ObjectiveList() {
       if (objectiveCodes.length === 0) return;
 
       setIsLoadingCounts(true);
-      const result = await loadEvidenceCountsForObjectives(objectiveCodes);
+      const result = await loadEvidenceCountsForObjectives(objectiveCodes, selectedHospital);
       if (result.success && result.data) {
         setEvidenceCounts(result.data);
       }

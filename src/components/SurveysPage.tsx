@@ -48,6 +48,7 @@ import {
   Link as LinkIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 // Survey Interfaces
 interface SurveyQuestion {
@@ -347,6 +348,7 @@ function TabPanel(props: TabPanelProps) {
 }
 
 export default function SurveysPage() {
+  const { selectedHospital } = useNABHStore();
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
@@ -370,10 +372,10 @@ export default function SurveysPage() {
     nabhRelevant: false,
   });
 
-  // Load surveys on component mount
+  // Load surveys on mount and when hospital changes
   useEffect(() => {
     loadSurveys();
-  }, []);
+  }, [selectedHospital]);
 
   const loadSurveys = async () => {
     try {
@@ -384,7 +386,7 @@ export default function SurveysPage() {
         .from('surveys')
         .select('*')
         .eq('is_active', true)
-        .eq('hospital_id', 'hope')
+        .eq('hospital_id', selectedHospital)
         .order('created_at', { ascending: false });
 
       if (surveysError) throw surveysError;
@@ -470,7 +472,7 @@ export default function SurveysPage() {
           created_by: 'Dr. Shiraz (Quality Coordinator)',
           nabh_relevant: template.nabhRelevant,
           frequency: template.frequency,
-          hospital_id: 'hope',
+          hospital_id: selectedHospital,
         })
         .select()
         .single();

@@ -56,6 +56,7 @@ import {
   fetchGoogleDocAsHTML,
   extractChapterFromFilename,
 } from '../services/googleDriveExtractor';
+import { useNABHStore } from '../store/nabhStore';
 
 const NABH_CHAPTERS = [
   { code: 'AAC', name: 'Access, Assessment and Continuity of Care' },
@@ -104,6 +105,7 @@ function naturalSortSOPTitle(a: string, b: string): number {
 
 export default function SOPsPage() {
   const navigate = useNavigate();
+  const { selectedHospital } = useNABHStore();
   const [sops, setSOPs] = useState<SOPDocument[]>([]);
   const [filteredSOPs, setFilteredSOPs] = useState<SOPDocument[]>([]);
   const [loading, setLoading] = useState(true);
@@ -152,10 +154,10 @@ export default function SOPsPage() {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [menuSOP, setMenuSOP] = useState<SOPDocument | null>(null);
 
-  // Load SOPs on mount
+  // Load SOPs on mount and when hospital changes
   useEffect(() => {
     loadSOPsData();
-  }, []);
+  }, [selectedHospital]);
 
   // Filter SOPs when filters change
   useEffect(() => {
@@ -164,7 +166,7 @@ export default function SOPsPage() {
 
   const loadSOPsData = async () => {
     setLoading(true);
-    const result = await loadAllSOPs();
+    const result = await loadAllSOPs(selectedHospital);
     if (result.success && result.data) {
       setSOPs(result.data);
     } else {
@@ -306,7 +308,7 @@ export default function SOPsPage() {
         pdf_filename: pdfFilenames[0] || undefined,
       };
 
-      const result = await saveSOPDocument(sopData as Omit<SOPDocument, 'id' | 'created_at' | 'updated_at'>);
+      const result = await saveSOPDocument(sopData as Omit<SOPDocument, 'id' | 'created_at' | 'updated_at'>, selectedHospital);
 
       if (result.success) {
         showSnackbar('SOP saved successfully', 'success');

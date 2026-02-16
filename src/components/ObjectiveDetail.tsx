@@ -28,7 +28,7 @@ import Alert from '@mui/material/Alert';
 import CircularProgress from '@mui/material/CircularProgress';
 import { useNABHStore } from '../store/nabhStore';
 import type { Status, Priority, ElementCategory, EvidenceFile, YouTubeVideo, TrainingMaterial, SOPDocument } from '../types/nabh';
-import { ASSIGNEE_OPTIONS, HOSPITAL_INFO } from '../config/hospitalConfig';
+import { ASSIGNEE_OPTIONS, getHospitalInfo } from '../config/hospitalConfig';
 import { getClaudeApiKey } from '../lib/supabase';
 
 interface ObjectiveDetailProps {
@@ -57,7 +57,8 @@ export default function ObjectiveDetail({
   chapterId,
   objectiveId,
 }: ObjectiveDetailProps) {
-  const { chapters, updateObjective } = useNABHStore();
+  const { chapters, updateObjective, selectedHospital } = useNABHStore();
+  const hospitalInfo = getHospitalInfo(selectedHospital);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const trainingFileInputRef = useRef<HTMLInputElement>(null);
   const sopFileInputRef = useRef<HTMLInputElement>(null);
@@ -311,7 +312,7 @@ export default function ObjectiveDetail({
     setGeneratedSOPContent('');
 
     try {
-      const prompt = `You are an expert in NABH documentation for ${HOSPITAL_INFO.name}.
+      const prompt = `You are an expert in NABH documentation for ${hospitalInfo.name}.
 
 Generate a complete HTML document for this Standard Operating Procedure (SOP) in ENGLISH ONLY.
 
@@ -325,7 +326,7 @@ Generate a complete, valid HTML document with embedded CSS:
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>SOP - ${objective.title} - ${HOSPITAL_INFO.name}</title>
+  <title>SOP - ${objective.title} - ${hospitalInfo.name}</title>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
@@ -363,8 +364,8 @@ Generate a complete, valid HTML document with embedded CSS:
 <body>
   <div class="header">
     <div class="logo-area">HOSPITAL<br>LOGO</div>
-    <div class="hospital-name">${HOSPITAL_INFO.name}</div>
-    <div class="hospital-address">${HOSPITAL_INFO.address}</div>
+    <div class="hospital-name">${hospitalInfo.name}</div>
+    <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
 
   <div class="doc-title">STANDARD OPERATING PROCEDURE</div>
@@ -447,7 +448,7 @@ Generate a complete, valid HTML document with embedded CSS:
   <div class="stamp-area">HOSPITAL STAMP</div>
 
   <div class="footer">
-    <strong>${HOSPITAL_INFO.name}</strong> | ${HOSPITAL_INFO.address}<br>
+    <strong>${hospitalInfo.name}</strong> | ${hospitalInfo.address}<br>
     This is a controlled document. Unauthorized copying or distribution is prohibited.
   </div>
 </body>
@@ -512,10 +513,10 @@ Fill in all sections with relevant content based on the NABH objective element d
     setGeneratedNotice('');
 
     try {
-      const prompt = `Generate a professional training notice/announcement in ENGLISH ONLY for ${HOSPITAL_INFO.name}. This is an internal document.
+      const prompt = `Generate a professional training notice/announcement in ENGLISH ONLY for ${hospitalInfo.name}. This is an internal document.
 
-Hospital: ${HOSPITAL_INFO.name}
-Address: ${HOSPITAL_INFO.address}
+Hospital: ${hospitalInfo.name}
+Address: ${hospitalInfo.address}
 
 Training Details:
 - Topic: ${objective.title} (${objective.code})
@@ -561,8 +562,8 @@ Generate a complete HTML document for this Training Notice with modern, professi
 <body>
   <div class="header">
     <div class="logo-area">HOSPITAL<br>LOGO</div>
-    <div class="hospital-name">${HOSPITAL_INFO.name}</div>
-    <div class="hospital-address">${HOSPITAL_INFO.address}</div>
+    <div class="hospital-name">${hospitalInfo.name}</div>
+    <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
 
   <div class="doc-title">TRAINING NOTICE</div>
@@ -599,13 +600,13 @@ Generate a complete HTML document for this Training Notice with modern, professi
       <div class="signature-line">
         Issued By<br>
         Quality Coordinator<br>
-        ${HOSPITAL_INFO.name}
+        ${hospitalInfo.name}
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <strong>${HOSPITAL_INFO.name}</strong> | ${HOSPITAL_INFO.address}<br>
+    <strong>${hospitalInfo.name}</strong> | ${hospitalInfo.address}<br>
     This is an official training notice from the Quality Department.
   </div>
 </body>
@@ -653,9 +654,9 @@ Fill in the notice body with appropriate content explaining why this training is
     setGeneratedAttendance('');
 
     try {
-      const prompt = `Generate a training attendance sheet in ENGLISH ONLY for ${HOSPITAL_INFO.name}. This is an internal document.
+      const prompt = `Generate a training attendance sheet in ENGLISH ONLY for ${hospitalInfo.name}. This is an internal document.
 
-Hospital: ${HOSPITAL_INFO.name}
+Hospital: ${hospitalInfo.name}
 Training Topic: ${objective.title} (${objective.code})
 Training Date: ${trainingDate || '[Date]'}
 Trainer: ${trainerName || '[Trainer Name]'}
@@ -701,8 +702,8 @@ Generate a complete HTML document for this Training Attendance Sheet with modern
 <body>
   <div class="header">
     <div class="logo-area">HOSPITAL<br>LOGO</div>
-    <div class="hospital-name">${HOSPITAL_INFO.name}</div>
-    <div class="hospital-address">${HOSPITAL_INFO.address}</div>
+    <div class="hospital-name">${hospitalInfo.name}</div>
+    <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
 
   <div class="doc-title">TRAINING ATTENDANCE SHEET</div>
@@ -748,7 +749,7 @@ Generate a complete HTML document for this Training Attendance Sheet with modern
   </div>
 
   <div class="footer">
-    <strong>${HOSPITAL_INFO.name}</strong> | ${HOSPITAL_INFO.address}<br>
+    <strong>${hospitalInfo.name}</strong> | ${hospitalInfo.address}<br>
     Document Reference: ATT/${objective.code.replace(/\./g, '/')}/${new Date().getFullYear()}
   </div>
 </body>
@@ -796,9 +797,9 @@ Generate the complete HTML with all 20 attendance rows filled in with empty cell
     setGeneratedMCQ('');
 
     try {
-      const prompt = `Generate a Multiple Choice Question (MCQ) test in ENGLISH ONLY for training evaluation at ${HOSPITAL_INFO.name}. This is an internal document.
+      const prompt = `Generate a Multiple Choice Question (MCQ) test in ENGLISH ONLY for training evaluation at ${hospitalInfo.name}. This is an internal document.
 
-Hospital: ${HOSPITAL_INFO.name}
+Hospital: ${hospitalInfo.name}
 Training Topic: ${objective.title}
 NABH Code: ${objective.code}
 Topic Description: ${objective.description}
@@ -860,8 +861,8 @@ Generate a complete HTML document for this MCQ Test with modern, professional st
 <body>
   <div class="header">
     <div class="logo-area">HOSPITAL<br>LOGO</div>
-    <div class="hospital-name">${HOSPITAL_INFO.name}</div>
-    <div class="hospital-address">${HOSPITAL_INFO.address}</div>
+    <div class="hospital-name">${hospitalInfo.name}</div>
+    <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
 
   <div class="doc-title">TRAINING EVALUATION TEST</div>
@@ -932,7 +933,7 @@ Generate a complete HTML document for this MCQ Test with modern, professional st
   </div>
 
   <div class="footer">
-    <strong>${HOSPITAL_INFO.name}</strong> | ${HOSPITAL_INFO.address}<br>
+    <strong>${hospitalInfo.name}</strong> | ${hospitalInfo.address}<br>
     Document Reference: MCQ/${objective.code.replace(/\./g, '/')}/${new Date().getFullYear()}
   </div>
 </body>
@@ -990,7 +991,7 @@ Generate the complete HTML with all ${mcqQuestionCount} MCQ questions filled in 
           <!DOCTYPE html>
           <html>
             <head>
-              <title>${title} - ${HOSPITAL_INFO.name}</title>
+              <title>${title} - ${hospitalInfo.name}</title>
               <style>
                 body { font-family: 'Courier New', monospace; font-size: 12px; line-height: 1.5; padding: 20px; white-space: pre-wrap; background: #f5f5f5; }
               </style>
@@ -1016,7 +1017,7 @@ Generate the complete HTML with all ${mcqQuestionCount} MCQ questions filled in 
           <!DOCTYPE html>
           <html>
             <head>
-              <title>${title} - ${HOSPITAL_INFO.name}</title>
+              <title>${title} - ${hospitalInfo.name}</title>
               <style>
                 body {
                   font-family: 'Courier New', monospace;

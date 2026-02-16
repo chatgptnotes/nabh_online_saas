@@ -32,6 +32,7 @@ import {
   Person as PersonIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 // Database interface
 interface HospitalProgramDB {
@@ -98,6 +99,7 @@ const dbToProgram = (db: HospitalProgramDB): HospitalProgram => ({
 });
 
 export default function HospitalProgramsMasterPage() {
+  const { selectedHospital } = useNABHStore();
   const [programs, setPrograms] = useState<HospitalProgram[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -107,6 +109,7 @@ export default function HospitalProgramsMasterPage() {
       try {
         const { data, error } = await (supabase.from('hospital_programs') as any)
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('name', { ascending: true });
 
@@ -124,7 +127,7 @@ export default function HospitalProgramsMasterPage() {
     };
 
     fetchPrograms();
-  }, []);
+  }, [selectedHospital]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -173,6 +176,7 @@ export default function HospitalProgramsMasterPage() {
           participants: programForm.participants || 0,
           frequency: programForm.frequency,
           nabh_relevant: programForm.nabhRelevant,
+          hospital_id: selectedHospital,
         })
         .select()
         .single();

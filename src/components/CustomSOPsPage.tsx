@@ -22,9 +22,11 @@ import {
 import { useNavigate } from 'react-router-dom';
 import { deleteGeneratedSOP, type GeneratedSOP } from '../services/sopGeneratedStorage';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 export default function CustomSOPsPage() {
   const navigate = useNavigate();
+  const { selectedHospital } = useNABHStore();
   const [sops, setSOPs] = useState<GeneratedSOP[]>([]);
   const [filteredSOPs, setFilteredSOPs] = useState<GeneratedSOP[]>([]);
   const [loading, setLoading] = useState(true);
@@ -62,7 +64,7 @@ export default function CustomSOPsPage() {
 
   useEffect(() => {
     fetchCustomSOPs();
-  }, []);
+  }, [selectedHospital]);
 
   useEffect(() => {
     if (searchQuery.trim() === '') {
@@ -85,11 +87,17 @@ export default function CustomSOPsPage() {
     setLoading(true);
     try {
       // Fetch SOPs where chapter_code is 'CUSTOM' or chapter_id is null
-      const { data, error } = await supabase
+      let query = supabase
         .from('nabh_generated_sops')
         .select('*')
         .or('chapter_code.eq.CUSTOM,chapter_id.is.null')
         .order('created_at', { ascending: false });
+
+      if (selectedHospital) {
+        query = query.eq('hospital_id', selectedHospital);
+      }
+
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching custom SOPs:', error);

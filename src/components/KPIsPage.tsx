@@ -32,7 +32,7 @@ import LinearProgress from '@mui/material/LinearProgress';
 import Card from '@mui/material/Card';
 import CardContent from '@mui/material/CardContent';
 import CardActionArea from '@mui/material/CardActionArea';
-import { HOSPITAL_INFO, getHospitalInfo } from '../config/hospitalConfig';
+import { getHospitalInfo } from '../config/hospitalConfig';
 import { NABH_KPIS, NABH_KPI_CATEGORIES, generateSampleKPIData } from '../data/kpiData';
 import type { KPIDefinition } from '../data/kpiData';
 import { extractFromDocument, extractKPIData, generateImprovedDocument } from '../services/documentExtractor';
@@ -81,12 +81,12 @@ export default function KPIsPage() {
   // Load saved graphs on mount
   useEffect(() => {
     loadSavedGraphs();
-  }, []);
+  }, [selectedHospital]);
 
   const loadSavedGraphs = async () => {
     setIsLoadingGraphs(true);
     try {
-      const result = await loadAllKPIGraphs();
+      const result = await loadAllKPIGraphs(selectedHospital);
       if (result.success && result.data) {
         setSavedGraphs(result.data);
       }
@@ -140,7 +140,8 @@ export default function KPIsPage() {
             dataUrl,
             data,
             'Auto-generated dummy data',
-            'Improving trend scenario'
+            'Improving trend scenario',
+            selectedHospital
           );
         }
 
@@ -553,7 +554,7 @@ export default function KPIsPage() {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `NABH_KPI_Dashboard_${HOSPITAL_INFO.name.replace(/\s+/g, '_')}.html`;
+    a.download = `NABH_KPI_Dashboard_${hospitalConfig.name.replace(/\s+/g, '_')}.html`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);

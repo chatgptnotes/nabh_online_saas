@@ -36,6 +36,7 @@ import {
   Error as ExpiredIcon,
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
+import { useNABHStore } from '../store/nabhStore';
 
 // Database interface
 interface LicenseDB {
@@ -108,6 +109,7 @@ const dbToLicense = (db: LicenseDB): License => ({
 });
 
 export default function LicensesMasterPage() {
+  const { selectedHospital } = useNABHStore();
   const [licenses, setLicenses] = useState<License[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -117,6 +119,7 @@ export default function LicensesMasterPage() {
       try {
         const { data, error } = await (supabase.from('licenses') as any)
           .select('*')
+          .eq('hospital_id', selectedHospital)
           .eq('is_active', true)
           .order('category', { ascending: true });
 
@@ -134,7 +137,7 @@ export default function LicensesMasterPage() {
     };
 
     fetchLicenses();
-  }, []);
+  }, [selectedHospital]);
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -211,6 +214,7 @@ export default function LicensesMasterPage() {
           reminder_days: licenseForm.reminderDays,
           renewal_cost: licenseForm.renewalCost,
           documents_link: licenseForm.documentsLink,
+          hospital_id: selectedHospital,
         })
         .select()
         .single();

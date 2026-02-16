@@ -509,7 +509,8 @@ export const extractDocumentContent = async (doc: UploadedDocument): Promise<Doc
  * Generate evidence HTML from extracted document data
  */
 export const generateEvidenceFromDocuments = async (
-  request: DocumentEvidenceRequest
+  request: DocumentEvidenceRequest,
+  hospitalId: string
 ): Promise<DocumentEvidenceResult> => {
   const geminiApiKey = getGeminiApiKey();
   if (!geminiApiKey) {
@@ -518,7 +519,7 @@ export const generateEvidenceFromDocuments = async (
 
   try {
     // Fetch real patient/staff data
-    const relevantData = await getRelevantData(request.evidenceItemText);
+    const relevantData = await getRelevantData(request.evidenceItemText, hospitalId);
 
     // Build context from extracted documents
     const documentContext = request.documentData.map((doc, idx) => {
@@ -637,7 +638,7 @@ Use this HTML template structure:
 </head>
 <body>
   <div class="header">
-    <div class="logo-area"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="${hospitalConfig.name} Logo" /></div>
+    <div class="logo-area"><img src="${typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online'}${hospitalConfig.logo || '/hospital-logo.png'}" alt="${hospitalConfig.name} Logo" /></div>
   </div>
 
   <div class="objective-line">${objectiveCode} - ${objectiveTitle}</div>
@@ -865,7 +866,7 @@ Generate a complete, print-ready HTML document using this template structure:
 </head>
 <body>
   <div class="header">
-    <div class="logo-area"><img src="https://www.nabh.online/assets/hope-hospital-logo.png" alt="${hospitalConfig.name} Logo" /></div>
+    <div class="logo-area"><img src="${typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online'}${hospitalConfig.logo || '/hospital-logo.png'}" alt="${hospitalConfig.name} Logo" /></div>
   </div>
 
   <div class="objective-line">${objectiveCode} - ${objectiveTitle}</div>

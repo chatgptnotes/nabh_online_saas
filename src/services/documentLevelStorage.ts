@@ -67,12 +67,13 @@ export async function uploadMultipleImages(files: File[]): Promise<Response<stri
 }
 
 // Load all documents for a specific level
-export async function loadDocumentsByLevel(level: number): Promise<Response<DocumentLevelItem[]>> {
+export async function loadDocumentsByLevel(level: number, hospitalId: string): Promise<Response<DocumentLevelItem[]>> {
   try {
     const { data, error } = await supabase
       .from('nabh_document_levels')
       .select('*')
       .eq('level', level)
+      .eq('hospital_id', hospitalId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -85,13 +86,15 @@ export async function loadDocumentsByLevel(level: number): Promise<Response<Docu
 
 // Save a new document
 export async function saveDocument(
-  doc: Omit<DocumentLevelItem, 'id' | 'created_at' | 'updated_at'>
+  doc: Omit<DocumentLevelItem, 'id' | 'created_at' | 'updated_at'>,
+  hospitalId: string
 ): Promise<Response<DocumentLevelItem>> {
   try {
     const { data, error } = await supabase
       .from('nabh_document_levels')
       .insert([{
         ...doc,
+        hospital_id: hospitalId,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString()
       }])
@@ -147,11 +150,12 @@ export async function deleteDocument(id: string): Promise<Response<void>> {
 }
 
 // Load all documents (for search/filter)
-export async function loadAllDocuments(): Promise<Response<DocumentLevelItem[]>> {
+export async function loadAllDocuments(hospitalId: string): Promise<Response<DocumentLevelItem[]>> {
   try {
     const { data, error } = await supabase
       .from('nabh_document_levels')
       .select('*')
+      .eq('hospital_id', hospitalId)
       .order('level', { ascending: true })
       .order('created_at', { ascending: false });
 
