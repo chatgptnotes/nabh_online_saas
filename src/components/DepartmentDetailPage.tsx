@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
@@ -8,7 +8,6 @@ import TextField from '@mui/material/TextField';
 import MenuItem from '@mui/material/MenuItem';
 import IconButton from '@mui/material/IconButton';
 import Icon from '@mui/material/Icon';
-import Chip from '@mui/material/Chip';
 import CircularProgress from '@mui/material/CircularProgress';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
@@ -17,7 +16,6 @@ import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import Toolbar from '@mui/material/Toolbar';
-import Divider from '@mui/material/Divider';
 import LinearProgress from '@mui/material/LinearProgress';
 import Header from './Header';
 import Sidebar from './Sidebar';
@@ -53,11 +51,15 @@ export default function DepartmentDetailPage() {
   const [newDescription, setNewDescription] = useState('');
   const [saving, setSaving] = useState(false);
 
-  // Upload state
-  const [selectedParent, setSelectedParent] = useState('');
-  const [uploadFile, setUploadFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  // Upload state per title
+  const [uploadingFor, setUploadingFor] = useState<string | null>(null);
   const [extracting, setExtracting] = useState<string | null>(null);
+  const fileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+
+  // Global upload (Select Title dropdown)
+  const [selectedParent, setSelectedParent] = useState('');
+  const [globalUploadFile, setGlobalUploadFile] = useState<File | null>(null);
+  const [globalUploading, setGlobalUploading] = useState(false);
 
   // Delete state
   const [deleteDialog, setDeleteDialog] = useState<DepartmentDocument | null>(null);
@@ -65,9 +67,7 @@ export default function DepartmentDetailPage() {
 
   // Snackbar
   const [snackbar, setSnackbar] = useState<{ open: boolean; message: string; severity: 'success' | 'error' | 'info' }>({
-    open: false,
-    message: '',
-    severity: 'info',
+    open: false, message: '', severity: 'info',
   });
 
   const showSnackbar = (message: string, severity: 'success' | 'error' | 'info' = 'info') => {
@@ -103,21 +103,22 @@ export default function DepartmentDetailPage() {
     load();
   }, [fetchDepartment, fetchDocuments]);
 
-  // Get title entries (manual entries = parent nodes)
   const titleEntries = documents.filter(d => d.file_url === 'manual-entry');
-
-  // Get child documents for a parent
   const getChildren = (parentId: string) =>
     documents.filter(d => d.file_name.startsWith(`[parent:${parentId}]`));
-
-  // Get orphan documents (uploaded without parent)
   const orphanDocs = documents.filter(
     d => d.file_url !== 'manual-entry' && !d.file_name.startsWith('[parent:')
   );
+  const totalEntries = titleEntries.length + orphanDocs.length;
 
   const getCleanFileName = (fileName: string) => {
     const match = fileName.match(/\[parent:[^\]]+\](.*)/);
     return match ? match[1] : fileName;
+  };
+
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' });
   };
 
   // Save manual title entry
@@ -137,75 +138,90 @@ export default function DepartmentDetailPage() {
     setSaving(false);
   };
 
-  // Upload file
-  const handleUpload = async () => {
-    if (!code || !uploadFile) return;
-    setUploading(true);
+  // Upload file for a specific title
+  const handleUploadForTitle = async (parentId: string, file: File) => {
+    if (!code) return;
+    setUploadingFor(parentId);
     try {
-      const doc = await departmentDocumentStorage.uploadFile(
-        code,
-        uploadFile,
-        selectedParent || undefined
-      );
-
+      const doc = await departmentDocumentStorage.uploadFile(code, file, parentId);
       showSnackbar('File uploaded, extracting text...', 'info');
-      setUploadFile(null);
-      setSelectedParent('');
       await fetchDocuments();
 
       // AI extraction
       setExtracting(doc.id);
-      try {
-        const extractionPrompt = await buildExtractionPrompt(code);
-        const result = await extractFromDocument(uploadFile, 'department', extractionPrompt);
-        if (result.success && result.text) {
-          // Try to parse as structured JSON
-          let extracted: string;
-          try {
-            const jsonMatch = result.text.match(/```json\n?([\s\S]*?)\n?```/) || result.text.match(/\{[\s\S]*\}/);
-            if (jsonMatch) {
-              JSON.parse(jsonMatch[1] || jsonMatch[0]);
-              extracted = jsonMatch[1] || jsonMatch[0];
-            } else {
-              extracted = JSON.stringify({
-                title: doc.file_name,
-                documentType: 'document',
-                sections: [{ heading: 'Extracted Content', content: result.text }],
-              });
-            }
-          } catch {
-            extracted = JSON.stringify({
-              title: doc.file_name,
-              documentType: 'document',
-              sections: [{ heading: 'Extracted Content', content: result.text }],
-            });
-          }
-          await departmentDocumentStorage.updateExtractedText(doc.id, extracted);
-          showSnackbar('Text extracted successfully!', 'success');
-        } else {
-          showSnackbar('Extraction completed with no text', 'info');
-        }
-      } catch (extractErr) {
-        console.error('Extraction error:', extractErr);
-        showSnackbar('File uploaded but extraction failed', 'error');
-      }
+      await runExtraction(doc, file);
       setExtracting(null);
       await fetchDocuments();
     } catch (err) {
       console.error('Upload error:', err);
       showSnackbar('Failed to upload file', 'error');
     }
-    setUploading(false);
+    setUploadingFor(null);
   };
 
-  // Build extraction prompt with real hospital data
+  // Global upload via Select Title dropdown
+  const handleGlobalUpload = async () => {
+    if (!code || !globalUploadFile || !selectedParent) return;
+    setGlobalUploading(true);
+    try {
+      const doc = await departmentDocumentStorage.uploadFile(code, globalUploadFile, selectedParent);
+      showSnackbar('File uploaded, extracting text...', 'info');
+      const fileForExtraction = globalUploadFile;
+      setGlobalUploadFile(null);
+      setSelectedParent('');
+      await fetchDocuments();
+
+      setExtracting(doc.id);
+      await runExtraction(doc, fileForExtraction);
+      setExtracting(null);
+      await fetchDocuments();
+    } catch (err) {
+      console.error('Upload error:', err);
+      showSnackbar('Failed to upload file', 'error');
+    }
+    setGlobalUploading(false);
+  };
+
+  const runExtraction = async (doc: DepartmentDocument, file: File) => {
+    try {
+      const extractionPrompt = await buildExtractionPrompt(code || '');
+      const result = await extractFromDocument(file, 'department', extractionPrompt);
+      if (result.success && result.text) {
+        let extracted: string;
+        try {
+          const jsonMatch = result.text.match(/```json\n?([\s\S]*?)\n?```/) || result.text.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            JSON.parse(jsonMatch[1] || jsonMatch[0]);
+            extracted = jsonMatch[1] || jsonMatch[0];
+          } else {
+            extracted = JSON.stringify({
+              title: doc.file_name, documentType: 'document',
+              sections: [{ heading: 'Extracted Content', content: result.text }],
+            });
+          }
+        } catch {
+          extracted = JSON.stringify({
+            title: doc.file_name, documentType: 'document',
+            sections: [{ heading: 'Extracted Content', content: result.text }],
+          });
+        }
+        await departmentDocumentStorage.updateExtractedText(doc.id, extracted);
+        showSnackbar('Text extracted successfully!', 'success');
+      } else {
+        showSnackbar('Extraction completed with no text', 'info');
+      }
+    } catch (extractErr) {
+      console.error('Extraction error:', extractErr);
+      showSnackbar('File uploaded but extraction failed', 'error');
+    }
+  };
+
   const buildExtractionPrompt = async (deptCode: string): Promise<string> => {
     const [patients, staff, doctors] = await Promise.all([
       fetchRealPatients('hope', 30),
       fetchRealStaff('hope'),
       fetchVisitingConsultants('hope'),
     ]);
-
     const patientNames = patients.slice(0, 15).map(p => p.patient_name).join(', ');
     const staffNames = staff.slice(0, 15).map(s => `${s.name} (${s.designation})`).join(', ');
     const doctorNames = doctors.slice(0, 10).map(d => `Dr. ${d.name}`).join(', ');
@@ -234,7 +250,6 @@ Extract and return ONLY a valid JSON object with this structure:
 Return ONLY the JSON, no markdown code blocks, no explanations.`;
   };
 
-  // Delete document
   const handleDelete = async () => {
     if (!deleteDialog) return;
     setDeleting(true);
@@ -252,18 +267,7 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
 
   const parseExtractedData = (text: string | null) => {
     if (!text) return null;
-    try {
-      return JSON.parse(text);
-    } catch {
-      return null;
-    }
-  };
-
-  const categoryColors: Record<string, string> = {
-    'Clinical Speciality': '#1565C0',
-    'Super Speciality': '#9C27B0',
-    'Support Services': '#ED6C02',
-    'Administration': '#2E7D32',
+    try { return JSON.parse(text); } catch { return null; }
   };
 
   if (loading) {
@@ -281,126 +285,100 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
       <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
         <Toolbar />
 
-        {/* Back button + Header */}
+        {/* Header: Back arrow + Department name */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
-          <IconButton onClick={() => navigate('/departments')} sx={{ bgcolor: '#f5f5f5' }}>
+          <IconButton onClick={() => navigate('/departments')}>
             <Icon>arrow_back</Icon>
           </IconButton>
-          <Box>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Typography variant="h5" fontWeight={700}>
-                {department?.name || code}
-              </Typography>
-              {department?.category && (
-                <Chip
-                  label={department.category}
-                  size="small"
-                  sx={{
-                    bgcolor: categoryColors[department.category] || '#546E7A',
-                    color: 'white',
-                    fontWeight: 600,
-                  }}
-                />
-              )}
-            </Box>
-            <Typography variant="body2" color="text.secondary">
-              Code: {department?.code} {department?.head_of_department && `| HOD: ${department.head_of_department}`}
-            </Typography>
-          </Box>
+          <Typography variant="h5" fontWeight={700}>
+            {department?.name || code}
+          </Typography>
         </Box>
 
-        {/* Add Title Section */}
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1.5 }}>
-            <Icon sx={{ verticalAlign: 'middle', mr: 0.5, color: '#1565C0' }}>add_circle</Icon>
-            Add Title / Entry
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap' }}>
-            <TextField
-              label="Title"
-              value={newTitle}
-              onChange={(e) => setNewTitle(e.target.value)}
-              size="small"
-              sx={{ minWidth: 250 }}
+        {/* Title input - full width */}
+        <TextField
+          placeholder="Title"
+          value={newTitle}
+          onChange={(e) => setNewTitle(e.target.value)}
+          fullWidth
+          variant="outlined"
+          sx={{ mb: 2 }}
+        />
+
+        {/* Description input - full width multiline */}
+        <TextField
+          placeholder="Description"
+          value={newDescription}
+          onChange={(e) => setNewDescription(e.target.value)}
+          fullWidth
+          multiline
+          rows={3}
+          variant="outlined"
+          sx={{ mb: 1 }}
+        />
+
+        {/* Save button - right aligned */}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-end', mb: 3 }}>
+          <Button
+            variant="outlined"
+            startIcon={saving ? <CircularProgress size={18} /> : <Icon>save</Icon>}
+            onClick={handleSaveTitle}
+            disabled={!newTitle.trim() || saving}
+          >
+            Save
+          </Button>
+        </Box>
+
+        {/* Select Title dropdown + Upload */}
+        <Box sx={{ display: 'flex', gap: 2, mb: 3, alignItems: 'center' }}>
+          <TextField
+            select
+            label="Select Title"
+            value={selectedParent}
+            onChange={(e) => setSelectedParent(e.target.value)}
+            fullWidth
+            variant="outlined"
+          >
+            <MenuItem value="">Select Title</MenuItem>
+            {titleEntries.map(t => (
+              <MenuItem key={t.id} value={t.id}>{t.file_name}</MenuItem>
+            ))}
+          </TextField>
+          <Button
+            variant="outlined"
+            component="label"
+            disabled={!selectedParent || globalUploading}
+            startIcon={globalUploading ? <CircularProgress size={18} /> : <Icon>upload</Icon>}
+            sx={{ whiteSpace: 'nowrap', minWidth: 120 }}
+          >
+            Upload
+            <input
+              type="file"
+              hidden
+              accept=".pdf,.png,.jpg,.jpeg"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file && selectedParent) {
+                  setGlobalUploadFile(file);
+                  // Auto-upload
+                  setTimeout(() => {
+                    setGlobalUploading(true);
+                    handleGlobalUploadDirect(file);
+                  }, 0);
+                }
+                e.target.value = '';
+              }}
             />
-            <TextField
-              label="Description (optional)"
-              value={newDescription}
-              onChange={(e) => setNewDescription(e.target.value)}
-              size="small"
-              sx={{ minWidth: 300, flex: 1 }}
-            />
-            <Button
-              variant="contained"
-              startIcon={saving ? <CircularProgress size={18} color="inherit" /> : <Icon>save</Icon>}
-              onClick={handleSaveTitle}
-              disabled={!newTitle.trim() || saving}
-            >
-              Save
-            </Button>
-          </Box>
-        </Paper>
+          </Button>
+        </Box>
+        {globalUploading && <LinearProgress sx={{ mb: 2 }} />}
 
-        {/* Upload Section */}
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="subtitle1" fontWeight={600} sx={{ mb: 1.5 }}>
-            <Icon sx={{ verticalAlign: 'middle', mr: 0.5, color: '#2E7D32' }}>cloud_upload</Icon>
-            Upload Document
-          </Typography>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: 'wrap', alignItems: 'center' }}>
-            <TextField
-              select
-              label="Select Parent Title"
-              value={selectedParent}
-              onChange={(e) => setSelectedParent(e.target.value)}
-              size="small"
-              sx={{ minWidth: 250 }}
-            >
-              <MenuItem value="">No Parent (standalone)</MenuItem>
-              {titleEntries.map(t => (
-                <MenuItem key={t.id} value={t.id}>{t.file_name}</MenuItem>
-              ))}
-            </TextField>
-            <Button
-              variant="outlined"
-              component="label"
-              startIcon={<Icon>attach_file</Icon>}
-            >
-              {uploadFile ? uploadFile.name : 'Choose File'}
-              <input
-                type="file"
-                hidden
-                accept=".pdf,.png,.jpg,.jpeg"
-                onChange={(e) => setUploadFile(e.target.files?.[0] || null)}
-              />
-            </Button>
-            <Button
-              variant="contained"
-              color="success"
-              startIcon={uploading ? <CircularProgress size={18} color="inherit" /> : <Icon>upload</Icon>}
-              onClick={handleUpload}
-              disabled={!uploadFile || uploading}
-            >
-              Upload
-            </Button>
-          </Box>
-          {uploading && (
-            <Box sx={{ mt: 1 }}>
-              <LinearProgress />
-              <Typography variant="caption" color="text.secondary">Uploading and extracting text...</Typography>
-            </Box>
-          )}
-        </Paper>
-
-        <Divider sx={{ my: 3 }} />
-
-        {/* Documents List */}
-        <Typography variant="h6" fontWeight={600} sx={{ mb: 2 }}>
-          <Icon sx={{ verticalAlign: 'middle', mr: 0.5, color: '#1565C0' }}>folder_open</Icon>
-          Documents ({documents.length})
+        {/* Entries heading */}
+        <Typography variant="h6" fontWeight={700} sx={{ mb: 2 }}>
+          Entries ({totalEntries})
         </Typography>
 
-        {documents.length === 0 && (
+        {totalEntries === 0 && (
           <Paper sx={{ p: 4, textAlign: 'center' }}>
             <Icon sx={{ fontSize: 48, color: '#bbb' }}>description</Icon>
             <Typography color="text.secondary" sx={{ mt: 1 }}>
@@ -412,121 +390,129 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
         {/* Title entries with children */}
         {titleEntries.map(title => {
           const children = getChildren(title.id);
-          const titleData = parseExtractedData(title.extracted_text);
+          const isUploading = uploadingFor === title.id;
           return (
-            <Paper key={title.id} sx={{ mb: 2, overflow: 'hidden' }}>
-              <Box sx={{ p: 2, bgcolor: '#e3f2fd', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <Paper key={title.id} sx={{ mb: 3, overflow: 'hidden' }} variant="outlined">
+              {/* Title header */}
+              <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                   <Icon sx={{ color: '#1565C0' }}>folder</Icon>
-                  <Typography variant="subtitle1" fontWeight={600}>{title.file_name}</Typography>
-                  <Chip label="Title" size="small" variant="outlined" color="primary" />
-                  <Chip label={`${children.length} files`} size="small" />
+                  <Typography variant="subtitle1" fontWeight={700}>{title.file_name}</Typography>
                 </Box>
-                <IconButton size="small" color="error" onClick={() => setDeleteDialog(title)}>
-                  <Icon>delete</Icon>
-                </IconButton>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Typography variant="body2" color="text.secondary">
+                    {formatDate(title.uploaded_at)}
+                  </Typography>
+                  <Button
+                    variant="outlined"
+                    size="small"
+                    startIcon={isUploading ? <CircularProgress size={16} /> : <Icon>upload</Icon>}
+                    disabled={isUploading}
+                    component="label"
+                  >
+                    Upload
+                    <input
+                      type="file"
+                      hidden
+                      accept=".pdf,.png,.jpg,.jpeg"
+                      ref={(el) => { fileInputRefs.current[title.id] = el; }}
+                      onChange={(e) => {
+                        const file = e.target.files?.[0];
+                        if (file) handleUploadForTitle(title.id, file);
+                        e.target.value = '';
+                      }}
+                    />
+                  </Button>
+                </Box>
               </Box>
 
-              {/* Title description */}
-              {titleData?.description && (
-                <Box sx={{ px: 2, py: 1, bgcolor: '#f5f5f5' }}>
-                  <Typography variant="body2" color="text.secondary">{titleData.description}</Typography>
-                </Box>
-              )}
+              {isUploading && <LinearProgress />}
 
               {/* Child documents */}
               <Box sx={{ p: 2 }}>
-                {children.length === 0 && (
-                  <Typography variant="body2" color="text.secondary" sx={{ fontStyle: 'italic' }}>
-                    No files uploaded under this title yet.
-                  </Typography>
-                )}
                 {children.map(child => {
                   const childData = parseExtractedData(child.extracted_text);
-                  const isExtracting = extracting === child.id;
+                  const isChildExtracting = extracting === child.id;
                   return (
-                    <Box key={child.id} sx={{ mb: 1 }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: '#fafafa', borderRadius: 1 }}>
-                        <Icon sx={{ color: child.file_type?.includes('pdf') ? '#C62828' : '#2E7D32', fontSize: 20 }}>
-                          {child.file_type?.includes('pdf') ? 'picture_as_pdf' : 'image'}
-                        </Icon>
+                    <Box key={child.id} sx={{ mb: 2 }}>
+                      {/* File row */}
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1 }}>
+                        <Icon sx={{ color: '#C62828', fontSize: 20 }}>picture_as_pdf</Icon>
                         <Typography variant="body2" sx={{ flex: 1 }}>
                           {getCleanFileName(child.file_name)}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {(child.file_size / 1024).toFixed(1)} KB
-                        </Typography>
                         {child.file_url && child.file_url !== 'manual-entry' && (
-                          <IconButton size="small" href={child.file_url} target="_blank">
-                            <Icon sx={{ fontSize: 18 }}>open_in_new</Icon>
+                          <IconButton size="small" component="a" href={child.file_url} target="_blank">
+                            <Icon sx={{ fontSize: 20 }}>download</Icon>
                           </IconButton>
                         )}
                         <IconButton size="small" color="error" onClick={() => setDeleteDialog(child)}>
-                          <Icon sx={{ fontSize: 18 }}>delete</Icon>
+                          <Icon sx={{ fontSize: 20 }}>delete</Icon>
                         </IconButton>
                       </Box>
-                      {isExtracting && <LinearProgress sx={{ mt: 0.5 }} />}
-                      {childData && <StructuredDataView data={childData} fileName={getCleanFileName(child.file_name)} />}
+
+                      {isChildExtracting && <LinearProgress sx={{ mb: 1 }} />}
+
+                      {/* Extracted data */}
+                      {childData && (
+                        <StructuredDataView data={childData} fileName={getCleanFileName(child.file_name)} />
+                      )}
                     </Box>
                   );
                 })}
+
+                {/* Date at bottom */}
+                <Typography variant="body2" color="text.secondary" sx={{ mt: 1 }}>
+                  {formatDate(title.uploaded_at)}
+                </Typography>
               </Box>
             </Paper>
           );
         })}
 
         {/* Orphan documents */}
-        {orphanDocs.length > 0 && (
-          <Paper sx={{ mb: 2, overflow: 'hidden' }}>
-            <Box sx={{ p: 2, bgcolor: '#fff3e0', display: 'flex', alignItems: 'center', gap: 1 }}>
-              <Icon sx={{ color: '#ED6C02' }}>insert_drive_file</Icon>
-              <Typography variant="subtitle1" fontWeight={600}>Standalone Documents</Typography>
-              <Chip label={`${orphanDocs.length} files`} size="small" />
-            </Box>
-            <Box sx={{ p: 2 }}>
-              {orphanDocs.map(doc => {
-                const docData = parseExtractedData(doc.extracted_text);
-                const isExtracting = extracting === doc.id;
-                return (
-                  <Box key={doc.id} sx={{ mb: 1 }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, p: 1, bgcolor: '#fafafa', borderRadius: 1 }}>
-                      <Icon sx={{ color: doc.file_type?.includes('pdf') ? '#C62828' : '#2E7D32', fontSize: 20 }}>
-                        {doc.file_type?.includes('pdf') ? 'picture_as_pdf' : 'image'}
-                      </Icon>
-                      <Typography variant="body2" sx={{ flex: 1 }}>{doc.file_name}</Typography>
-                      <Typography variant="caption" color="text.secondary">
-                        {(doc.file_size / 1024).toFixed(1)} KB
-                      </Typography>
-                      {doc.file_url && (
-                        <IconButton size="small" href={doc.file_url} target="_blank">
-                          <Icon sx={{ fontSize: 18 }}>open_in_new</Icon>
-                        </IconButton>
-                      )}
-                      <IconButton size="small" color="error" onClick={() => setDeleteDialog(doc)}>
-                        <Icon sx={{ fontSize: 18 }}>delete</Icon>
-                      </IconButton>
-                    </Box>
-                    {isExtracting && <LinearProgress sx={{ mt: 0.5 }} />}
-                    {docData && <StructuredDataView data={docData} fileName={doc.file_name} />}
-                  </Box>
-                );
-              })}
-            </Box>
-          </Paper>
-        )}
+        {orphanDocs.map(doc => {
+          const docData = parseExtractedData(doc.extracted_text);
+          const isExtr = extracting === doc.id;
+          return (
+            <Paper key={doc.id} sx={{ mb: 3, overflow: 'hidden' }} variant="outlined">
+              <Box sx={{ p: 2, display: 'flex', alignItems: 'center', gap: 1 }}>
+                <Icon sx={{ color: '#C62828', fontSize: 20 }}>picture_as_pdf</Icon>
+                <Typography variant="body2" sx={{ flex: 1 }}>{doc.file_name}</Typography>
+                {doc.file_url && (
+                  <IconButton size="small" component="a" href={doc.file_url} target="_blank">
+                    <Icon sx={{ fontSize: 20 }}>download</Icon>
+                  </IconButton>
+                )}
+                <IconButton size="small" color="error" onClick={() => setDeleteDialog(doc)}>
+                  <Icon sx={{ fontSize: 20 }}>delete</Icon>
+                </IconButton>
+              </Box>
+              {isExtr && <LinearProgress />}
+              {docData && (
+                <Box sx={{ p: 2, pt: 0 }}>
+                  <StructuredDataView data={docData} fileName={doc.file_name} />
+                </Box>
+              )}
+              <Box sx={{ px: 2, pb: 1 }}>
+                <Typography variant="body2" color="text.secondary">{formatDate(doc.uploaded_at)}</Typography>
+              </Box>
+            </Paper>
+          );
+        })}
 
-        {/* Delete Confirmation Dialog */}
+        {/* Delete Dialog */}
         <Dialog open={!!deleteDialog} onClose={() => setDeleteDialog(null)}>
           <DialogTitle>Delete Entry</DialogTitle>
           <DialogContent>
             <Typography>
               Are you sure you want to delete "{deleteDialog?.file_name}"?
-              {deleteDialog?.file_url === 'manual-entry' && (
-                <Typography variant="body2" color="error" sx={{ mt: 1 }}>
-                  This will also delete all files uploaded under this title.
-                </Typography>
-              )}
             </Typography>
+            {deleteDialog?.file_url === 'manual-entry' && (
+              <Typography variant="body2" color="error" sx={{ mt: 1 }}>
+                This will also delete all files uploaded under this title.
+              </Typography>
+            )}
           </DialogContent>
           <DialogActions>
             <Button onClick={() => setDeleteDialog(null)}>Cancel</Button>
@@ -558,4 +544,24 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
       </Box>
     </Box>
   );
+
+  // Direct upload handler for global Select Title
+  async function handleGlobalUploadDirect(file: File) {
+    if (!code || !selectedParent) { setGlobalUploading(false); return; }
+    try {
+      const doc = await departmentDocumentStorage.uploadFile(code, file, selectedParent);
+      showSnackbar('File uploaded, extracting text...', 'info');
+      setSelectedParent('');
+      await fetchDocuments();
+
+      setExtracting(doc.id);
+      await runExtraction(doc, file);
+      setExtracting(null);
+      await fetchDocuments();
+    } catch (err) {
+      console.error('Upload error:', err);
+      showSnackbar('Failed to upload file', 'error');
+    }
+    setGlobalUploading(false);
+  }
 }
