@@ -76,21 +76,25 @@ export default function DepartmentDetailPage() {
 
   const fetchDepartment = useCallback(async () => {
     if (!code) return;
-    const { data } = await supabase
+    console.log('[DepartmentDetail] Fetching department for code:', code);
+    const { data, error } = await supabase
       .from('departments')
       .select('name, code, category, description, head_of_department')
       .eq('code', code)
       .single();
+    console.log('[DepartmentDetail] Department result:', data, error);
     if (data) setDepartment(data);
   }, [code]);
 
   const fetchDocuments = useCallback(async () => {
     if (!code) return;
     try {
+      console.log('[DepartmentDetail] Fetching documents for code:', code);
       const docs = await departmentDocumentStorage.getDocuments(code);
+      console.log('[DepartmentDetail] Fetched documents:', docs.length, docs);
       setDocuments(docs);
     } catch (err) {
-      console.error('Error fetching documents:', err);
+      console.error('[DepartmentDetail] Error fetching documents:', err);
     }
   }, [code]);
 
