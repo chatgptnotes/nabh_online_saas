@@ -13,14 +13,17 @@ export interface DepartmentDocument {
 
 export const departmentDocumentStorage = {
   async getDocuments(deptCode: string): Promise<DepartmentDocument[]> {
-    const { data, error } = await supabase
-      .from('department_documents')
+    const { data, error } = await (supabase
+      .from('department_documents') as any)
       .select('*')
       .eq('department_code', deptCode)
       .order('uploaded_at', { ascending: false });
 
-    if (error) throw error;
-    return data || [];
+    if (error) {
+      console.error('[DeptDocStorage] getDocuments error:', error);
+      throw error;
+    }
+    return (data as DepartmentDocument[]) || [];
   },
 
   async uploadFile(deptCode: string, file: File, parentId?: string): Promise<DepartmentDocument> {
@@ -40,8 +43,8 @@ export const departmentDocumentStorage = {
 
     const { data: urlData } = supabase.storage.from('documents').getPublicUrl(storagePath);
 
-    const { data, error } = await supabase
-      .from('department_documents')
+    const { data, error } = await (supabase
+      .from('department_documents') as any)
       .insert({
         department_code: deptCode,
         file_name: fileName,
@@ -53,12 +56,12 @@ export const departmentDocumentStorage = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DepartmentDocument;
   },
 
   async saveManualEntry(deptCode: string, title: string, description: string): Promise<DepartmentDocument> {
-    const { data, error } = await supabase
-      .from('department_documents')
+    const { data, error } = await (supabase
+      .from('department_documents') as any)
       .insert({
         department_code: deptCode,
         file_name: title,
@@ -71,12 +74,12 @@ export const departmentDocumentStorage = {
       .single();
 
     if (error) throw error;
-    return data;
+    return data as DepartmentDocument;
   },
 
   async updateExtractedText(id: string, extractedText: string): Promise<void> {
-    const { error } = await supabase
-      .from('department_documents')
+    const { error } = await (supabase
+      .from('department_documents') as any)
       .update({ extracted_text: extractedText })
       .eq('id', id);
 
@@ -86,8 +89,8 @@ export const departmentDocumentStorage = {
   async deleteDocument(doc: DepartmentDocument): Promise<void> {
     // Delete children first (files uploaded under this title)
     if (doc.file_url === 'manual-entry') {
-      const { data: children } = await supabase
-        .from('department_documents')
+      const { data: children } = await (supabase
+        .from('department_documents') as any)
         .select('*')
         .eq('department_code', doc.department_code)
         .like('file_name', `[parent:${doc.id}]%`);
@@ -108,8 +111,8 @@ export const departmentDocumentStorage = {
     }
 
     // Delete DB record
-    const { error } = await supabase
-      .from('department_documents')
+    const { error } = await (supabase
+      .from('department_documents') as any)
       .delete()
       .eq('id', doc.id);
 

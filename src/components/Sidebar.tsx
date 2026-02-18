@@ -121,8 +121,8 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
   useEffect(() => {
     const fetchDepts = async () => {
-      const { data } = await supabase
-        .from('departments')
+      const { data } = await (supabase
+        .from('departments') as any)
         .select('name, code')
         .eq('is_active', true)
         .order('name');

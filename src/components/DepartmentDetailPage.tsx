@@ -15,19 +15,13 @@ import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
-import Toolbar from '@mui/material/Toolbar';
 import LinearProgress from '@mui/material/LinearProgress';
-import Header from './Header';
-import Sidebar from './Sidebar';
-import Footer from './Footer';
 import StructuredDataView from './StructuredDataView';
 import { departmentDocumentStorage } from '../services/departmentDocumentStorage';
 import type { DepartmentDocument } from '../services/departmentDocumentStorage';
 import { extractFromDocument } from '../services/documentExtractor';
 import { supabase } from '../lib/supabase';
 import { fetchRealPatients, fetchRealStaff, fetchVisitingConsultants } from '../services/hopeHospitalDatabase';
-
-const drawerWidth = 280;
 
 interface DepartmentInfo {
   name: string;
@@ -40,7 +34,6 @@ interface DepartmentInfo {
 export default function DepartmentDetailPage() {
   const { code } = useParams<{ code: string }>();
   const navigate = useNavigate();
-  const [mobileOpen, setMobileOpen] = useState(false);
 
   const [department, setDepartment] = useState<DepartmentInfo | null>(null);
   const [documents, setDocuments] = useState<DepartmentDocument[]>([]);
@@ -77,12 +70,14 @@ export default function DepartmentDetailPage() {
   const fetchDepartment = useCallback(async () => {
     if (!code) return;
     console.log('[DepartmentDetail] Fetching department for code:', code);
-    const { data, error } = await supabase
-      .from('departments')
+    const { data, error } = await (supabase
+      .from('departments') as any)
       .select('name, code, category, description, head_of_department')
       .eq('code', code)
-      .single();
+      .eq('is_active', true)
+      .maybeSingle();
     console.log('[DepartmentDetail] Department result:', data, error);
+    if (error) console.error('[DepartmentDetail] Department fetch error:', error);
     if (data) setDepartment(data);
   }, [code]);
 
@@ -283,13 +278,8 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
   }
 
   return (
-    <Box sx={{ display: 'flex' }}>
-      <Header onMenuClick={() => setMobileOpen(!mobileOpen)} />
-      <Sidebar mobileOpen={mobileOpen} onClose={() => setMobileOpen(false)} />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, width: { sm: `calc(100% - ${drawerWidth}px)` } }}>
-        <Toolbar />
-
-        {/* Header: Back arrow + Department name */}
+    <Box>
+      {/* Header: Back arrow + Department name */}
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 3 }}>
           <IconButton onClick={() => navigate('/departments')}>
             <Icon>arrow_back</Icon>
@@ -544,8 +534,6 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
           </Alert>
         </Snackbar>
 
-        <Footer />
-      </Box>
     </Box>
   );
 

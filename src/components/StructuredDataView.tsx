@@ -22,7 +22,7 @@ interface StructuredData {
   description?: string;
   keyValuePairs?: { key: string; value: string }[] | Record<string, string>;
   sections?: { heading: string; content: string }[];
-  tables?: { caption?: string; data: string }[];
+  tables?: { caption?: string; data?: string; headers?: string[]; rows?: string[][] }[];
 }
 
 interface StructuredDataViewProps {
@@ -47,9 +47,14 @@ function parseKeyValuePairs(kvp: StructuredData['keyValuePairs']): { key: string
   return Object.entries(kvp).map(([key, value]) => ({ key, value: String(value) }));
 }
 
-function parseTable(tableData: string | undefined): { headers: string[]; rows: string[][] } {
-  if (!tableData) return { headers: [], rows: [] };
-  const lines = tableData.split('\n').filter(l => l.trim());
+function resolveTable(table: { data?: string; headers?: string[]; rows?: string[][] }): { headers: string[]; rows: string[][] } {
+  // Format 1: Direct headers + rows arrays (from DB)
+  if (table.headers && Array.isArray(table.headers) && table.headers.length > 0) {
+    return { headers: table.headers, rows: table.rows || [] };
+  }
+  // Format 2: Pipe-delimited string
+  if (!table.data) return { headers: [], rows: [] };
+  const lines = table.data.split('\n').filter(l => l.trim());
   if (lines.length === 0) return { headers: [], rows: [] };
   const headers = lines[0].split('|').map(h => h.trim());
   const rows = lines.slice(1).map(line => line.split('|').map(c => c.trim()));
@@ -124,7 +129,7 @@ export default function StructuredDataView({ data, fileName }: StructuredDataVie
     // Tables
     if (data.tables && data.tables.length > 0) {
       data.tables.forEach(table => {
-        const { headers, rows } = parseTable(table.data);
+        const { headers, rows } = resolveTable(table);
         if (headers.length === 0) return;
 
         if (y > 240) { doc.addPage(); y = 20; }
@@ -190,7 +195,7 @@ export default function StructuredDataView({ data, fileName }: StructuredDataVie
     // Tables
     if (data.tables && data.tables.length > 0) {
       data.tables.forEach((table, idx) => {
-        const { headers, rows } = parseTable(table.data);
+        const { headers, rows } = resolveTable(table);
         if (headers.length === 0) return;
         const wsData = [headers, ...rows];
         const ws = XLSX.utils.aoa_to_sheet(wsData);
@@ -302,15 +307,16 @@ export default function StructuredDataView({ data, fileName }: StructuredDataVie
 
           {/* Tables */}
           {data.tables && data.tables.length > 0 && data.tables.map((table, idx) => {
-            const { headers, rows } = parseTable(table.data);
+            const { headers, rows } = resolveTable(table);
             if (headers.length === 0) return null;
             return (
               <Box key={idx} sx={{ mb: 2 }}>
-                {table.caption && (
-                  <Typography variant="subtitle2" color="primary" sx={{ mb: 0.5 }}>
-                    {table.caption}
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5, mb: 1 }}>
+                  <Icon sx={{ color: '#1565C0', fontSize: 20 }}>grid_on</Icon>
+                  <Typography variant="subtitle2" color="primary" fontWeight={600}>
+                    {table.caption || 'Table Data'}
                   </Typography>
-                )}
+                </Box>
                 <TableContainer>
                   <Table size="small">
                     <TableHead>
