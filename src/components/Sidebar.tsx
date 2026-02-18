@@ -328,38 +328,6 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
 
       <Divider sx={{ my: 1 }} />
 
-      {/* Management Sections */}
-      <Box sx={{ p: 2, pb: 1 }}>
-        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
-          MANAGEMENT
-        </Typography>
-      </Box>
-      <List dense>
-        {MANAGEMENT_SECTIONS.map((section) => (
-          <ListItem key={section.id} disablePadding>
-            <ListItemButton
-              selected={location.pathname === section.path}
-              onClick={() => handleSectionClick(section.path)}
-              sx={{ py: 1 }}
-            >
-              <ListItemIcon sx={{ minWidth: 36 }}>
-                <Icon color={location.pathname === section.path ? 'primary' : 'inherit'}>
-                  {section.icon}
-                </Icon>
-              </ListItemIcon>
-              <Tooltip title={section.description} placement="right" arrow>
-                <ListItemText
-                  primary={section.label}
-                  slotProps={{
-                    primary: { fontWeight: location.pathname === section.path ? 600 : 400, fontSize: '0.875rem' },
-                  }}
-                />
-              </Tooltip>
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
-      <Divider sx={{ my: 1 }} />
       {/* Departments Section */}
       <Box sx={{ px: 2, py: 1 }}>
         <ListItemButton
@@ -406,6 +374,40 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           </List>
         </Collapse>
       </Box>
+
+      <Divider sx={{ my: 1 }} />
+
+      {/* Management Sections */}
+      <Box sx={{ p: 2, pb: 1 }}>
+        <Typography variant="subtitle2" color="text.secondary" sx={{ mb: 1 }}>
+          MANAGEMENT
+        </Typography>
+      </Box>
+      <List dense>
+        {MANAGEMENT_SECTIONS.map((section) => (
+          <ListItem key={section.id} disablePadding>
+            <ListItemButton
+              selected={location.pathname === section.path}
+              onClick={() => handleSectionClick(section.path)}
+              sx={{ py: 1 }}
+            >
+              <ListItemIcon sx={{ minWidth: 36 }}>
+                <Icon color={location.pathname === section.path ? 'primary' : 'inherit'}>
+                  {section.icon}
+                </Icon>
+              </ListItemIcon>
+              <Tooltip title={section.description} placement="right" arrow>
+                <ListItemText
+                  primary={section.label}
+                  slotProps={{
+                    primary: { fontWeight: location.pathname === section.path ? 600 : 400, fontSize: '0.875rem' },
+                  }}
+                />
+              </Tooltip>
+            </ListItemButton>
+          </ListItem>
+        ))}
+      </List>
       <Divider sx={{ my: 1 }} />
       {/* Chapters Section */}
       <Box sx={{ p: 2, pb: 1 }}>
