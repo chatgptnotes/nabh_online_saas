@@ -148,6 +148,7 @@ export default function LicensesMasterPage() {
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' });
   const [uploadFile, setUploadFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Form state for new/edit license
   const [licenseForm, setLicenseForm] = useState<Partial<License>>({
@@ -414,6 +415,21 @@ export default function LicensesMasterPage() {
   const expiringLicenses = licenses.filter(l => l.status === 'Expiring Soon').length;
   const expiredLicenses = licenses.filter(l => l.status === 'Expired').length;
 
+  // Filter licenses by search query
+  const filteredLicenses = searchQuery.trim()
+    ? licenses.filter(l => {
+        const q = searchQuery.toLowerCase();
+        return (
+          l.name.toLowerCase().includes(q) ||
+          l.category.toLowerCase().includes(q) ||
+          l.licenseNumber.toLowerCase().includes(q) ||
+          l.issuingAuthority.toLowerCase().includes(q) ||
+          l.responsiblePerson.toLowerCase().includes(q) ||
+          l.status.toLowerCase().includes(q)
+        );
+      })
+    : licenses;
+
   return (
     <Container maxWidth="xl">
       {/* Header */}
@@ -490,6 +506,27 @@ export default function LicensesMasterPage() {
         </Box>
       </Box>
 
+      {/* Search Bar */}
+      <Box mb={3}>
+        <TextField
+          fullWidth
+          size="small"
+          placeholder="Search licenses by name, category, license number, authority..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          slotProps={{
+            input: {
+              startAdornment: <Icon sx={{ mr: 1, color: 'text.secondary' }}>search</Icon>,
+            },
+          }}
+          sx={{
+            '& .MuiOutlinedInput-root': {
+              bgcolor: 'white',
+            },
+          }}
+        />
+      </Box>
+
       {/* Loading State */}
       {loading && (
         <Box display="flex" justifyContent="center" py={6}>
@@ -500,18 +537,18 @@ export default function LicensesMasterPage() {
       {/* Licenses Grid */}
       {!loading && (
         <Box display="flex" gap={3} flexWrap="wrap">
-          {licenses.length === 0 ? (
+          {filteredLicenses.length === 0 ? (
             <Box textAlign="center" py={6} width="100%">
               <LicenseIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
               <Typography variant="h6" color="text.secondary">
-                No licenses found
+                {searchQuery ? 'No licenses match your search' : 'No licenses found'}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                Click "Add License" to create your first license.
+                {searchQuery ? 'Try a different search term.' : 'Click "Add License" to create your first license.'}
               </Typography>
             </Box>
           ) : (
-            licenses.map(license => (
+            filteredLicenses.map(license => (
           <Box flex="1" minWidth="400px" key={license.id}>
             <Card elevation={2} sx={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
               <CardContent sx={{ flexGrow: 1 }}>
