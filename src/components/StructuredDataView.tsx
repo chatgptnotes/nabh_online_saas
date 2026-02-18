@@ -47,7 +47,8 @@ function parseKeyValuePairs(kvp: StructuredData['keyValuePairs']): { key: string
   return Object.entries(kvp).map(([key, value]) => ({ key, value: String(value) }));
 }
 
-function parseTable(tableData: string): { headers: string[]; rows: string[][] } {
+function parseTable(tableData: string | undefined): { headers: string[]; rows: string[][] } {
+  if (!tableData) return { headers: [], rows: [] };
   const lines = tableData.split('\n').filter(l => l.trim());
   if (lines.length === 0) return { headers: [], rows: [] };
   const headers = lines[0].split('|').map(h => h.trim());
