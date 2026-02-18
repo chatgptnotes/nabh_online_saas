@@ -553,6 +553,7 @@ function App() {
             {/* Protected routes */}
             <Route path="/objective/:chapterId/:objectiveId" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
             <Route path="/kpi/:kpiId" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
+            <Route path="/department/:code" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
             <Route path="/*" element={<ProtectedRoute><AppContent /></ProtectedRoute>} />
           </Routes>
         </AuthProvider>
