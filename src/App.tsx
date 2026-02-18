@@ -24,6 +24,7 @@ import EmployeesPage from './components/EmployeesPage';
 import VisitingConsultantsPage from './components/VisitingConsultantsPage';
 import DoctorsPage from './components/DoctorsPage';
 import DepartmentsMasterPage from './components/DepartmentsMasterPage';
+import DepartmentDetailPage from './components/DepartmentDetailPage';
 import EquipmentMasterPage from './components/EquipmentMasterPage';
 import EvidencePromptMasterPage from './components/EvidencePromptMasterPage';
 import SOPPromptMasterPage from './components/SOPPromptMasterPage';
@@ -285,6 +286,7 @@ function MainContent() {
   const isConsultantsPage = location.pathname === '/consultants';
   const isDoctorsPage = location.pathname === '/doctors';
   const isDepartmentsPage = location.pathname === '/departments';
+  const isDepartmentDetailPage = location.pathname.startsWith('/department/');
   const isEquipmentPage = location.pathname === '/equipment';
   const isEvidencePromptPage = location.pathname === '/evidence-prompt';
   const isSOPPromptPage = location.pathname === '/sop-prompt';
@@ -373,6 +375,10 @@ function MainContent() {
 
   if (isDoctorsPage) {
     return <DoctorsPage />;
+  }
+
+  if (isDepartmentDetailPage) {
+    return <DepartmentDetailPage />;
   }
 
   if (isDepartmentsPage) {

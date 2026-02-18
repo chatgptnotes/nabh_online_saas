@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Drawer from '@mui/material/Drawer';
 import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
@@ -18,6 +18,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useNABHStore } from '../store/nabhStore';
 import { getChapterStats } from '../data/nabhData';
 import { useAuth } from '../providers/AuthProvider';
+import { supabase } from '../lib/supabase';
 
 const DOCUMENT_LEVELS = [
   { id: 'level-1', label: 'Level 1: Mission & Vision', icon: 'flag', path: '/document-levels?level=1', color: '#1565C0' },
@@ -115,6 +116,20 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
   const navigate = useNavigate();
   const location = useLocation();
   const [expandedLevel, setExpandedLevel] = useState<string | null>('level-2');
+  const [deptExpanded, setDeptExpanded] = useState(location.pathname.startsWith('/department/'));
+  const [departments, setDepartments] = useState<{ name: string; code: string }[]>([]);
+
+  useEffect(() => {
+    const fetchDepts = async () => {
+      const { data } = await supabase
+        .from('departments')
+        .select('name, code')
+        .eq('is_active', true)
+        .order('name');
+      if (data) setDepartments(data);
+    };
+    fetchDepts();
+  }, []);
 
   const handleChapterClick = (chapterId: string) => {
     setSelectedChapter(chapterId);
@@ -344,6 +359,53 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
           </ListItem>
         ))}
       </List>
+      <Divider sx={{ my: 1 }} />
+      {/* Departments Section */}
+      <Box sx={{ px: 2, py: 1 }}>
+        <ListItemButton
+          onClick={() => setDeptExpanded(!deptExpanded)}
+          sx={{ borderRadius: 1, py: 0.5 }}
+        >
+          <ListItemIcon sx={{ minWidth: 36 }}>
+            <Icon sx={{ color: '#1565C0' }}>apartment</Icon>
+          </ListItemIcon>
+          <ListItemText
+            primary="DEPARTMENTS"
+            slotProps={{ primary: { sx: { fontWeight: 600, fontSize: '0.85rem', color: 'text.secondary' } } }}
+          />
+          <Icon sx={{ fontSize: 20, color: 'text.secondary' }}>
+            {deptExpanded ? 'expand_less' : 'expand_more'}
+          </Icon>
+        </ListItemButton>
+        <Collapse in={deptExpanded} timeout="auto" unmountOnExit>
+          <List dense disablePadding sx={{ pl: 1 }}>
+            {departments.map((dept) => (
+              <ListItem key={dept.code} disablePadding>
+                <ListItemButton
+                  selected={location.pathname === `/department/${dept.code}`}
+                  onClick={() => handleSectionClick(`/department/${dept.code}`)}
+                  sx={{
+                    py: 0.3,
+                    borderRadius: 1,
+                    '&.Mui-selected': {
+                      bgcolor: '#e3f2fd',
+                      borderLeft: '3px solid #1565C0',
+                    },
+                  }}
+                >
+                  <ListItemIcon sx={{ minWidth: 30 }}>
+                    <Icon sx={{ fontSize: 18, color: '#1565C0' }}>business</Icon>
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={dept.name}
+                    slotProps={{ primary: { sx: { fontSize: '0.8rem' } } }}
+                  />
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Collapse>
+      </Box>
       <Divider sx={{ my: 1 }} />
       {/* Chapters Section */}
       <Box sx={{ p: 2, pb: 1 }}>
