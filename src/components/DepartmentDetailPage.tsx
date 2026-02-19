@@ -329,7 +329,15 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
             select
             label="Select Title"
             value={selectedParent}
-            onChange={(e) => setSelectedParent(e.target.value)}
+            onChange={(e) => {
+              const val = e.target.value;
+              setSelectedParent(val);
+              if (val) {
+                setTimeout(() => {
+                  document.getElementById(`entry-${val}`)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }, 100);
+              }
+            }}
             fullWidth
             variant="outlined"
           >
@@ -386,7 +394,7 @@ Return ONLY the JSON, no markdown code blocks, no explanations.`;
           const children = getChildren(title.id);
           const isUploading = uploadingFor === title.id;
           return (
-            <Paper key={title.id} sx={{ mb: 3, overflow: 'hidden' }} variant="outlined">
+            <Paper key={title.id} id={`entry-${title.id}`} sx={{ mb: 3, overflow: 'hidden' }} variant="outlined">
               {/* Title header */}
               <Box sx={{ p: 2, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #eee' }}>
                 <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
