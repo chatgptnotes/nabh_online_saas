@@ -88,7 +88,7 @@ const nabhCoordinator = getNABHCoordinator();
 
 const getLogoUrl = (config: HospitalConfig) => {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online';
-  return `${base}${config.logo || '/hospital-logo.png'}`;
+  return `${base}${config.logo}`;
 };
 
 const getContentPrompt = (config: HospitalConfig, objectiveCode: string) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.
@@ -802,6 +802,43 @@ export default function AIEvidenceGenerator() {
     }
   }, [selectedEvidenceForCreation, selectedEvidenceObjectiveCode, clearSelectedEvidenceForCreation, chapters]);
 
+  // Post-process HTML to ensure correct hospital branding (logo + name)
+  const postProcessHTML = (html: string): string => {
+    let processed = html;
+    const logoUrl = getLogoUrl(hospitalConfig);
+
+    // 1. Replace "Dr. Murali's Hope Hospital" variations
+    processed = processed.replace(/Dr\.?\s*Murali'?s?\s+Hope\s+Hospital/gi, hospitalConfig.name);
+    processed = processed.replace(/Dr\.?\s*Murali'?s?\s*Hope\s*Hospital/gi, hospitalConfig.name);
+    processed = processed.replace(/DR\.?\s*MURALI'?S?\s+HOPE\s+HOSPITAL/gi, hospitalConfig.name.toUpperCase());
+    processed = processed.replace(/DR\.?\s*MURALI'?S?\s*HOPE\s*HOSPITAL/gi, hospitalConfig.name.toUpperCase());
+
+    // 2. If not Hope Hospital, replace remaining Hope Hospital mentions
+    if (hospitalConfig.name !== 'Hope Hospital') {
+      processed = processed.replace(/Hope\s+Hospital/gi, hospitalConfig.name);
+      processed = processed.replace(/HOPE\s+HOSPITAL/gi, hospitalConfig.name.toUpperCase());
+    }
+
+    // 3. Fix logo: directly replace Hope Hospital logo URLs with correct hospital logo
+    const correctLogoUrl = getLogoUrl(hospitalConfig);
+
+    if (hospitalConfig.name !== 'Hope Hospital') {
+      // Replace relative paths
+      processed = processed.replace(/\/assets\/hope-hospital-logo\.png/g, hospitalConfig.logo);
+      processed = processed.replace(/\/hospital-logo\.png/g, hospitalConfig.logo);
+      // Replace absolute URLs (any origin)
+      processed = processed.replace(/https?:\/\/[^"'\s]*\/assets\/hope-hospital-logo\.png/g, correctLogoUrl);
+      processed = processed.replace(/https?:\/\/[^"'\s]*\/hospital-logo\.png/g, correctLogoUrl);
+    }
+
+    // Fix text placeholders
+    const logoImg = `<img src="${correctLogoUrl}" alt="${hospitalConfig.name}" class="logo" style="width: 180px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">`;
+    processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
+    processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
+
+    return processed;
+  };
+
   const selectedChapterData = chapters.find(c => c.id === selectedChapter);
   const objectives = selectedChapterData?.objectives || [];
 
@@ -940,6 +977,7 @@ export default function AIEvidenceGenerator() {
   const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
   const handleGenerateContent = async () => {
+    console.log('[AI Generator] Hospital config:', hospitalConfig.name, 'Logo:', hospitalConfig.logo, 'LogoURL:', getLogoUrl(hospitalConfig));
     const selectedItems = evidenceItems.filter(item => item.selected);
 
     if (selectedItems.length === 0) {
@@ -1068,12 +1106,14 @@ Generate complete, ready-to-use content/template for this evidence in ENGLISH ON
             throw new Error('No API key configured.');
           }
 
-          // Extract editable text from the generated HTML content
-          const editableText = extractTextFromHTML(content);
+          // Post-process to ensure correct hospital branding
+          const processedContent = postProcessHTML(content);
+          // Extract editable text from the processed HTML content
+          const editableText = extractTextFromHTML(processedContent);
 
           contents.push({
             evidenceItem: item.text,
-            content,
+            content: processedContent,
             editableText,
           });
 

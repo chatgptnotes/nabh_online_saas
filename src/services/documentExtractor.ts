@@ -279,7 +279,7 @@ export const generateImprovedDocument = async (
   extractedText: string,
   documentCategory: string,
   userSuggestions: string,
-  hospitalName: string = 'Hope Hospital'
+  hospitalName: string = getHospitalInfo().name
 ): Promise<string> => {
   const geminiApiKey = getGeminiApiKey();
   if (!geminiApiKey) {

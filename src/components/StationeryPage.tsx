@@ -67,7 +67,7 @@ const STATIONERY_CATEGORIES = [
 
 const WORKFLOW_STEPS = ['Upload Document', 'Extract Content', 'Add Suggestions', 'Generate Improved'];
 
-// Comprehensive Default Stationery Items for Hope Hospital
+// Comprehensive Default Stationery Items
 const DEFAULT_STATIONERY_ITEMS: StationeryItem[] = [
   // PATIENT FORMS
   {
@@ -405,7 +405,7 @@ const DEFAULT_STATIONERY_ITEMS: StationeryItem[] = [
     id: 'letter_001',
     name: 'Official Hospital Letterhead',
     category: 'letterheads',
-    description: 'Hope Hospital official letterhead for correspondence',
+    description: 'Official hospital letterhead for correspondence',
     status: 'pending',
     userSuggestions: [],
     createdAt: '2026-02-03T10:00:00.000Z',
