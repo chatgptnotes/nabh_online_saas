@@ -6,10 +6,10 @@
  * to ensure consistency, compliance, and audit readiness.
  */
 
-export const NABH_EVIDENCE_GENERATION_PROMPT = `
+export const getNabhEvidencePrompt = (hospitalName: string = 'Hope Hospital') => `
 # NABH Evidence Generation System - 3rd Edition SHCO Standards
 
-You are an AI coding agent specialized in generating comprehensive NABH (National Accreditation Board for Hospitals & Healthcare Providers) evidence documents for Hope Hospital's accreditation audit. Generate realistic, audit-ready evidence that demonstrates compliance with NABH 3rd Edition SHCO standards.
+You are an AI coding agent specialized in generating comprehensive NABH (National Accreditation Board for Hospitals & Healthcare Providers) evidence documents for ${hospitalName}'s accreditation audit. Generate realistic, audit-ready evidence that demonstrates compliance with NABH 3rd Edition SHCO standards.
 
 ## CRITICAL REQUIREMENTS
 
@@ -144,7 +144,7 @@ Reference the complete scope of services from September 26, 2025 document
 ### 8. HOSPITAL CONTEXT
 
 #### A. HOSPITAL DETAILS
-- **Name**: Hope Hospital
+- **Name**: ${hospitalName}
 - **Address**: Nagpur, India
 - **Type**: Multi-specialty hospital
 - **Bed Capacity**: Current occupancy tracking toward 75 beds by April 2026
@@ -291,7 +291,10 @@ Generate evidence that will confidently pass NABH 3rd Edition SHCO audit standar
  * Utility functions for evidence generation
  */
 
-export const getEvidencePromptForChapter = (chapter: string): string => {
+// Backward-compatible constant (defaults to Hope Hospital)
+export const NABH_EVIDENCE_GENERATION_PROMPT = getNabhEvidencePrompt();
+
+export const getEvidencePromptForChapter = (chapter: string, hospitalName?: string): string => {
   const chapterSpecificPrompts = {
     'AAC': 'Focus on patient registration, assessment protocols, discharge planning, and continuity of care evidence',
     'COP': 'Emphasize patient care plans, clinical protocols, multidisciplinary care, and care coordination',
@@ -305,7 +308,7 @@ export const getEvidencePromptForChapter = (chapter: string): string => {
     'IMS': 'Generate data management, privacy protection, system security, and information governance documentation'
   };
 
-  return `${NABH_EVIDENCE_GENERATION_PROMPT}
+  return `${getNabhEvidencePrompt(hospitalName)}
 
 ### CHAPTER-SPECIFIC FOCUS: ${chapter}
 ${chapterSpecificPrompts[chapter as keyof typeof chapterSpecificPrompts] || 'Generate comprehensive evidence for this NABH chapter'}
@@ -313,13 +316,13 @@ ${chapterSpecificPrompts[chapter as keyof typeof chapterSpecificPrompts] || 'Gen
 Ensure all generated evidence specifically demonstrates compliance with ${chapter} standards while following the master requirements above.`;
 };
 
-export const getEvidencePromptForObjective = (objectiveCode: string, description: string): string => {
-  return `${NABH_EVIDENCE_GENERATION_PROMPT}
+export const getEvidencePromptForObjective = (objectiveCode: string, description: string, hospitalName?: string): string => {
+  return `${getNabhEvidencePrompt(hospitalName)}
 
 ### OBJECTIVE-SPECIFIC EVIDENCE: ${objectiveCode}
 **Objective Description**: ${description}
 
-Generate specific evidence that directly demonstrates compliance with this objective element. Ensure the evidence clearly shows how Hope Hospital meets the requirements described in the objective while following all master requirements above.`;
+Generate specific evidence that directly demonstrates compliance with this objective element. Ensure the evidence clearly shows how ${hospitalName || 'the hospital'} meets the requirements described in the objective while following all master requirements above.`;
 };
 
 export default NABH_EVIDENCE_GENERATION_PROMPT;

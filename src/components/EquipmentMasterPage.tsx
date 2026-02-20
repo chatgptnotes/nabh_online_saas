@@ -54,6 +54,8 @@ import {
   type EquipmentStatus,
   type EquipmentCompliance
 } from '../data/equipmentMaster';
+import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 
 /**
  * Equipment Master Page Component
@@ -77,6 +79,8 @@ const initialFormState = {
 };
 
 const EquipmentMasterPage: React.FC = () => {
+  const { selectedHospital } = useNABHStore();
+  const hospitalConfig = getHospitalInfo(selectedHospital);
   const [searchTerm, setSearchTerm] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<EquipmentCategory | 'All'>('All');
   const [statusFilter, setStatusFilter] = useState<EquipmentStatus | 'All'>('All');
@@ -390,7 +394,7 @@ const EquipmentMasterPage: React.FC = () => {
               Equipment Master
             </Typography>
             <Typography variant="subtitle1" color="text.secondary">
-              Hope Hospital ICU Equipment Inventory - NABH Audit Ready
+              {hospitalConfig.name} ICU Equipment Inventory - NABH Audit Ready
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 2 }}>

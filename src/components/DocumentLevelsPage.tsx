@@ -27,6 +27,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import TablePagination from '@mui/material/TablePagination';
 import type { DocumentLevelItem } from '../services/documentLevelStorage';
 import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 import {
   loadDocumentsByLevel,
   saveDocument,
@@ -111,6 +112,7 @@ const INITIAL_FORM_DATA = {
 
 export default function DocumentLevelsPage() {
   const { selectedHospital } = useNABHStore();
+  const hospitalConfig = getHospitalInfo(selectedHospital);
   const [searchParams] = useSearchParams();
   const levelParam = searchParams.get('level');
   const [tabValue, setTabValue] = useState(levelParam ? parseInt(levelParam) - 1 : 0);
@@ -536,7 +538,7 @@ export default function DocumentLevelsPage() {
                           fontSize: '1.05rem',
                         }}
                       >
-                        Hope Hospitals, the service provider of a global healthcare system providing patient focused, high quality and cost-effective services.
+                        {hospitalConfig.name}, the service provider of a global healthcare system providing patient focused, high quality and cost-effective services.
                       </Typography>
                     </Box>
 
@@ -562,7 +564,7 @@ export default function DocumentLevelsPage() {
                           fontSize: '1.05rem',
                         }}
                       >
-                        Hope Hospitals to lead the way as an International health care service provider in India.
+                        {hospitalConfig.name} to lead the way as an International health care service provider in India.
                       </Typography>
                     </Box>
                   </Box>

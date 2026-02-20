@@ -26,8 +26,12 @@ import Tabs from '@mui/material/Tabs';
 import Tab from '@mui/material/Tab';
 import { doctorsMaster, syncDoctorsToDatabase } from '../data/doctorsMaster';
 import type { Doctor } from '../data/doctorsMaster';
+import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 
 export default function DoctorsPage() {
+  const { selectedHospital } = useNABHStore();
+  const hospitalConfig = getHospitalInfo(selectedHospital);
   const [doctors, setDoctors] = useState<Doctor[]>([]);
   const [filteredDoctors, setFilteredDoctors] = useState<Doctor[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -184,7 +188,7 @@ export default function DoctorsPage() {
             Resident Medical Officers (RMO)
           </Typography>
           <Typography variant="body2" color="text.secondary">
-            {doctors.length} RMO Doctors ({allopathicCount} Allopathic + {nonAllopathicCount} Non-Allopathic) - Hope Hospital
+            {doctors.length} RMO Doctors ({allopathicCount} Allopathic + {nonAllopathicCount} Non-Allopathic) - {hospitalConfig.name}
           </Typography>
         </Box>
         <Box sx={{ display: 'flex', gap: 1 }}>

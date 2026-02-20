@@ -49,6 +49,7 @@ import {
 } from '@mui/icons-material';
 import { supabase } from '../lib/supabase';
 import { useNABHStore } from '../store/nabhStore';
+import { getHospitalInfo } from '../config/hospitalConfig';
 
 // Survey Interfaces
 interface SurveyQuestion {
@@ -100,7 +101,7 @@ const SURVEY_TEMPLATES = [
     questions: [
       {
         id: 'overall_satisfaction',
-        question: 'How satisfied are you with your overall work experience at Hope Hospital?',
+        question: 'How satisfied are you with your overall work experience at our hospital?',
         type: 'rating' as const,
         required: true,
         category: 'General Satisfaction',
@@ -170,7 +171,7 @@ const SURVEY_TEMPLATES = [
       },
       {
         id: 'recommend_workplace',
-        question: 'Would you recommend Hope Hospital as a good place to work to others?',
+        question: 'Would you recommend our hospital as a good place to work to others?',
         type: 'yes_no' as const,
         required: true,
         category: 'Overall Recommendation',
@@ -215,7 +216,7 @@ const SURVEY_TEMPLATES = [
     questions: [
       {
         id: 'overall_experience',
-        question: 'How would you rate your overall experience at Hope Hospital?',
+        question: 'How would you rate your overall experience at our hospital?',
         type: 'rating' as const,
         required: true,
         category: 'Overall Experience',
@@ -271,7 +272,7 @@ const SURVEY_TEMPLATES = [
       },
       {
         id: 'recommend_hospital',
-        question: 'Would you recommend Hope Hospital to others?',
+        question: 'Would you recommend our hospital to others?',
         type: 'yes_no' as const,
         required: true,
         category: 'Recommendation',
@@ -349,6 +350,7 @@ function TabPanel(props: TabPanelProps) {
 
 export default function SurveysPage() {
   const { selectedHospital } = useNABHStore();
+  const hospitalConfig = getHospitalInfo(selectedHospital);
   const [surveys, setSurveys] = useState<Survey[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedSurvey, setSelectedSurvey] = useState<Survey | null>(null);
@@ -610,13 +612,13 @@ export default function SurveysPage() {
   };
 
   const shareViaWhatsApp = (surveyURL: string, surveyTitle: string) => {
-    const message = `🏥 *Hope Hospital Survey*\n\n*${surveyTitle}*\n\nPlease take a few minutes to complete this survey. Your feedback is valuable to us.\n\n🔗 ${surveyURL}\n\nThank you for your participation!`;
+    const message = `🏥 *${hospitalConfig.name} Survey*\n\n*${surveyTitle}*\n\nPlease take a few minutes to complete this survey. Your feedback is valuable to us.\n\n🔗 ${surveyURL}\n\nThank you for your participation!`;
     const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
   };
 
   const shareViaEmail = (surveyURL: string, surveyTitle: string) => {
-    const subject = `Survey: ${surveyTitle} - Hope Hospital`;
+    const subject = `Survey: ${surveyTitle} - ${hospitalConfig.name}`;
     const body = `Dear Team,
 
 You are invited to participate in the following survey:
@@ -631,7 +633,7 @@ Your feedback is important for our continuous improvement and NABH accreditation
 Thank you for your time and participation.
 
 Best regards,
-Hope Hospital Quality Team
+${hospitalConfig.name} Quality Team
 Dr. Shiraz (Quality Coordinator)`;
 
     const mailtoURL = `mailto:?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;

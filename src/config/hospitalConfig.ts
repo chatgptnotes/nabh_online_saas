@@ -72,7 +72,7 @@ export const fetchHospitalsFromDB = async (): Promise<Record<string, HospitalInf
         phone: h.phone || '',
         email: h.email || '',
         website: h.website || '',
-        logo: h.logo_url || '/hospital-logo.png',
+        logo: h.logo_url || HOSPITALS[h.slug]?.logo || '/hospital-logo.png',
       };
     });
 
