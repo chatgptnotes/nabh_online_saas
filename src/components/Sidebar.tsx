@@ -73,6 +73,7 @@ const MANAGEMENT_SECTIONS = [
   { id: 'mous', label: 'MOUs & Partnerships', icon: 'handshake', path: '/mous', description: 'Manage Memoranda of Understanding and strategic partnerships with multiple document support' },
   { id: 'programs', label: 'Hospital Programs', icon: 'local_hospital', path: '/programs', description: 'Manage hospital programs and initiatives' },
   { id: 'clinical-audits', label: 'Clinical Audits', icon: 'fact_check', path: '/clinical-audits', description: 'Manage clinical audits and quality assessments' },
+  { id: 'nc-tracker', label: 'NC Tracker', icon: 'report_problem', path: '/nc-tracker', description: 'Track and resolve audit Non-Conformities chapter-wise' },
   { id: 'surveys', label: 'Surveys', icon: 'poll', path: '/surveys', description: 'Manage patient & staff satisfaction surveys and quality assessments' },
   { id: 'evidence-prompt', label: 'Evidence Prompt Master', icon: 'assignment', path: '/evidence-prompt', description: 'NABH evidence generation prompts & templates' },
   { id: 'sop-prompt', label: 'SOP Prompt Master', icon: 'description', path: '/sop-prompt', description: 'SOP generation prompts & templates' },
