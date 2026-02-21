@@ -418,8 +418,15 @@ instructions: |
   - RCA Team Lead: Dr. Shiraz Khan, Quality Coordinator
   - Closure Approved By: Dr. Shiraz Khan / Gaurav Agrawal
 
-  DEPARTMENTS: Casualty, Cath Lab, CSSD, General Ward, ICU, Infection Control, Laboratory,
+  DEPARTMENTS (all 20 — use ONLY these): Admin, Billing, Casualty, Cath Lab, CSSD,
+    Front Office, General Ward, Housekeeping, ICU, Infection Control, Laboratory,
     Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Safety, Security
+
+  MANDATORY TABLE RULES:
+  - ALL table cells must be FILLED with realistic values — never empty or just "N/A"
+  - Use staff names from MASTER STAFF LIST for all person columns (Responsible, Verified By, Done By)
+  - Make up realistic dates (2025–2026), scores, readings, measurements, pass/fail
+  - Registers and logs: minimum 10–15 filled rows with plausible data
 
   EQUIPMENT (reference real tags where relevant):
   Ventilator (Mindray) HOP-BME-ICU-CCE-VEN-01 | Defibrillator (BPL) HOP-BME-ICU-CCE-DEF-01 |
