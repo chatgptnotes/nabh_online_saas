@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Dialog from '@mui/material/Dialog';
 import DialogTitle from '@mui/material/DialogTitle';
 import DialogContent from '@mui/material/DialogContent';
@@ -13,10 +13,7 @@ import FormControlLabel from '@mui/material/FormControlLabel';
 import Checkbox from '@mui/material/Checkbox';
 import CircularProgress from '@mui/material/CircularProgress';
 import Alert from '@mui/material/Alert';
-import Divider from '@mui/material/Divider';
-import Tabs from '@mui/material/Tabs';
-import Tab from '@mui/material/Tab';
-import TextField from '@mui/material/TextField';
+import Tooltip from '@mui/material/Tooltip';
 import { callGeminiAPI } from '../lib/supabase';
 import { supabase } from '../lib/supabase';
 import { getHospitalInfo } from '../config/hospitalConfig';
@@ -28,7 +25,7 @@ interface NCEvidenceModalProps {
   nc: NcRecord;
   open: boolean;
   onClose: () => void;
-  onSaved: (html: string) => void;
+  onSaved: (html: string | null) => void;
 }
 
 interface StaffMember {
@@ -269,6 +266,13 @@ Generate a formal Auditor Response Letter with these sections:
 6. Signoff (formal closing: Dr. Shiraz Khan, NABH Coordinator / Administrator, ${hospital.name})`;
 }
 
+// ── Capture current HTML from iframe (works in view and edit mode) ──────────
+function captureIframeHtml(iframeEl: HTMLIFrameElement | null): string | null {
+  if (!iframeEl?.contentDocument) return null;
+  const raw = iframeEl.contentDocument.documentElement.outerHTML;
+  return raw.startsWith('<!DOCTYPE') ? raw : '<!DOCTYPE html>\n' + raw;
+}
+
 // ── Component ──────────────────────────────────────────────────────────────
 export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEvidenceModalProps) {
   const { selectedHospital } = useNABHStore();
@@ -280,14 +284,17 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
     ? hospital.logo
     : `${window.location.origin}${hospital.logo}`;
 
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+
   const [staff, setStaff]               = useState<StaffMember[]>([]);
   const [selectedTypes, setSelectedTypes] = useState<string[]>(['corrective', 'supporting', 'training', 'auditor']);
   const [generating, setGenerating]     = useState(false);
   const [saving, setSaving]             = useState(false);
+  const [deleting, setDeleting]         = useState(false);
   const [error, setError]               = useState<string | null>(null);
-  const [html, setHtml]                 = useState<string | null>(nc.evidence_html || null);
-  const [tab, setTab]                   = useState(0); // 0 = Preview, 1 = Edit HTML
-  const [editedHtml, setEditedHtml]     = useState('');
+  // viewHtml drives the iframe srcDoc; kept stable while editing so React doesn't reload the iframe
+  const [viewHtml, setViewHtml]         = useState<string | null>(nc.evidence_html || null);
+  const [editMode, setEditMode]         = useState(false);
 
   const isMajor = nc.score === 2;
 
@@ -303,37 +310,59 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
     })();
   }, [open]);
 
-  // Sync editedHtml when html changes
-  useEffect(() => {
-    if (html) setEditedHtml(html);
-  }, [html]);
+  // When the iframe loads (after generation), enable designMode if edit mode is active
+  const handleIframeLoad = () => {
+    if (editMode && iframeRef.current?.contentDocument) {
+      iframeRef.current.contentDocument.designMode = 'on';
+    }
+  };
 
   const toggleType = (id: string) =>
     setSelectedTypes((prev) =>
       prev.includes(id) ? prev.filter((t) => t !== id) : [...prev, id]
     );
 
+  // ── Enter / exit edit mode ────────────────────────────────────────────────
+  const handleEnterEdit = () => {
+    if (iframeRef.current?.contentDocument) {
+      iframeRef.current.contentDocument.designMode = 'on';
+      // Focus so cursor appears immediately
+      iframeRef.current.contentDocument.body?.focus();
+    }
+    setEditMode(true);
+  };
+
+  const handleDoneEditing = () => {
+    // Capture current iframe DOM back into viewHtml
+    const captured = captureIframeHtml(iframeRef.current);
+    if (iframeRef.current?.contentDocument) {
+      iframeRef.current.contentDocument.designMode = 'off';
+    }
+    setEditMode(false);
+    if (captured) setViewHtml(captured); // iframe reloads with committed content
+  };
+
+  // ── Generate ──────────────────────────────────────────────────────────────
   const handleGenerate = async () => {
     if (selectedTypes.length === 0) { setError('Select at least one evidence type.'); return; }
     setGenerating(true);
+    setEditMode(false);
     setError(null);
     try {
       const sectionDefs: { id: string; title: string; dept: string; category: string }[] = [
-        { id: 'corrective', title: 'CORRECTIVE ACTION REPORT',       dept: `${nc.chapter_code} Department`,      category: 'NC Closure — Corrective Action' },
-        { id: 'supporting', title: 'SUPPORTING EVIDENCE DOCUMENT',    dept: `${nc.chapter_code} Department`,      category: 'NC Closure — Evidence Record' },
-        { id: 'training',   title: 'TRAINING RECORD & ASSESSMENT',    dept: `${nc.chapter_code} Department`,      category: 'NC Closure — Training Evidence' },
-        { id: 'auditor',    title: 'AUDITOR RESPONSE LETTER',         dept: 'Quality & Administration',           category: 'NC Closure — Formal Correspondence' },
+        { id: 'corrective', title: 'CORRECTIVE ACTION REPORT',    dept: `${nc.chapter_code} Department`, category: 'NC Closure — Corrective Action' },
+        { id: 'supporting', title: 'SUPPORTING EVIDENCE DOCUMENT', dept: `${nc.chapter_code} Department`, category: 'NC Closure — Evidence Record' },
+        { id: 'training',   title: 'TRAINING RECORD & ASSESSMENT', dept: `${nc.chapter_code} Department`, category: 'NC Closure — Training Evidence' },
+        { id: 'auditor',    title: 'AUDITOR RESPONSE LETTER',      dept: 'Quality & Administration',      category: 'NC Closure — Formal Correspondence' },
       ];
 
       const selected = sectionDefs.filter((s) => selectedTypes.includes(s.id));
 
-      // Generate each section in parallel
       const results = await Promise.all(
         selected.map(async (sec) => {
           const prompt = buildContentPrompt(sec.id, nc, staff, hospital);
           const res    = await callGeminiAPI(prompt, 0.7, 4096);
           let content: string = res?.candidates?.[0]?.content?.parts?.[0]?.text || '';
-          // strip any accidental code fences or HTML wrappers
           content = content
             .replace(/^```html\s*/i, '').replace(/^```\s*/i, '').replace(/\s*```\s*$/g, '')
             .replace(/<!DOCTYPE[^>]*>/gi, '').replace(/<\/?html[^>]*>/gi, '')
@@ -344,9 +373,7 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
         })
       );
 
-      const assembled = assembleHTML(results, nc, hospital, logoUrl);
-      setHtml(assembled);
-      setTab(0);
+      setViewHtml(assembleHTML(results, nc, hospital, logoUrl));
     } catch (e: any) {
       setError(e.message || 'Failed to generate evidence');
     } finally {
@@ -354,8 +381,21 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
     }
   };
 
+  // ── Save ──────────────────────────────────────────────────────────────────
   const handleSave = async () => {
-    const toSave = tab === 1 ? editedHtml : html;
+    // If editing, commit current iframe content first
+    let toSave = viewHtml;
+    if (editMode) {
+      const captured = captureIframeHtml(iframeRef.current);
+      if (captured) {
+        if (iframeRef.current?.contentDocument) {
+          iframeRef.current.contentDocument.designMode = 'off';
+        }
+        setEditMode(false);
+        setViewHtml(captured);
+        toSave = captured;
+      }
+    }
     if (!toSave) return;
     setSaving(true);
     setError(null);
@@ -365,7 +405,6 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
         .update({ evidence_html: toSave, updated_at: new Date().toISOString() })
         .eq('id', nc.id);
       if (err) throw err;
-      if (tab === 1) setHtml(editedHtml); // commit edited version
       onSaved(toSave);
     } catch (e: any) {
       setError(e.message || 'Failed to save');
@@ -374,8 +413,30 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
     }
   };
 
+  // ── Delete ────────────────────────────────────────────────────────────────
+  const handleDelete = async () => {
+    if (!window.confirm('Delete this evidence document? This cannot be undone.')) return;
+    setDeleting(true);
+    setError(null);
+    try {
+      const { error: err } = await (supabase as any)
+        .from('nabh_ncs')
+        .update({ evidence_html: null, updated_at: new Date().toISOString() })
+        .eq('id', nc.id);
+      if (err) throw err;
+      setViewHtml(null);
+      setEditMode(false);
+      onSaved(null);
+    } catch (e: any) {
+      setError(e.message || 'Failed to delete');
+    } finally {
+      setDeleting(false);
+    }
+  };
+
+  // ── Download PDF ──────────────────────────────────────────────────────────
   const handleDownloadPDF = () => {
-    const src = tab === 1 ? editedHtml : html;
+    const src = editMode ? captureIframeHtml(iframeRef.current) : viewHtml;
     if (!src) return;
     const win = window.open('', '_blank');
     if (!win) return;
@@ -384,8 +445,6 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
     win.focus();
     setTimeout(() => win.print(), 600);
   };
-
-  const currentHtml = tab === 1 ? editedHtml : html;
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="lg" fullWidth>
@@ -401,13 +460,8 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
             </Typography>
           </Box>
           <Box sx={{ display: 'flex', gap: 1, alignItems: 'center' }}>
-            {html && (
-              <Chip
-                label="Evidence Stored"
-                size="small"
-                color="success"
-                icon={<Icon>check_circle</Icon>}
-              />
+            {viewHtml && (
+              <Chip label="Evidence Stored" size="small" color="success" icon={<Icon>check_circle</Icon>} />
             )}
             <Chip
               label={isMajor ? 'Major NC' : 'Minor NC'}
@@ -419,8 +473,8 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
       </DialogTitle>
 
       <DialogContent dividers sx={{ p: 0 }}>
-        {/* Evidence type selector — shown only before generation */}
-        {!html && (
+        {/* ── Evidence type selector (shown before generation) ── */}
+        {!viewHtml && !generating && (
           <Box sx={{ p: 2.5 }}>
             <Typography variant="subtitle1" fontWeight={600} gutterBottom>
               Select evidence types to generate:
@@ -441,68 +495,101 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
             </FormGroup>
             {staff.length > 0 && (
               <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
-                ✓ Loaded {staff.length} real staff members from master — will be used in attendance records
+                ✓ Loaded {staff.length} real staff members from master
               </Typography>
             )}
           </Box>
         )}
 
         {error && (
-          <Alert severity="error" sx={{ mx: 2.5, mb: 1.5 }} onClose={() => setError(null)}>
+          <Alert severity="error" sx={{ mx: 2.5, my: 1 }} onClose={() => setError(null)}>
             {error}
           </Alert>
         )}
 
-        {/* Preview / Edit tabs — shown after generation */}
-        {html && (
-          <Box>
-            <Box sx={{ borderBottom: 1, borderColor: 'divider', px: 2 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ minHeight: 42 }}>
-                  <Tab label="Preview" icon={<Icon sx={{ fontSize: 18 }}>visibility</Icon>} iconPosition="start" sx={{ minHeight: 42, py: 0 }} />
-                  <Tab label="Edit HTML" icon={<Icon sx={{ fontSize: 18 }}>code</Icon>} iconPosition="start" sx={{ minHeight: 42, py: 0 }} />
-                </Tabs>
-                <Button size="small" onClick={() => { setHtml(null); setTab(0); }} startIcon={<Icon>refresh</Icon>}>
-                  Regenerate
-                </Button>
-              </Box>
-            </Box>
-
-            {tab === 0 && (
-              <Box sx={{ height: 520, bgcolor: 'white' }}>
-                <iframe
-                  srcDoc={html}
-                  title="Evidence Preview"
-                  style={{ width: '100%', height: '100%', border: 'none' }}
-                />
-              </Box>
-            )}
-
-            {tab === 1 && (
-              <Box sx={{ p: 2 }}>
-                <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: 'block' }}>
-                  Edit the raw HTML below. Click "Save to DB" to persist your changes.
-                </Typography>
-                <TextField
-                  multiline
-                  fullWidth
-                  rows={22}
-                  value={editedHtml}
-                  onChange={(e) => setEditedHtml(e.target.value)}
-                  inputProps={{ style: { fontFamily: 'monospace', fontSize: 11 } }}
-                  variant="outlined"
-                />
-              </Box>
-            )}
+        {/* ── Generating spinner ── */}
+        {generating && (
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 3 }}>
+            <CircularProgress size={22} />
+            <Typography color="text.secondary">
+              Generating {selectedTypes.length} section(s) using real staff from master…
+            </Typography>
           </Box>
         )}
 
-        {generating && (
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, p: 2.5 }}>
-            <CircularProgress size={22} />
-            <Typography color="text.secondary">
-              Generating {selectedTypes.length} evidence section(s) using real staff from master…
-            </Typography>
+        {/* ── Document viewer / editor ── */}
+        {viewHtml && (
+          <Box>
+            {/* Toolbar */}
+            <Box
+              sx={{
+                display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                px: 2, py: 0.75,
+                bgcolor: editMode ? 'warning.light' : 'grey.50',
+                borderBottom: '1px solid', borderColor: 'divider',
+              }}
+            >
+              {editMode ? (
+                <Typography variant="caption" fontWeight={600} color="warning.dark">
+                  Edit mode — click anywhere in the document to edit text, tables, or values
+                </Typography>
+              ) : (
+                <Typography variant="caption" color="text.secondary">
+                  Document preview — use Edit to make changes directly in the document
+                </Typography>
+              )}
+              <Box sx={{ display: 'flex', gap: 1 }}>
+                {editMode ? (
+                  <Button
+                    size="small"
+                    variant="contained"
+                    color="warning"
+                    startIcon={<Icon>check</Icon>}
+                    onClick={handleDoneEditing}
+                  >
+                    Done Editing
+                  </Button>
+                ) : (
+                  <Tooltip title="Click inside the document to edit text directly">
+                    <Button
+                      size="small"
+                      variant="outlined"
+                      startIcon={<Icon>edit</Icon>}
+                      onClick={handleEnterEdit}
+                    >
+                      Edit Document
+                    </Button>
+                  </Tooltip>
+                )}
+                <Tooltip title="Discard and regenerate">
+                  <Button
+                    size="small"
+                    variant="text"
+                    startIcon={<Icon>refresh</Icon>}
+                    onClick={() => { setViewHtml(null); setEditMode(false); }}
+                    disabled={editMode}
+                  >
+                    Regenerate
+                  </Button>
+                </Tooltip>
+              </Box>
+            </Box>
+
+            {/* The document iframe */}
+            <Box sx={{ height: 520, bgcolor: 'white' }}>
+              <iframe
+                ref={iframeRef}
+                srcDoc={viewHtml}
+                title="Evidence Document"
+                onLoad={handleIframeLoad}
+                style={{
+                  width: '100%',
+                  height: '100%',
+                  border: 'none',
+                  outline: editMode ? '2px solid #ED6C02' : 'none',
+                }}
+              />
+            </Box>
           </Box>
         )}
       </DialogContent>
@@ -510,8 +597,22 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
       <DialogActions sx={{ px: 2.5, py: 1.5, gap: 1 }}>
         <Button onClick={onClose} color="inherit">Close</Button>
 
-        {currentHtml ? (
+        {viewHtml ? (
           <>
+            {/* Delete */}
+            <Button
+              variant="outlined"
+              color="error"
+              startIcon={deleting ? <CircularProgress size={16} color="error" /> : <Icon>delete</Icon>}
+              onClick={handleDelete}
+              disabled={deleting || editMode}
+            >
+              {deleting ? 'Deleting…' : 'Delete'}
+            </Button>
+
+            <Box sx={{ flex: 1 }} />
+
+            {/* Download PDF */}
             <Button
               variant="outlined"
               startIcon={<Icon>picture_as_pdf</Icon>}
@@ -519,6 +620,8 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
             >
               Download PDF
             </Button>
+
+            {/* Save to DB */}
             <Button
               variant="contained"
               color="success"
@@ -526,17 +629,13 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
               onClick={handleSave}
               disabled={saving}
             >
-              {saving ? 'Saving…' : 'Save to DB'}
+              {saving ? 'Saving…' : editMode ? 'Save Changes' : 'Save to DB'}
             </Button>
           </>
         ) : (
           <Button
             variant="contained"
-            startIcon={
-              generating
-                ? <CircularProgress size={16} sx={{ color: 'white' }} />
-                : <Icon>auto_awesome</Icon>
-            }
+            startIcon={generating ? <CircularProgress size={16} sx={{ color: 'white' }} /> : <Icon>auto_awesome</Icon>}
             onClick={handleGenerate}
             disabled={generating || selectedTypes.length === 0}
           >

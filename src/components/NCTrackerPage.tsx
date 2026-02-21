@@ -193,8 +193,8 @@ export default function NCTrackerPage() {
     }
   };
 
-  const handleEvidenceSaved = (ncId: string, html: string) => {
-    setNcs((prev) => prev.map((r) => (r.id === ncId ? { ...r, evidence_html: html } : r)));
+  const handleEvidenceSaved = (ncId: string, html: string | null) => {
+    setNcs((prev) => prev.map((r) => (r.id === ncId ? { ...r, evidence_html: html || null } : r)));
   };
 
   // group by chapter

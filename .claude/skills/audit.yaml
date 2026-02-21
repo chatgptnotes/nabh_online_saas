@@ -236,6 +236,10 @@ instructions: |
       │                                │ Date: __/__/____            │
       └──────────────────────────────────────────────────────────────┘
 
+  ✏️ WYSIWYG EDITING: Generated documents support in-place visual editing via the NC Tracker
+  evidence viewer. Users click "Edit Document" to directly edit text in the document (no HTML).
+  "Delete" removes the document for regeneration. Always generate accurate content first.
+
   🎯 MASTER DATA RULES (MANDATORY — See .claude/masters.md for full reference):
 
   STAFF (Use ONLY these names — NEVER invent):

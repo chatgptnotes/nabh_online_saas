@@ -134,6 +134,17 @@ instructions: |
   46. Jiyalal Sukhdeve - Security Guard - Security
 
   ═══════════════════════════════════════════════════════════════════
+  ✏️ WYSIWYG EDITING (After generation):
+  ═══════════════════════════════════════════════════════════════════
+
+  The generated HTML document is displayed inside a live iframe viewer.
+  The user can click "Edit Document" to enable in-place WYSIWYG editing
+  (browser designMode) — they click directly in the document to edit text,
+  correct names, fix dates, adjust scores, etc. without touching HTML code.
+  "Done Editing" commits changes. "Save to DB" saves the edited version.
+  "Delete" removes the document if it needs to be fully regenerated.
+
+  ═══════════════════════════════════════════════════════════════════
   🎯 MASTER DATA RULES (MANDATORY — NEVER INVENT NAMES OR DEPARTMENTS):
   ═══════════════════════════════════════════════════════════════════
 
