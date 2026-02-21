@@ -15,9 +15,10 @@ This file is the single source of truth for all master data used in evidence gen
 - **Email:** info@hopehospital.com
 - **Website:** www.hopehospital.com
 - **Logo URL:** https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
-- **Logo CSS (container):** `.logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }`
-- **Logo CSS (standalone):** `.logo { width: 225px; height: auto; margin: 0 auto 8px; display: block; }`
-- **Logo HTML:** `<img src="[URL]" alt="Hope Hospital Logo" style="width: 225px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">`
+- **Logo CSS (container):** `.logo-area { width: 525px; height: auto; min-height: 60px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }`
+- **Logo CSS (standalone):** `.logo { width: 270px; height: auto; margin: 0 auto 8px; display: block; }`
+- **Logo HTML:** `<img src="[URL]" alt="Hope Hospital Logo" style="width: 270px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">`
+- **Hospital Info (always include below logo):** Address + Phone + Email + SPOC: Dr. B.K. Murali — CMD & Chairman
 
 ---
 

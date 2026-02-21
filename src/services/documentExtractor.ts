@@ -684,7 +684,7 @@ Use EXACTLY this HTML template structure (fill in the content sections):
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; line-height: 1.6; color: #333; padding: 0 15px 15px; width: 100%; max-width: 800px; margin-left: auto !important; margin-right: auto !important; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 5px; margin-bottom: 15px; margin-top: 0 !important; padding-top: 0 !important; line-height: 1; }
-    .logo { width: 225px; height: auto; margin: 0 auto !important; padding: 0 !important; display: block; vertical-align: top; }
+    .logo { width: 270px; height: auto; margin: 0 auto !important; padding: 0 !important; display: block; vertical-align: top; }
     .hospital-address { font-size: 13px; color: #666; margin: 0 !important; padding: 0 !important; line-height: 1.2; }
     .doc-title { background: linear-gradient(135deg, #1565C0, #0D47A1); color: white; padding: 12px; font-size: 20px; font-weight: bold; text-align: center; margin: 20px 0; border-radius: 5px; }
     .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -719,8 +719,8 @@ Use EXACTLY this HTML template structure (fill in the content sections):
 <body>
   <div style="font-size: 28px; font-weight: bold; color: #1565C0; margin-bottom: 10px;">SOP</div>
   <div class="header">
-    <img src="${logoUrl}" alt="${hospitalInfo.name}" class="logo" style="width: 225px; height: auto; display: block; margin: 0 auto !important; padding: 0 !important; vertical-align: top;">
-    <div class="hospital-address">${hospitalInfo.address} | Phone: ${hospitalInfo.phone} | Email: ${hospitalInfo.email}</div>
+    <img src="${logoUrl}" alt="${hospitalInfo.name}" class="logo" style="width: 270px; height: auto; display: block; margin: 0 auto !important; padding: 0 !important; vertical-align: top;">
+    <div class="hospital-address">${hospitalInfo.address} | Phone: ${hospitalInfo.phone} | Email: ${hospitalInfo.email}<br><strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman</div>
   </div>
 
   <div class="doc-title">SOP-${objectiveCode || chapterCode} - ${objectiveTitle}</div>
