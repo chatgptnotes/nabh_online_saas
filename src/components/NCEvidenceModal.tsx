@@ -49,7 +49,7 @@ const STANDARD_CSS = `
   .page { page-break-after: always; padding-bottom: 30px; margin-bottom: 10px; }
   .page:last-child { page-break-after: auto; }
   .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 6px; margin-bottom: 8px; }
-  .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-area { width: 525px; height: auto; min-height: 60px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; }
   .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
   .doc-title { background: #1565C0; color: white; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; margin: 14px 0; border-radius: 5px; }
   .objective-line { font-size: 12px; color: #333; margin: 10px 0; font-weight: 500; }
@@ -100,7 +100,12 @@ function wrapInPage(
 <div class="${isLast ? 'page last' : 'page'}">
   <div class="header">
     <div class="logo-area">
-      <img src="${logoUrl}" alt="${hospital.name} Logo" onerror="this.style.display='none'" />
+      <img src="${logoUrl}" alt="${hospital.name} Logo" onerror="this.style.display='none'" style="width:100%;height:auto;object-fit:contain;" />
+    </div>
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.6;margin-top:2px;">
+      ${hospital.address}<br>
+      Phone: ${hospital.phone} &nbsp;|&nbsp; Email: ${hospital.email}<br>
+      <strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman
     </div>
   </div>
 
@@ -178,6 +183,59 @@ ${pages}
 </html>`;
 }
 
+// ── Full master data embedded in every prompt ────────────────────────────────
+const MASTER_STAFF_LIST = `
+1. Dr. B.K. Murali | CMD | Admin
+2. Dr. Shiraz Khan | Quality Co-ordinator | ICU
+3. Gaurav Agrawal | Administrator | Admin
+4. Dr. Afzal Sheikh | RMO | ICU
+5. Dr. Suhash Tiple | Consultant | ICU
+6. Dr. Sachin Gathibande | RMO | ICU
+7. Dr. Swapnil Charpe | RMO | Casualty
+8. Dr. Sharad Kawale | RMO | General Ward
+9. Brother Chandraprakash Bisen | ICN | ICU
+10. Sister Farzana Khan | Head Nurse | ICU
+11. Brother Ajay Meshram | Nursing Staff | Casualty
+12. Nitin Bawane | X-Ray Technician | Radiology
+13. Apeksha Wandre | OT Technician | OT
+14. Shruti Uikey | OT Technician | OT
+15. Sarvesh Bhramhe | OT Technician | OT
+16. Digesh Bisen | Lab Technician | Laboratory
+17. Rachana Rathore | Lab Technician | Laboratory
+18. Sarita Rangari | Lab Attendant | Laboratory
+19. Nisha Sharma | Receptionist | Front Office
+20. Diksha Sakhare | Receptionist | Front Office
+21. Ruchika Jambhulkar | Pharmacist | Pharmacy
+22. Tejash Akhare | Pharmacist | Pharmacy
+23. Abhishek Dannar | Pharmacist | Pharmacy
+24. Lalit Meshram | Attendant Pharmacist | Pharmacy
+25. Jagruti Tembhare | Quality Manager & HR Head | Admin
+26. Azhar Khan | Billing Staff | Billing
+27. Madhuri Marwate | Billing Staff | Billing
+28. Pragati Nandeshwar | Billing Staff | Billing
+29. Kashish Jagwani | MRD Attendant | MRD
+30. Aman Rajak | Fire Safety Officer | Safety
+31. Afroz Khan | Security Guard | Security
+32. Kiran Kadbe | Security Guard | Security
+33. Roma Kangwani | Physiotherapist | Physiotherapy
+34. Sonali Kakde | Clinical Audit Coordinator | Admin`;
+
+const EQUIPMENT_MASTER_LIST = `
+HOP-BME-ICU-CCE-VEN-01 | Ventilator | Mindray | ICU | Operational
+HOP-BME-ICU-CCE-VEN-02 | Ventilator | Mindray | ICU | Operational
+HOP-BME-2007-ICU-CCE-VEN-01 | Ventilator | NELLCOR PURITAN BENNETT | ICU | Operational
+HOP-BME-2012-ICU-CCE-MON-01 | Multipara Monitor | NASAN | ICU | Operational
+HOP-BME-ICU-CCE-MON-05 | Multipara Monitor | MEDIAID | ICU | Operational
+HOP-BME-ICU-CCE-DEF-01 | Defibrillator | BPL | ICU | Operational
+HOP-BME-ICU-CCE-SUC-01 | Suction Machine | GOLEY | ICU | Operational
+HOP-BME-ICU-CCE-SYP-01 | Syringe Pump | SMITH | ICU | Operational
+HOP-BME-ICU-CCE-SYP-02 | Syringe Pump | SMITH | ICU | Operational
+HOP-BME-ICU-CCE-ABG-01 | ABG Machine | i-STAT | ICU | Operational
+HOP-BME-ICU-CCE-GLU-01 | Glucometer | SD-Codefree | ICU | Operational
+HOP-BME-ICU-CCE-BPA-01 | BP Apparatus | Diamond | ICU | Operational
+HOP-BME-ICU-CCE-NEB-01 | Nebulizer | LIFE-LINE | ICU | Operational
+HOP-BME-2012-ICU-CCE-BIP-01 | BiPAP | Harmony | ICU | Operational`;
+
 // ── Content-only prompt for each evidence type ─────────────────────────────
 function buildContentPrompt(
   type: string,
@@ -198,72 +256,110 @@ NC DETAILS:
 - Finding: ${nc.nc_description}
 - Severity: ${severity}
 
-REAL STAFF LIST (USE ONLY THESE NAMES — never invent names):
+MASTER STAFF LIST — USE ONLY THESE NAMES (never invent names):
+${MASTER_STAFF_LIST}
+
+ADDITIONAL STAFF FROM DATABASE:
 ${staffTable}
 
-KEY QUALITY TEAM (signing authorities):
-- Dr. Shiraz Khan — Quality Coordinator / Administrator
-- Sonali Kakde — Clinical Audit Coordinator (Prepared By)
-- Gaurav Agrawal — Hospital Administrator (Reviewed By)
-- Jagruti Tembhare — Quality Manager & HR Head
+EQUIPMENT MASTER (use tag codes when referencing equipment):
+${EQUIPMENT_MASTER_LIST}
 
-DEPARTMENTS: Casualty, Cath Lab, CSSD, General Ward, HR, ICU, Infection Control, Laboratory, Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Reception, Ultrasound, X-ray
+DEPARTMENTS: Admin, Billing, Casualty, Cath Lab, CSSD, Front Office, General Ward, Housekeeping, ICU, Infection Control, Laboratory, Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Safety, Security
+
+MANDATORY TABLE RULES:
+- Every data-table MUST have ALL cells filled with realistic values — NEVER leave cells empty or write just "N/A"
+- Use staff names from the MASTER STAFF LIST above for "Responsible Person", "Verified By", "Observed By", "Done By", "Signature" columns
+- Make up realistic dates (Jan–Apr 2026), scores (e.g. 8/10, 72%), readings, measurements, and pass/fail results
+- For registers and logs: minimum 10 filled rows per table — make up realistic plausible data
+- Equipment references must use the tag codes from EQUIPMENT MASTER above
 
 OUTPUT FORMAT:
 - Return ONLY the inner HTML content — NO DOCTYPE, NO <html>, NO <head>, NO <body>, NO <style>
 - Use ONLY these CSS classes: section, section-title, section-content, data-table, highlight-box, procedure-step, step-number
-- All dates in March–April 2026 range
+- All dates in Jan–April 2026 range
 - No markdown, only valid HTML`;
 
   if (type === 'corrective') return `${base}
 
 Generate a Corrective Action Report with these sections:
-1. Non-Conformity Description (table: Finding | Audit Date | Standard | Severity)
-2. Immediate Correction Taken (3–4 specific actions taken within 48 hrs — relevant to: "${nc.nc_description}")
-3. Root Cause Analysis — 5-Why Method (data-table: Why # | Question | Answer — 5 rows deep, specific to the NC)
-4. Corrective Action Plan (data-table: Sr | Action Item | Responsible Person | Target Date | Status — min 5 rows, use real staff names above)
-5. Preventive Measures (4–5 bullet points, long-term steps to prevent recurrence)`;
+
+1. Non-Conformity Description (data-table: Finding | Audit Date: 14/02/2026 | Standard: ${nc.standard_code} | Chapter: ${nc.chapter_code} | Severity: ${severity})
+
+2. Immediate Correction Taken — actions within 48 hrs of audit (data-table: Sr | Action Taken | Done By | Date | Status — 5 rows, all "Completed", use real staff names, specific actions directly addressing: "${nc.nc_description}")
+
+3. Root Cause Analysis — 5-Why Method (data-table: Why No. | Question Asked | Root Cause Found — 5 rows deep, each row building on the previous, specific to: "${nc.nc_description}")
+
+4. Corrective Action Plan (data-table: Sr | Action Item | Responsible Person | Target Date | Completion Date | Status — 6 rows minimum, use real staff names, target dates Mar–Apr 2026, Status = "Completed" or "In Progress", each action directly linked to the NC)
+
+5. Monitoring Register (data-table showing ongoing compliance monitoring after corrective action — 10 rows, columns relevant to the NC type e.g. for medication: Date | Ward | Item Checked | Observations | Compliant Y/N | Checked By | Remarks — use real staff names, realistic observations, mostly "Yes" with 1–2 "No" showing improvement)
+
+6. Preventive Measures (highlight-box: 4–5 specific long-term steps to prevent recurrence, each as a bullet)`;
 
   if (type === 'supporting') return `${base}
 
 Generate a Supporting Evidence Document with these sections:
-1. Evidence Checklist (data-table: Sr | Evidence Item | Document Reference | Status | Verified By — 8 rows, use real staff names for Verified By)
-2. Photographic / Documentary Evidence Log (data-table: Sr | Evidence Description | Date | Location | Remarks — 5 rows relevant to the NC)
-3. Verification Records (data-table: Verification Item | Date Verified | Verified By | Observation | Result — 4 rows, use real staff names)
-4. NC Closure Status (highlight-box: 3-line summary confirming NC is addressed and evidence is attached)`;
+
+1. Evidence Checklist (data-table: Sr | Evidence Item | Document Ref No. | Date Obtained | Status | Verified By — 10 rows, status = "Attached" / "Submitted", all with document reference numbers like HOH/NC/${nc.standard_code.replace(/\s+/g, '-').toUpperCase()}/2026, use real staff names for Verified By)
+
+2. Observation / Monitoring Log (data-table relevant to the NC — 12 filled rows showing compliance monitoring. Columns depend on NC type:
+   - For medication NC: Date | Time | Ward/Location | Item | Observation | Compliant | Observer
+   - For infection control NC: Date | Department | Activity Observed | Technique | Compliant Y/N | Corrective Remark | Observer
+   - For equipment NC: Date | Equipment ID | Equipment Name | Check Parameter | Reading | Normal Range | Status | Checked By
+   - For documentation NC: Date | Record Type | Patient ID/Ref | Completeness | Signature Present | Abbreviations Used | Auditor
+   - For training/awareness NC: Date | Staff Name | Designation | Knowledge Area | Score | Pass/Fail | Evaluated By
+   Use equipment tag codes from EQUIPMENT MASTER for equipment NCs. Use real staff names throughout.)
+
+3. Documentary Evidence Log (data-table: Sr | Document Type | Reference No. | Issue Date | Submitted To | Acknowledgement Date | Remarks — 6 rows, realistic document references)
+
+4. Photographic Evidence Register (data-table: Sr | Description of Evidence | Location | Date | Photographer | File Reference | Remark — 5 rows, specific to the NC scenario)
+
+5. NC Closure Verification (highlight-box: 4-line formal statement with date confirming NC is closed, evidence reference, and verified by Sonali Kakde, Clinical Audit Coordinator)`;
 
   if (type === 'training') return `${base}
 
 Generate a Training Record with these sections:
 
-1. Training Details (data-table 2-col: Topic | [relevant to "${nc.nc_description}"] | Date | [March 2026 date] | Time | 11:30 AM | Duration | 1.5 Hours | Venue | Conference Room, ${hospital.name} | Trainer | Dr. Shiraz Khan)
+1. Training Programme Details (data-table 2-col key-value: Training Topic | [topic directly addressing "${nc.nc_description}"] | Date | 15/03/2026 | Day | Sunday | Time | 10:00 AM – 11:30 AM | Duration | 90 minutes | Venue | Conference Hall, ${hospital.name} | Facilitator/Trainer | Dr. Shiraz Khan, NABH Coordinator | Co-Trainer | Jagruti Tembhare, Quality Manager | Target Audience | Staff from ${nc.chapter_code}-related departments | Total Enrolled | 15 | Total Attended | 14)
 
-2. Pre-Training Assessment — MCQ (10 questions)
-- 5 MCQs testing BASELINE knowledge BEFORE training
-- Format: numbered questions with options A/B/C/D, correct answer marked ✓ in a note below each question
-- Questions must be directly relevant to the NC topic
+2. Pre-Training MCQ Assessment — 10 Questions (BEFORE training)
+Test BASELINE awareness. Format: numbered questions each with 4 options (A/B/C/D), mark correct answer with ✓. Topics must relate directly to "${nc.nc_description}". Questions should reveal gaps (i.e. some questions that untrained staff likely don't know).
 
-3. Attendance Sheet (data-table: Sr | Name | Designation | Department | Pre-Score | Post-Score | Signature — use 15 names from the real staff list above, pick those relevant to the NC chapter: ${nc.chapter_code})
+3. Training Attendance Sheet (data-table: Sr | Employee ID | Name | Designation | Department | Present Y/N | Pre-Test Score /10 | Post-Test Score /10 | Signature — 15 rows using names from MASTER STAFF LIST relevant to NC chapter ${nc.chapter_code}. Pre-Test scores: 3–6/10. Post-Test scores: 7–10/10. Mark 14 Present, 1 Absent. Use realistic employee IDs like HH-001, HH-002...)
 
-4. Post-Training Assessment — MCQ (10 questions)
-- 5 MCQs testing KNOWLEDGE GAINED AFTER training (slightly harder than pre-test, same topic)
-- Format: same as pre-training MCQs
-- Note: Use the SAME topics but phrase questions differently to test deeper understanding
+4. Post-Training MCQ Assessment — 10 Questions (AFTER training)
+Test KNOWLEDGE GAINED. Same topics but deeper/harder questions. Format same as pre-test. Mark correct answers.
 
-5. Assessment Results Summary (data-table: Sr | Name | Pre-Test /10 | Post-Test /10 | Improvement | Result — use the same 15 staff from attendance, realistic scores: pre avg 4–5/10, post avg 7–9/10, all Pass)
+5. Assessment Results Summary (data-table: Sr | Name | Department | Pre-Test /10 | Post-Test /10 | Improvement (+) | % Improvement | Result — 15 rows matching attendance. Show improvement of +3 to +5 marks. Result = Pass for all present. 1 Absent = "—")
 
-6. Training Effectiveness Evaluation (highlight-box: 3–4 points on how this training directly resolves "${nc.nc_description}")`;
+6. Training Feedback Summary (data-table: Sr | Feedback Parameter | Rating 1-5 (Avg) | Remarks — 6 rows: Content Quality | Trainer Effectiveness | Relevance to Work | Time Management | Overall Satisfaction | Would Recommend to Colleagues — realistic ratings 4.0–4.8)
 
-  // auditor
+7. Training Effectiveness Evaluation (highlight-box: 4 bullet points showing how this training directly resolves "${nc.nc_description}" with reference to specific improvement in scores and planned re-audit date)`;
+
+  // auditor response letter
   return `${base}
 
 Generate a formal Auditor Response Letter with these sections:
-1. Letter Header (to: NABH Assessment Team, QCI, New Delhi | subject: Corrective Action Response for NC ${nc.standard_code} | ref: NABH Audit February 2026)
-2. NC Finding Reference (paragraph quoting the finding: "${nc.nc_description}")
-3. Corrective Actions Taken (4–5 numbered paragraphs, formal letter language, specific actions with March–April 2026 dates, named responsible persons from the real staff list)
-4. Compliance Timeline (data-table: Action | Completion Date | Status | Evidence Reference — 4 rows)
-5. Closure Request (2-sentence formal paragraph requesting assessor to consider NC closed)
-6. Signoff (formal closing: Dr. Shiraz Khan, NABH Coordinator / Administrator, ${hospital.name})`;
+
+1. Letter Header (formal layout: From: Dr. Shiraz Khan, NABH Coordinator, ${hospital.name} | To: The Chief Assessor, NABH Assessment Team, QCI, New Delhi | Date: 20/03/2026 | Subject: Submission of Corrective Action Response — NC ${nc.standard_code} | Ref: NABH Audit February 2026)
+
+2. Introduction Paragraph (2 sentences: acknowledging the NC finding and expressing commitment to addressing it)
+
+3. NC Finding Reference (quoted block showing the exact finding: "${nc.nc_description}" — formatted as a blockquote or highlighted box)
+
+4. Corrective Actions Taken (5 numbered paragraphs in formal letter language, each describing one specific action taken with:
+   - What was done (specific to the NC)
+   - Who did it (real staff name and designation from master list)
+   - When it was completed (Mar 2026 date)
+   - What evidence is available)
+
+5. Compliance Evidence Summary (data-table: Sr | Action Taken | Responsible Person | Completion Date | Evidence Document | Status — 6 rows, use real staff names, all "Completed")
+
+6. Supporting Documents Submitted (data-table: Sr | Document Name | Document No. | Date | Pages — 5 rows listing the evidence package: CAR report, training record, photos, audit log, SOP revision)
+
+7. Closure Request Paragraph (2 formal sentences requesting the assessor to consider NC ${nc.standard_code} as closed, citing evidence attached)
+
+8. Formal Signoff (Dr. Shiraz Khan | NABH Coordinator / Administrator | ${hospital.name} | Nagpur | Date: 20/03/2026)`;
 }
 
 // ── Capture current HTML from iframe (works in view and edit mode) ──────────

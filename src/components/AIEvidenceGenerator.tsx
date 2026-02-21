@@ -97,6 +97,50 @@ Generate a complete HTML document for the selected evidence item in ENGLISH ONLY
 
 IMPORTANT: Generate the output as a complete, valid HTML document with embedded CSS styling. The document must be modern, professional, and print-ready.
 
+MASTER STAFF LIST — USE ONLY THESE NAMES (never invent staff names):
+1. Dr. B.K. Murali | CMD | Admin
+2. Dr. Shiraz Khan | Quality Co-ordinator | ICU
+3. Gaurav Agrawal | Administrator | Admin
+4. Dr. Afzal Sheikh | RMO | ICU
+5. Dr. Suhash Tiple | Consultant | ICU
+6. Dr. Sachin Gathibande | RMO | ICU
+7. Dr. Swapnil Charpe | RMO | Casualty
+8. Dr. Sharad Kawale | RMO | General Ward
+9. Brother Chandraprakash Bisen | ICN | ICU
+10. Sister Farzana Khan | Head Nurse | ICU
+11. Brother Ajay Meshram | Nursing Staff | Casualty
+12. Nitin Bawane | X-Ray Technician | Radiology
+13. Apeksha Wandre | OT Technician | OT
+14. Shruti Uikey | OT Technician | OT
+15. Sarvesh Bhramhe | OT Technician | OT
+16. Digesh Bisen | Lab Technician | Laboratory
+17. Rachana Rathore | Lab Technician | Laboratory
+18. Ruchika Jambhulkar | Pharmacist | Pharmacy
+19. Tejash Akhare | Pharmacist | Pharmacy
+20. Jagruti Tembhare | Quality Manager & HR Head | Admin
+21. Azhar Khan | Billing Staff | Billing
+22. Kashish Jagwani | MRD Attendant | MRD
+23. Aman Rajak | Fire Safety Officer | Safety
+24. Roma Kangwani | Physiotherapist | Physiotherapy
+25. Sonali Kakde | Clinical Audit Coordinator | Admin
+
+DEPARTMENTS (USE ONLY THESE 20):
+Admin, Billing, Casualty, Cath Lab, CSSD, Front Office, General Ward, Housekeeping, ICU, Infection Control, Laboratory, Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Safety, Security
+
+EQUIPMENT (use tag codes): HOP-BME-ICU-CCE-VEN-01/02 (Ventilator, Mindray) | HOP-BME-2007-ICU-CCE-VEN-01/02/03 (Ventilator, Nellcor) | HOP-BME-ICU-CCE-MON-01–06 (Multipara Monitor) | HOP-BME-ICU-CCE-DEF-01 (Defibrillator, BPL) | HOP-BME-ICU-CCE-SUC-01/02 (Suction Machine) | HOP-BME-ICU-CCE-SYP-01–05 (Syringe Pump, SMITH) | HOP-BME-ICU-CCE-ABG-01 (ABG Machine) | HOP-BME-ICU-CCE-GLU-01 (Glucometer) | HOP-BME-ICU-CCE-BPA-01 (BP Apparatus)
+
+SIGNING AUTHORITIES (always use):
+- PREPARED BY: Sonali Kakde, Clinical Audit Coordinator
+- REVIEWED BY: Gaurav Agrawal, Hospital Administrator
+- APPROVED BY: Dr. Shiraz Khan, NABH Coordinator / Administrator
+
+MANDATORY TABLE RULES:
+- ALL data tables must have FULLY FILLED rows — never leave any cell empty or write just "N/A"
+- Use staff names from MASTER STAFF LIST for Responsible Person, Verified By, Observed By, Signature columns
+- Make up realistic dates (Jan–Apr 2026), scores, readings, measurements, pass/fail results
+- For registers and logs: include minimum 10–15 filled rows with realistic plausible data
+- For checklists: all items checked with realistic Yes/No values and observations
+
 Use this HTML template structure:
 
 <!DOCTYPE html>
