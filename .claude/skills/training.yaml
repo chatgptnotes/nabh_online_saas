@@ -154,7 +154,9 @@ instructions: |
     - Reviewed By: Gaurav Agrawal, Hospital Administrator
     - Approved By: Dr. Shiraz Khan, Quality Coordinator / Administrator
   PRE/POST MCQ: EVERY training MUST have Pre-Training AND Post-Training MCQ assessments.
-  LOGO: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+  LOGO URL: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+  LOGO CSS: .logo { width: 225px; height: auto; margin: 0 auto 10px; display: block; }
+  LOGO HTML: <img src="[URL above]" alt="Hope Hospital" class="logo" style="width: 225px; height: auto; display: block; margin: 0 auto;">
   See .claude/masters.md for complete master data reference.
 
   ═══════════════════════════════════════════════════════════════════
@@ -162,7 +164,8 @@ instructions: |
   ═══════════════════════════════════════════════════════════════════
 
   1. ONE HTML file with all 5 documents (use page-break-after: always)
-  2. Logo: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+  2. Logo URL: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+     Logo size: width: 225px (DO NOT use smaller sizes — 225px is the standard)
   3. Training date: 3-6 months ago
   4. Circular date: 1 day before training
   5. Report date: 1 day after training

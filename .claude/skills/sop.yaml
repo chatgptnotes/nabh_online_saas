@@ -237,6 +237,12 @@ instructions: |
   │ Date: __/__/____     │ Date: __/__/____   │ Date: __/__/____ │
   └──────────────────────────────────────────────────────────────┘
 
+  🖼️ LOGO (MANDATORY SIZES — do not use smaller values):
+  URL: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+  CSS (logo-area container): .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+  CSS (standalone img):       .logo { width: 225px; height: auto; margin: 0 auto 8px; display: block; }
+  HTML img tag: <img src="[URL]" alt="Hope Hospital Logo" style="width: 225px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">
+
   🎯 MASTER DATA RULES (MANDATORY — See .claude/masters.md for full reference):
 
   STAFF (Use ONLY these names in responsibilities and sign-offs — NEVER invent):
