@@ -1874,7 +1874,7 @@ Use EXACTLY this HTML template structure (fill in the content sections):
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 10px; margin-bottom: 20px; }
-    .logo { width: 180px; height: auto; margin: 0 auto 5px; display: block; }
+    .logo { width: 225px; height: auto; margin: 0 auto 5px; display: block; }
     .hospital-address { font-size: 11px; color: #666; }
     .doc-title { background: linear-gradient(135deg, #1565C0, #0D47A1); color: white; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; margin: 20px 0; border-radius: 5px; }
     .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
@@ -2067,7 +2067,7 @@ SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 15px; margin-bottom: 20px; }
-    .logo { width: 180px; height: auto; margin: 0 auto 2px; display: block; }
+    .logo { width: 225px; height: auto; margin: 0 auto 2px; display: block; }
     .hospital-address { font-size: 11px; color: #666; }
     .content { padding: 20px 0; white-space: pre-wrap; line-height: 1.8; }
     .footer { margin-top: 30px; padding-top: 15px; border-top: 2px solid #1565C0; text-align: center; font-size: 10px; color: #666; }
@@ -2110,7 +2110,7 @@ SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
     processed = processed.replace(/Assured\s*\|\s*Committed\s*\|\s*Proficient/gi, '');
 
     // 3. Fix the logo - replace any logo with correct one (2px margin = ~0.5cm spacing)
-    const logoImg = `<img src="${logoUrl}" alt="${hospitalConfig.name}" class="logo" style="width: 180px; height: auto; margin: 0 auto 2px; display: block;" onerror="this.style.display='none'">`;
+    const logoImg = `<img src="${logoUrl}" alt="${hospitalConfig.name}" class="logo" style="width: 225px; height: auto; margin: 0 auto 2px; display: block;" onerror="this.style.display='none'">`;
 
     processed = processed.replace(
       /<img[^>]*class="logo"[^>]*>/gi,

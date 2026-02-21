@@ -609,7 +609,7 @@ Use this HTML template structure:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 350px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }
@@ -834,7 +834,7 @@ Generate a complete, print-ready HTML document using this template structure:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 350px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }

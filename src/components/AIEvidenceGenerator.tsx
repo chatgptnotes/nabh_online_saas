@@ -109,7 +109,7 @@ Use this HTML template structure:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 350px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }
@@ -214,7 +214,7 @@ Use this structure:
     .page { page-break-after: always; padding-bottom: 20px; }
     .page:last-child { page-break-after: auto; }
     .header { text-align: center; margin-bottom: 15px; }
-    .logo { max-width: 220px; margin: 0 auto 10px; display: block; }
+    .logo { max-width: 275px; margin: 0 auto 10px; display: block; }
     .title { font-size: 20px; font-weight: bold; text-align: center; margin: 20px 0; }
     .subtitle { font-size: 16px; text-decoration: underline; text-align: center; margin: 10px 0; }
     .date-line { text-align: right; margin: 15px 0; }
@@ -573,7 +573,7 @@ function updateHTMLWithText(
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 350px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }
@@ -832,7 +832,7 @@ export default function AIEvidenceGenerator() {
     }
 
     // Fix text placeholders
-    const logoImg = `<img src="${correctLogoUrl}" alt="${hospitalConfig.name}" class="logo" style="width: 180px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">`;
+    const logoImg = `<img src="${correctLogoUrl}" alt="${hospitalConfig.name}" class="logo" style="width: 225px; height: auto; display: block; margin: 0 auto;" onerror="this.style.display='none'">`;
     processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
     processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
 

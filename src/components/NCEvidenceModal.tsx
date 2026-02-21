@@ -49,7 +49,7 @@ const STANDARD_CSS = `
   .page { page-break-after: always; padding-bottom: 30px; margin-bottom: 10px; }
   .page:last-child { page-break-after: auto; }
   .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 6px; margin-bottom: 8px; }
-  .logo-area { width: 350px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+  .logo-area { width: 438px; height: 100px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
   .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
   .doc-title { background: #1565C0; color: white; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; margin: 14px 0; border-radius: 5px; }
   .objective-line { font-size: 12px; color: #333; margin: 10px 0; font-weight: 500; }
