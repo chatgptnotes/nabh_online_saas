@@ -34,7 +34,7 @@ interface StaffMember {
   department: string;
 }
 
-const EVIDENCE_TYPES = [
+export const EVIDENCE_TYPES = [
   { id: 'corrective', label: 'Corrective Action Report (Root Cause + Actions)' },
   { id: 'supporting', label: 'Supporting Evidence Document' },
   { id: 'training',   label: 'Training Record (with Pre/Post MCQ Assessment)' },
@@ -42,14 +42,14 @@ const EVIDENCE_TYPES = [
 ];
 
 // ── Standard CSS used across the entire app ──────────────────────────────────
-const STANDARD_CSS = `
+export const STANDARD_CSS = `
   html { height: 100%; overflow-y: auto; }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
   .page { page-break-after: always; padding-bottom: 30px; margin-bottom: 10px; }
   .page:last-child { page-break-after: auto; }
   .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 6px; margin-bottom: 8px; }
-  .logo-area { width: 525px; height: auto; min-height: 60px; margin: 0 auto 6px; display: flex; align-items: center; justify-content: center; }
+  .logo-area { width: 525px; height: auto; margin: 0 auto 2px; display: flex; align-items: center; justify-content: center; }
   .logo-area img { max-width: 100%; max-height: 100%; object-fit: contain; }
   .doc-title { background: #1565C0; color: white; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; margin: 14px 0; border-radius: 5px; }
   .objective-line { font-size: 12px; color: #333; margin: 10px 0; font-weight: 500; }
@@ -102,7 +102,7 @@ function wrapInPage(
     <div class="logo-area">
       <img src="${logoUrl}" alt="${hospital.name} Logo" onerror="this.style.display='none'" style="width:100%;height:auto;object-fit:contain;" />
     </div>
-    <div style="font-size:11px;color:#444;text-align:center;line-height:1.6;margin-top:2px;">
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:0;">
       ${hospital.address}<br>
       Phone: ${hospital.phone} &nbsp;|&nbsp; Email: ${hospital.email}<br>
       <strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman
@@ -156,7 +156,7 @@ function wrapInPage(
 }
 
 // ── Build the final full HTML from section contents ────────────────────────
-function assembleHTML(
+export function assembleHTML(
   sections: { title: string; dept: string; category: string; content: string }[],
   nc: NcRecord,
   hospital: ReturnType<typeof getHospitalInfo>,
@@ -237,7 +237,7 @@ HOP-BME-ICU-CCE-NEB-01 | Nebulizer | LIFE-LINE | ICU | Operational
 HOP-BME-2012-ICU-CCE-BIP-01 | BiPAP | Harmony | ICU | Operational`;
 
 // ── Content-only prompt for each evidence type ─────────────────────────────
-function buildContentPrompt(
+export function buildContentPrompt(
   type: string,
   nc: NcRecord,
   staff: StaffMember[],
@@ -363,7 +363,7 @@ Generate a formal Auditor Response Letter with these sections:
 }
 
 // ── Capture current HTML from iframe (works in view and edit mode) ──────────
-function captureIframeHtml(iframeEl: HTMLIFrameElement | null): string | null {
+export function captureIframeHtml(iframeEl: HTMLIFrameElement | null): string | null {
   if (!iframeEl?.contentDocument) return null;
   const raw = iframeEl.contentDocument.documentElement.outerHTML;
   return raw.startsWith('<!DOCTYPE') ? raw : '<!DOCTYPE html>\n' + raw;

@@ -153,7 +153,7 @@ Use this HTML template structure:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 525px; height: auto; min-height: 60px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 525px; height: auto; margin: 0 auto 2px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { width: 100%; height: auto; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }
@@ -185,7 +185,7 @@ Use this HTML template structure:
 <body>
   <div class="header">
     <div class="logo-area"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" style="width:100%;height:auto;object-fit:contain;" /></div>
-    <div style="font-size:11px;color:#444;text-align:center;line-height:1.6;margin-top:4px;">${config.address}<br>Phone: ${config.phone} &nbsp;|&nbsp; Email: ${config.email}<br><strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman</div>
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:0;">${config.address}<br>Phone: ${config.phone} &nbsp;|&nbsp; Email: ${config.email}<br><strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman</div>
   </div>
 
   <div class="objective-line">[OBJECTIVE_CODE_AND_TITLE]</div>
@@ -618,7 +618,7 @@ function updateHTMLWithText(
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 2px 20px 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #1565C0; padding-bottom: 2px; margin-bottom: 5px; }
-    .logo-area { width: 525px; height: auto; min-height: 60px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
+    .logo-area { width: 525px; height: auto; margin: 0 auto 2px; display: flex; align-items: center; justify-content: center; }
     .logo-area img { width: 100%; height: auto; object-fit: contain; }
     .hospital-name { font-size: 24px; font-weight: bold; color: #1565C0; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }

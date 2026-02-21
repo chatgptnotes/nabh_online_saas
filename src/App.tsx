@@ -34,6 +34,7 @@ import HospitalManualsMasterPage from './components/HospitalManualsMasterPage';
 import LicensesMasterPage from './components/LicensesMasterPage';
 import MOUsMasterPage from './components/MOUsMasterPage';
 import NCTrackerPage from './components/NCTrackerPage';
+import NCEvidencePage from './components/NCEvidencePage';
 import SurveysPage from './components/SurveysPage';
 import CheatSheetsPage from './components/CheatSheetsPage';
 import SearchPage from './components/SearchPage';
@@ -308,6 +309,7 @@ function MainContent() {
   const isOldExtractedSOPsPage = location.pathname === '/old-extracted-sops';
   const isSuperAdminPage = location.pathname === '/super-admin';
   const isNCTrackerPage = location.pathname === '/nc-tracker';
+  const isNCEvidencePage = location.pathname.startsWith('/nc-evidence/');
   const isDashboardPage = location.pathname === '/dashboard';
   const isLandingPage = location.pathname === '/' && !selectedChapter;
 
@@ -463,6 +465,10 @@ function MainContent() {
     return <NCTrackerPage />;
   }
 
+  if (isNCEvidencePage) {
+    return <NCEvidencePage />;
+  }
+
   if (isDashboardPage && !selectedChapter) {
     return <Dashboard />;
   }
@@ -495,7 +501,7 @@ function AppContent() {
   const isAIPage = location.pathname === '/ai-generator';
   const isObjectiveDetailPage = location.pathname.startsWith('/objective/');
   const isKPIDetailPage = location.pathname.startsWith('/kpi/');
-  const isManagementPage = ['/stationery', '/committees', '/surveys', '/cheat-sheets', '/search', '/kpis', '/presentations', '/nabh-master', '/migration', '/patients', '/employees', '/consultants', '/doctors', '/departments', '/equipment', '/programs', '/clinical-audits', '/manuals', '/licenses', '/mous', '/evidence-prompt', '/sop-prompt', '/emergency-codes', '/signage-generator', '/image-generator', '/call-center', '/sops', '/recent-sops', '/sop-database', '/custom-sops', '/old-extracted-sops', '/dashboard', '/super-admin', '/nc-tracker'].includes(location.pathname) || isKPIDetailPage;
+  const isManagementPage = ['/stationery', '/committees', '/surveys', '/cheat-sheets', '/search', '/kpis', '/presentations', '/nabh-master', '/migration', '/patients', '/employees', '/consultants', '/doctors', '/departments', '/equipment', '/programs', '/clinical-audits', '/manuals', '/licenses', '/mous', '/evidence-prompt', '/sop-prompt', '/emergency-codes', '/signage-generator', '/image-generator', '/call-center', '/sops', '/recent-sops', '/sop-database', '/custom-sops', '/old-extracted-sops', '/dashboard', '/super-admin', '/nc-tracker'].includes(location.pathname) || isKPIDetailPage || isNCEvidencePage;
   const isLandingPage = location.pathname === '/' && !selectedChapter;
   const showSidebar = !isAIPage && !isLandingPage && !isObjectiveDetailPage || isManagementPage;
 

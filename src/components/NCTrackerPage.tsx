@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import Chip from '@mui/material/Chip';
@@ -13,7 +14,6 @@ import Alert from '@mui/material/Alert';
 import Tooltip from '@mui/material/Tooltip';
 import { supabase } from '../lib/supabase';
 import { useNABHStore } from '../store/nabhStore';
-import NCEvidenceModal from './NCEvidenceModal';
 
 // ---------- types ----------
 export interface NcRecord {
@@ -129,6 +129,7 @@ function nextStatus(current: string): 'Open' | 'In Progress' | 'Closed' {
 
 export default function NCTrackerPage() {
   const { selectedHospital } = useNABHStore();
+  const navigate = useNavigate();
   const hospitalId = selectedHospital || 'hope';
 
   const [ncs, setNcs] = useState<NcRecord[]>([]);
@@ -136,10 +137,14 @@ export default function NCTrackerPage() {
   const [seeding, setSeeding] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expandedChapter, setExpandedChapter] = useState<string | false>('AAC');
-  const [evidenceNc, setEvidenceNc] = useState<NcRecord | null>(null);
   const [updatingId, setUpdatingId] = useState<string | null>(null);
+  // Guard against concurrent loadNcs calls (prevents duplicate seeding on fast navigation)
+  const loadingRef = useRef(false);
 
   const loadNcs = useCallback(async () => {
+    // Prevent concurrent loads (avoids duplicate seeding)
+    if (loadingRef.current) return;
+    loadingRef.current = true;
     setLoading(true);
     setError(null);
     try {
@@ -152,7 +157,7 @@ export default function NCTrackerPage() {
       if (err) throw err;
 
       if (!data || data.length === 0) {
-        // seed
+        // First-time seed — only runs when table is empty
         setSeeding(true);
         const seedRows = SEED_NCS.map((r) => ({ ...r, hospital_id: hospitalId }));
         const { data: inserted, error: seedErr } = await (supabase as any)
@@ -163,12 +168,32 @@ export default function NCTrackerPage() {
         if (seedErr) throw seedErr;
         setNcs(inserted || []);
       } else {
-        setNcs(data);
+        // Deduplicate by standard_code — keep first occurrence, await delete of extras
+        const seen = new Set<string>();
+        const unique: NcRecord[] = [];
+        const idsToDelete: string[] = [];
+        for (const nc of data as NcRecord[]) {
+          if (seen.has(nc.standard_code)) {
+            idsToDelete.push(nc.id);
+          } else {
+            seen.add(nc.standard_code);
+            unique.push(nc);
+          }
+        }
+        if (idsToDelete.length > 0) {
+          // Synchronous delete — wait for completion so next load sees clean data
+          await (supabase as any)
+            .from('nabh_ncs')
+            .delete()
+            .in('id', idsToDelete);
+        }
+        setNcs(unique);
       }
     } catch (e: any) {
       setError(e.message || 'Failed to load NCs');
     } finally {
       setLoading(false);
+      loadingRef.current = false;
     }
   }, [hospitalId]);
 
@@ -193,8 +218,8 @@ export default function NCTrackerPage() {
     }
   };
 
-  const handleEvidenceSaved = (ncId: string, html: string | null) => {
-    setNcs((prev) => prev.map((r) => (r.id === ncId ? { ...r, evidence_html: html || null } : r)));
+  const handleOpenEvidence = (nc: NcRecord) => {
+    navigate(`/nc-evidence/${nc.id}`);
   };
 
   // group by chapter
@@ -291,7 +316,7 @@ export default function NCTrackerPage() {
                   nc={nc}
                   updating={updatingId === nc.id}
                   onStatusClick={() => handleStatusClick(nc)}
-                  onGenerate={() => setEvidenceNc(nc)}
+                  onGenerate={() => handleOpenEvidence(nc)}
                 />
               ))}
             </AccordionDetails>
@@ -299,15 +324,6 @@ export default function NCTrackerPage() {
         );
       })}
 
-      {/* Evidence Modal */}
-      {evidenceNc && (
-        <NCEvidenceModal
-          nc={evidenceNc}
-          open={!!evidenceNc}
-          onClose={() => setEvidenceNc(null)}
-          onSaved={(html) => handleEvidenceSaved(evidenceNc.id, html)}
-        />
-      )}
     </Box>
   );
 }
