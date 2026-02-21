@@ -364,15 +364,42 @@ function NCCard({ nc, updating, onStatusClick, onGenerate }: NCCardProps) {
 
         <Box sx={{ flex: 1 }} />
 
-        {/* Generate Evidence button */}
+        {/* Evidence stored badge */}
+        {nc.evidence_html && (
+          <Chip
+            label="PDF Ready"
+            size="small"
+            color="success"
+            variant="outlined"
+            icon={<Icon sx={{ fontSize: '14px !important' }}>picture_as_pdf</Icon>}
+            sx={{ fontWeight: 600 }}
+          />
+        )}
+
+        {/* Eye icon to view stored evidence */}
+        {nc.evidence_html && (
+          <Tooltip title="View / Edit stored evidence">
+            <Chip
+              label="View"
+              size="small"
+              color="success"
+              icon={<Icon sx={{ fontSize: '14px !important' }}>visibility</Icon>}
+              onClick={onGenerate}
+              sx={{ cursor: 'pointer', fontWeight: 600 }}
+            />
+          </Tooltip>
+        )}
+
+        {/* Generate / Regenerate button */}
         <Button
           size="small"
-          variant={nc.evidence_html ? 'outlined' : 'contained'}
-          startIcon={<Icon>{nc.evidence_html ? 'visibility' : 'auto_awesome'}</Icon>}
+          variant={nc.evidence_html ? 'text' : 'contained'}
+          startIcon={<Icon>{nc.evidence_html ? 'refresh' : 'auto_awesome'}</Icon>}
           onClick={onGenerate}
-          color={nc.evidence_html ? 'success' : 'primary'}
+          color={nc.evidence_html ? 'inherit' : 'primary'}
+          sx={{ minWidth: 0 }}
         >
-          {nc.evidence_html ? 'View Evidence' : 'Generate Evidence'}
+          {nc.evidence_html ? 'Regen' : 'Generate'}
         </Button>
 
         {/* Closed checkmark */}

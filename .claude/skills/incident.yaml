@@ -394,11 +394,36 @@ instructions: |
      │ Medical Superintendent: ______ Date: ____    │
      └──────────────────────────────────────────────┘
 
+  🎯 MASTER DATA RULES (MANDATORY — See .claude/masters.md for full reference):
+
+  STAFF (Use ONLY these names — NEVER invent):
+  Dr. B.K. Murali (CMD) | Dr. Shiraz Khan (Quality Co-ordinator, ICU) | Gaurav Agrawal (Administrator) |
+  Dr. Afzal Sheikh (RMO, ICU) | Dr. Suhash Tiple (Consultant, ICU) | Dr. Sachin Gathibande (RMO, ICU) |
+  Dr. Swapnil Charpe (RMO, Casualty) | Dr. Sharad Kawale (RMO, General Ward) |
+  Brother Chandraprakash Bisen (ICN, ICU) | Sister Farzana Khan (Head Nurse, ICU) |
+  Brother Ajay Meshram (Nursing Staff, Casualty) | Nitin Bawane (X-Ray Tech, Radiology) |
+  Digesh Bisen (Lab Tech, Laboratory) | Rachana Rathore (Lab Tech, Laboratory) |
+  Ruchika Jambhulkar (Pharmacist, Pharmacy) | Tejash Akhare (Pharmacist, Pharmacy) |
+  Jagruti Tembhare (Quality Manager & HR Head) | Aman Rajak (Fire Safety Officer, Safety)
+
+  SIGNING AUTHORITIES:
+  - Quality Manager (Received By): Jagruti Tembhare
+  - Lead Investigator: Sonali Kakde, Clinical Audit Coordinator
+  - RCA Team Lead: Dr. Shiraz Khan, Quality Coordinator
+  - Closure Approved By: Dr. Shiraz Khan / Gaurav Agrawal
+
+  DEPARTMENTS: Casualty, Cath Lab, CSSD, General Ward, ICU, Infection Control, Laboratory,
+    Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Safety, Security
+
+  EQUIPMENT (reference real tags where relevant):
+  Ventilator (Mindray) HOP-BME-ICU-CCE-VEN-01 | Defibrillator (BPL) HOP-BME-ICU-CCE-DEF-01 |
+  Multipara Monitor (NASAN) HOP-BME-2012-ICU-CCE-MON-01 | Syringe Pump (SMITH) HOP-BME-ICU-CCE-SYP-01
+
   🎯 CRITICAL REQUIREMENTS:
 
   REALISM:
   - Use actual patient data (UHID, name from database)
-  - Real staff names and designations
+  - Real staff names and designations (from master list above — NEVER invent)
   - Specific dates and times
   - Realistic incident scenarios
   - Quantifiable data (vitals, lab values, etc.)

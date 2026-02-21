@@ -41,14 +41,33 @@ instructions: |
   - Prepared By: Trainer name
   - Hospital footer
 
-  DOCUMENT 4: TRAINING ASSESSMENT
+  DOCUMENT 4: TRAINING ASSESSMENT (Pre & Post)
   - Hope Hospital logo
   - Title: "Training Assessment"
   - Topic, Date, Pass Criteria (≥70%)
-  - 5-10 MCQ questions with correct answers marked ✓
-  - Results table: Sr.No. | Name | Designation | Score | % | Result (Pass/Fail)
-  - 8-15 employees with scores
-  - Summary box: Total Assessed, Average Score, Pass Rate
+
+  PRE-TRAINING ASSESSMENT (Before Training):
+  - 5 MCQ questions testing BASELINE knowledge BEFORE training
+  - Format: numbered questions with options A/B/C/D, correct answer marked ✓ below each question
+  - Questions directly relevant to the training topic
+  - Label clearly: "Section A — Pre-Training Assessment"
+
+  ATTENDANCE WITH PRE/POST SCORES:
+  - Table: Sr.No. | Name | Designation | Department | Pre-Score (/10) | Post-Score (/10) | Signature
+  - Use 15 staff from the master list below
+  - Realistic scores: Pre avg 4–5/10, Post avg 7–9/10
+  - All results: Pass
+
+  POST-TRAINING ASSESSMENT (After Training):
+  - 5 MCQ questions testing KNOWLEDGE GAINED after training (slightly harder)
+  - Same topic but deeper understanding tested
+  - Format: same as pre-training MCQs
+  - Label clearly: "Section B — Post-Training Assessment"
+
+  RESULTS SUMMARY:
+  - Table: Sr.No. | Name | Pre-Test /10 | Post-Test /10 | Improvement | Result
+  - Shows measurable knowledge improvement
+  - Summary box: Total Assessed, Average Pre-Score, Average Post-Score, Average Improvement, Pass Rate
   - Hospital footer
 
   DOCUMENT 5: TRAINING COMPLETION REPORT
@@ -115,11 +134,24 @@ instructions: |
   46. Jiyalal Sukhdeve - Security Guard - Security
 
   ═══════════════════════════════════════════════════════════════════
+  🎯 MASTER DATA RULES (MANDATORY — NEVER INVENT NAMES OR DEPARTMENTS):
+  ═══════════════════════════════════════════════════════════════════
+
+  STAFF: Use ONLY the 46 names listed above. NEVER invent names.
+  SIGNING AUTHORITIES (use exactly these):
+    - Prepared By: Sonali Kakde, Clinical Audit Coordinator
+    - Reviewed By: Gaurav Agrawal, Hospital Administrator
+    - Approved By: Dr. Shiraz Khan, Quality Coordinator / Administrator
+  PRE/POST MCQ: EVERY training MUST have Pre-Training AND Post-Training MCQ assessments.
+  LOGO: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
+  See .claude/masters.md for complete master data reference.
+
+  ═══════════════════════════════════════════════════════════════════
   🎯 CRITICAL REQUIREMENTS:
   ═══════════════════════════════════════════════════════════════════
 
   1. ONE HTML file with all 5 documents (use page-break-after: always)
-  2. Logo: https://www.nabh.online/assets/hope-hospital-logo.png
+  2. Logo: https://aynoltymgusyasgxshng.supabase.co/storage/v1/object/public/documents/logos/hope/1771582950712.png
   3. Training date: 3-6 months ago
   4. Circular date: 1 day before training
   5. Report date: 1 day after training

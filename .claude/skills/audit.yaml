@@ -236,13 +236,35 @@ instructions: |
       │                                │ Date: __/__/____            │
       └──────────────────────────────────────────────────────────────┘
 
+  🎯 MASTER DATA RULES (MANDATORY — See .claude/masters.md for full reference):
+
+  STAFF (Use ONLY these names — NEVER invent):
+  Dr. B.K. Murali (CMD) | Dr. Shiraz Khan (Quality Co-ordinator, ICU) | Gaurav Agrawal (Administrator) |
+  Dr. Afzal Sheikh (RMO, ICU) | Dr. Suhash Tiple (Consultant, ICU) | Dr. Sachin Gathibande (RMO, ICU) |
+  Dr. Swapnil Charpe (RMO, Casualty) | Dr. Sharad Kawale (RMO, General Ward) |
+  Brother Chandraprakash Bisen (ICN, ICU) | Sister Farzana Khan (Head Nurse, ICU) |
+  Brother Ajay Meshram (Nursing Staff, Casualty) | Nitin Bawane (X-Ray Tech, Radiology) |
+  Apeksha Wandre (OT Tech, OT) | Shruti Uikey (OT Tech, OT) | Sarvesh Bhramhe (OT Tech, OT) |
+  Digesh Bisen (Lab Tech, Laboratory) | Rachana Rathore (Lab Tech, Laboratory) |
+  Ruchika Jambhulkar (Pharmacist, Pharmacy) | Tejash Akhare (Pharmacist, Pharmacy) |
+  Jagruti Tembhare (Quality Manager & HR Head) | Kashish Jagwani (MRD Attendant, MRD) |
+  Aman Rajak (Fire Safety Officer, Safety)
+
+  SIGNING AUTHORITIES:
+  - Lead Auditor: Sonali Kakde, Clinical Audit Coordinator
+  - Reviewed By: Gaurav Agrawal, Hospital Administrator
+  - Approved By: Dr. Shiraz Khan, Quality Coordinator / Administrator
+
+  DEPARTMENTS: Casualty, Cath Lab, CSSD, General Ward, ICU, Infection Control, Laboratory,
+    Maintenance, MRD, OT, Pathology, Pharmacy, Physiotherapy, Radiology, Safety, Security
+
   🎯 CRITICAL REQUIREMENTS:
 
   DATA & REALISM:
   - 25-35 audit criteria minimum
   - Real observations (not generic)
   - Specific numbers and percentages
-  - Named staff members (from database)
+  - Named staff members (from master list above — NEVER invent names)
   - Actual dates (1-2 months ago)
   - Include both compliance and non-compliance
   - Realistic compliance score (75-90% range)
