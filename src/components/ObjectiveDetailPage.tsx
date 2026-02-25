@@ -1298,6 +1298,35 @@ Start directly with the numbered list, no introduction or explanation.`;
     }
   };
 
+  // Print a single saved evidence item document
+  const handlePrintSavedEvidenceItem = async (documentId: string) => {
+    try {
+      const result = await loadEvidenceById(documentId);
+      if (result.success && result.data && result.data.html_content) {
+        const printWindow = window.open('', '_blank');
+        if (printWindow) {
+          printWindow.document.write(result.data.html_content);
+          printWindow.document.close();
+          printWindow.onload = () => {
+            printWindow.print();
+          };
+          // Fallback if onload doesn't fire (content already loaded synchronously)
+          setTimeout(() => { printWindow.print(); }, 500);
+        } else {
+          setSnackbarMessage('Failed to open print window. Please allow popups for this site.');
+          setSnackbarOpen(true);
+        }
+      } else {
+        setSnackbarMessage(`Failed to load document for printing: ${result.error || 'Unknown error'}`);
+        setSnackbarOpen(true);
+      }
+    } catch (error) {
+      console.error('[Print Evidence] Exception:', error);
+      setSnackbarMessage('Error printing document. Please try again.');
+      setSnackbarOpen(true);
+    }
+  };
+
   // Print evidence items
   const handlePrintEvidenceItems = () => {
     if (interpretationEvidenceItems.length === 0) return;
@@ -3861,6 +3890,21 @@ Provide only the Hindi explanation, no English text. The explanation should be c
                               }}
                             >
                               <Icon>visibility</Icon>
+                            </IconButton>
+                          </span>
+                        </Tooltip>
+                        <Tooltip title={savedEvidenceItemDocuments[item.id] ? "Print document" : "Document not yet generated"}>
+                          <span>
+                            <IconButton
+                              size="small"
+                              color={savedEvidenceItemDocuments[item.id] ? "primary" : "default"}
+                              onClick={() => savedEvidenceItemDocuments[item.id] && handlePrintSavedEvidenceItem(savedEvidenceItemDocuments[item.id])}
+                              disabled={!savedEvidenceItemDocuments[item.id]}
+                              sx={{
+                                opacity: savedEvidenceItemDocuments[item.id] ? 1 : 0.3,
+                              }}
+                            >
+                              <Icon>print</Icon>
                             </IconButton>
                           </span>
                         </Tooltip>
