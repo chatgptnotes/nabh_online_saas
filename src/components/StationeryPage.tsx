@@ -1038,13 +1038,17 @@ export default function StationeryPage() {
       const stampedFile = new File([blob], `${controlNumber}_${file.name.replace(/\.[^.]+$/, '')}.pdf`, { type: 'application/pdf' });
       const publicUrl = await stationeryStorage.uploadFile(stampedFile);
 
-      // 4. Update item in database
+      // 4. Update item in database (only send snake_case DB fields)
       const updatedItem = await stationeryStorage.save({
-        ...item,
+        id: item.id,
+        name: item.name,
+        category: item.category,
+        description: item.description,
         original_file_url: publicUrl,
         original_file_name: file.name,
         original_file_type: file.type,
         status: 'approved',
+        user_suggestions: [],
       });
 
       // 5. Update local state
