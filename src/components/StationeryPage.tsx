@@ -67,6 +67,27 @@ const STATIONERY_CATEGORIES = [
 
 const WORKFLOW_STEPS = ['Upload Document', 'Extract Content', 'Add Suggestions', 'Generate Improved'];
 
+/** NABH document control number codes per stationery category */
+const CATEGORY_DOC_CODES: Record<string, { dept: string; type: string }> = {
+  forms:        { dept: 'HOSP', type: 'FORM' },
+  consent:      { dept: 'HOSP', type: 'CONS' },
+  checklists:   { dept: 'QA',   type: 'CHK' },
+  registers:    { dept: 'ADMIN', type: 'REG' },
+  certificates: { dept: 'ADMIN', type: 'CERT' },
+  reports:      { dept: 'HOSP', type: 'RPT' },
+  letterheads:  { dept: 'ADMIN', type: 'DOC' },
+  labels:       { dept: 'HOSP', type: 'LBL' },
+  sops:         { dept: 'QA',   type: 'SOP' },
+  other:        { dept: 'QA',   type: 'FORM' },
+};
+
+function getStationeryDocNumber(allItems: StationeryItem[], item: StationeryItem): string {
+  const codes = CATEGORY_DOC_CODES[item.category] || { dept: 'HOSP', type: 'DOC' };
+  const sameCategory = allItems.filter(i => i.category === item.category);
+  const idx = sameCategory.findIndex(i => i.id === item.id) + 1;
+  return `${codes.dept}-${codes.type}-${String(idx).padStart(2, '0')}`;
+}
+
 // Comprehensive Default Stationery Items
 const DEFAULT_STATIONERY_ITEMS: StationeryItem[] = [
   // PATIENT FORMS
@@ -1056,6 +1077,9 @@ export default function StationeryPage() {
                   </Box>
                   <Typography variant="h6" fontWeight={600} gutterBottom noWrap>
                     {item.name}
+                  </Typography>
+                  <Typography variant="caption" sx={{ fontFamily: 'monospace', color: 'primary.main', fontWeight: 700, mb: 0.5, display: 'block', letterSpacing: 0.5 }}>
+                    {getStationeryDocNumber(stationeryItems, item)}
                   </Typography>
                   <Typography variant="body2" color="text.secondary" sx={{ mb: 1, height: 40, overflow: 'hidden' }}>
                     {item.description || item.originalFileName || 'No description'}
