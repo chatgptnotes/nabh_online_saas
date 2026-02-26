@@ -817,16 +817,23 @@ export default function StationeryPage() {
   const cardFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
   const [uploadingCardId, setUploadingCardId] = useState<string | null>(null);
 
-  // Load stationery items from Supabase
+  // Load stationery items from Supabase, merging with defaults for any missing items
   useEffect(() => {
     const loadItems = async () => {
       try {
         setIsLoading(true);
         const data = await stationeryStorage.getAll(selectedHospital);
-        setStationeryItems(data || []);
+        const dbItems: any[] = data || [];
+
+        // Merge: keep all DB items, then add any DEFAULT items whose id is not in DB
+        const dbIds = new Set(dbItems.map((i: any) => i.id));
+        const missing = DEFAULT_STATIONERY_ITEMS.filter(d => !dbIds.has(d.id));
+        setStationeryItems([...dbItems, ...missing]);
       } catch (error) {
         console.error('Error loading stationery:', error);
-        setSnackbar({ open: true, message: 'Failed to load documents from database', severity: 'error' });
+        // Fallback to defaults on error
+        setStationeryItems(DEFAULT_STATIONERY_ITEMS);
+        setSnackbar({ open: true, message: 'Failed to load from database — showing defaults', severity: 'error' });
       } finally {
         setIsLoading(false);
       }
