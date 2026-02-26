@@ -29,6 +29,7 @@ import { extractFromDocument, generateImprovedDocument, analyzeDocument } from '
 import { getHospitalInfo } from '../config/hospitalConfig';
 import { useNABHStore } from '../store/nabhStore';
 import { stationeryStorage } from '../services/stationeryStorage';
+import { stampPdfWithControlNumber } from '../utils/stampDocument';
 
 interface StationeryItem {
   id: string;
@@ -692,6 +693,8 @@ export default function StationeryPage() {
 
   const [snackbar, setSnackbar] = useState({ open: false, message: '', severity: 'success' as 'success' | 'error' | 'info' });
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const cardFileInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
+  const [uploadingCardId, setUploadingCardId] = useState<string | null>(null);
 
   // Load stationery items from Supabase
   useEffect(() => {
@@ -886,6 +889,47 @@ export default function StationeryPage() {
       printWindow.document.write(content);
       printWindow.document.close();
       printWindow.print();
+    }
+  };
+
+  /** Upload a document for a specific stationery card, stamp it with control number */
+  const handleCardUpload = async (event: React.ChangeEvent<HTMLInputElement>, item: StationeryItem) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    setUploadingCardId(item.id);
+    try {
+      // 1. Compute control number
+      const controlNumber = getStationeryDocNumber(stationeryItems, item);
+
+      // 2. Stamp PDF with control number footer
+      const { blob } = await stampPdfWithControlNumber(file, controlNumber, hospitalConfig.name);
+
+      // 3. Upload stamped PDF to Supabase Storage
+      const stampedFile = new File([blob], `${controlNumber}_${file.name.replace(/\.[^.]+$/, '')}.pdf`, { type: 'application/pdf' });
+      const publicUrl = await stationeryStorage.uploadFile(stampedFile);
+
+      // 4. Update item in database
+      const updatedItem = await stationeryStorage.save({
+        ...item,
+        original_file_url: publicUrl,
+        original_file_name: file.name,
+        original_file_type: file.type,
+        status: 'approved',
+      });
+
+      // 5. Update local state
+      setStationeryItems(prev => prev.map(i => i.id === item.id ? updatedItem : i));
+      setSnackbar({ open: true, message: `Uploaded & stamped: ${controlNumber}`, severity: 'success' });
+    } catch (error) {
+      console.error('Card upload error:', error);
+      setSnackbar({ open: true, message: 'Upload failed — please try again', severity: 'error' });
+    } finally {
+      setUploadingCardId(null);
+      // Reset file input
+      if (cardFileInputRefs.current[item.id]) {
+        cardFileInputRefs.current[item.id]!.value = '';
+      }
     }
   };
 
@@ -1154,6 +1198,25 @@ export default function StationeryPage() {
                 </CardContent>
                 <CardActions sx={{ justifyContent: 'space-between', px: 2, pb: 2 }}>
                   <Box>
+                    <Tooltip title="Upload & Stamp Document">
+                      <span>
+                        <IconButton
+                          size="small"
+                          color="primary"
+                          disabled={uploadingCardId === item.id}
+                          onClick={() => cardFileInputRefs.current[item.id]?.click()}
+                        >
+                          {uploadingCardId === item.id ? <CircularProgress size={18} /> : <Icon>upload_file</Icon>}
+                        </IconButton>
+                      </span>
+                    </Tooltip>
+                    <input
+                      type="file"
+                      hidden
+                      ref={el => { cardFileInputRefs.current[item.id] = el; }}
+                      accept="image/*,.pdf"
+                      onChange={(e) => handleCardUpload(e, item)}
+                    />
                     <Tooltip title="View Details">
                       <IconButton size="small" onClick={() => { setSelectedItem(item); setIsViewDialogOpen(true); }}>
                         <Icon>visibility</Icon>
@@ -1170,7 +1233,17 @@ export default function StationeryPage() {
                       </IconButton>
                     </Tooltip>
                   </Box>
-                  {item.improvedContent && (
+                  {item.original_file_url && item.status === 'approved' ? (
+                    <Button
+                      size="small"
+                      variant="contained"
+                      color="success"
+                      startIcon={<Icon>download</Icon>}
+                      onClick={() => window.open(item.original_file_url, '_blank')}
+                    >
+                      Download
+                    </Button>
+                  ) : item.improvedContent ? (
                     <Button
                       size="small"
                       variant="contained"
@@ -1180,7 +1253,7 @@ export default function StationeryPage() {
                     >
                       Print
                     </Button>
-                  )}
+                  ) : null}
                 </CardActions>
               </Card>
             </Grid>
