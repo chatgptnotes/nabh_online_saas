@@ -647,7 +647,7 @@ Use this HTML template structure:
   <div class="doc-title">[DOCUMENT TITLE]</div>
 
   <table class="info-table">
-    <tr><th>Document No</th><td>${generateDocumentNumber(objectiveCode)}</td><th>Version</th><td>1.0</td></tr>
+    <tr><th>Document No</th><td>${generateDocumentNumber({ objectiveCode, evidenceText: evidenceItemText, sequenceNumber: 1 })}</td><th>Version</th><td>1.0</td></tr>
     <tr><th>Department</th><td>[Department]</td><th>Category</th><td>[Policy/SOP/Record]</td></tr>
     <tr><th>Effective Date</th><td>${getFormattedDate()}</td><th>Review Date</th><td>${getReviewDate()}</td></tr>
   </table>
@@ -876,7 +876,7 @@ Generate a complete, print-ready HTML document using this template structure:
   <div class="doc-title">[AUTO-DETECTED TITLE FROM CONTENT]</div>
 
   <table class="info-table">
-    <tr><th>Document No</th><td>[Generate appropriate code based on ${objectiveCode}]</td><th>Version</th><td>1.0</td></tr>
+    <tr><th>Document No</th><td>${generateDocumentNumber({ objectiveCode, evidenceText: detectedTitle, sequenceNumber: 1 })}</td><th>Version</th><td>1.0</td></tr>
     <tr><th>Department</th><td>[Detect from content or use "General"]</td><th>Category</th><td>Record/Report</td></tr>
     <tr><th>Effective Date</th><td>${formattedDate}</td><th>Review Date</th><td>${reviewDate}</td></tr>
   </table>

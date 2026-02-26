@@ -18,7 +18,7 @@ import { callGeminiAPI } from '../lib/supabase';
 import { supabase } from '../lib/supabase';
 import { getHospitalInfo } from '../config/hospitalConfig';
 import { useNABHStore } from '../store/nabhStore';
-import { getFormattedDate, getReviewDate } from '../utils/documentNumbering';
+import { getFormattedDate, getReviewDate, generateNCDocNumber } from '../utils/documentNumbering';
 import type { NcRecord } from './NCTrackerPage';
 
 interface NCEvidenceModalProps {
@@ -157,18 +157,18 @@ function wrapInPage(
 
 // ── Build the final full HTML from section contents ────────────────────────
 export function assembleHTML(
-  sections: { title: string; dept: string; category: string; content: string }[],
+  sections: { id: string; title: string; dept: string; category: string; content: string }[],
   nc: NcRecord,
   hospital: ReturnType<typeof getHospitalInfo>,
   logoUrl: string,
 ): string {
   const today  = getFormattedDate();
   const review = getReviewDate();
-  const docNo  = `HOH/NC/${nc.standard_code.replace(/\s+/g, '-').toUpperCase()}/2026`;
 
-  const pages = sections.map((s, i) =>
-    wrapInPage(s.content, s.title, s.dept, s.category, nc, hospital, logoUrl, today, review, docNo, i === sections.length - 1)
-  ).join('\n');
+  const pages = sections.map((s, i) => {
+    const docNo = generateNCDocNumber(nc.standard_code, s.id, i + 1);
+    return wrapInPage(s.content, s.title, s.dept, s.category, nc, hospital, logoUrl, today, review, docNo, i === sections.length - 1);
+  }).join('\n');
 
   return `<!DOCTYPE html>
 <html lang="en">

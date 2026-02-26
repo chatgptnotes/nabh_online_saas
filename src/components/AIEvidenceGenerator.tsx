@@ -91,7 +91,7 @@ const getLogoUrl = (config: HospitalConfig) => {
   return `${base}${config.logo}`;
 };
 
-const getContentPrompt = (config: HospitalConfig, objectiveCode: string) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.
+const getContentPrompt = (config: HospitalConfig, objectiveCode: string, evidenceText: string = '', sequenceNumber: number = 1) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.
 
 Generate a complete HTML document for the selected evidence item in ENGLISH ONLY (internal document).
 
@@ -193,7 +193,7 @@ Use this HTML template structure:
   <div class="doc-title">[DOCUMENT TITLE]</div>
 
   <table class="info-table">
-    <tr><th>Document No</th><td>${generateDocumentNumber(objectiveCode)}</td><th>Version</th><td>1.0</td></tr>
+    <tr><th>Document No</th><td>${generateDocumentNumber({ objectiveCode, evidenceText, sequenceNumber })}</td><th>Version</th><td>1.0</td></tr>
     <tr><th>Department</th><td>[Department]</td><th>Category</th><td>[Policy/SOP/Record]</td></tr>
     <tr><th>Effective Date</th><td>${getFormattedDate()}</td><th>Review Date</th><td>${getReviewDate()}</td></tr>
   </table>
@@ -647,8 +647,8 @@ function updateHTMLWithText(
   <div class="doc-title">${title || 'Evidence Document'}</div>
 
   <table class="info-table">
-    <tr><th>Document No</th><td>DOC-001</td><th>Version</th><td>1.0</td></tr>
-    <tr><th>Effective Date</th><td>29/12/2025</td><th>Review Date</th><td>29/12/2025</td></tr>
+    <tr><th>Document No</th><td>${generateDocumentNumber({ objectiveCode: 'GENERAL', sequenceNumber: 1 })}</td><th>Version</th><td>1.0</td></tr>
+    <tr><th>Effective Date</th><td>${getFormattedDate()}</td><th>Review Date</th><td>${getReviewDate()}</td></tr>
   </table>
 
   ${sectionHTML}
@@ -1054,7 +1054,7 @@ export default function AIEvidenceGenerator() {
           // Use training-specific prompt for training-related evidence
           const contentPrompt = isTrainingEvidence(item.text)
             ? getTrainingPrompt(hospitalConfig)
-            : getContentPrompt(hospitalConfig, objectiveCode);
+            : getContentPrompt(hospitalConfig, objectiveCode, item.text, i + 1);
 
           // Fetch real patient/staff data from nabh_patients table
           const relevantData = await getRelevantData(item.text, selectedHospital);

@@ -136,12 +136,29 @@ Reference the complete scope of services from September 26, 2025 document
 
 #### C. DOCUMENTATION STANDARDS
 - Proper headers with hospital logo and details
-- Sequential numbering systems
+- NABH-compliant document control numbers (see below)
 - Appropriate approvals and signatures
 - Version control for policies
 - Clear, legible entries
 
-### 8. HOSPITAL CONTEXT
+### 8. DOCUMENT CONTROL NUMBERS (MANDATORY)
+All documents MUST use NABH-compliant control numbers in the format: [DEPT]-[TYPE]-[NN]
+
+**Department Codes**: AAC, COP, PHARM, PRE, HIC, QA, ADMIN, FMS, HR, IT, HOSP (hospital-wide)
+**Document Type Codes**: SOP, POL (Policy), FORM, REG (Register), CHK (Checklist), LOG, AUD (Audit), RPT (Report), CIR (Circular), ATT (Attendance), TRG (Training Content), ASM (Assessment)
+**Sequential Number**: Two-digit (01, 02, 03...)
+
+**Examples**:
+- HIC-SOP-01 → Infection Control SOP #1
+- PHARM-REG-03 → Pharmacy Register #3
+- HR-FORM-05 → HR Form #5
+- HOSP-POL-01 → Hospital-wide Policy #1
+- QA-AUD-02 → Quality Audit #2
+- FMS-LOG-04 → Facility Management Log #4
+
+**CRITICAL**: The Document No field in the info-table header is pre-filled. Do NOT change or replace it. Use the exact number provided.
+
+### 9. HOSPITAL CONTEXT
 
 #### A. HOSPITAL DETAILS
 - **Name**: ${hospitalName}
@@ -158,7 +175,7 @@ Reference the complete scope of services from September 26, 2025 document
 - Quality-focused patient care
 - Technology-enabled operations
 
-### 9. EVIDENCE CATEGORIES BY NABH CHAPTERS
+### 10. EVIDENCE CATEGORIES BY NABH CHAPTERS
 
 #### A. AAC (Access, Assessment and Continuity of Care)
 - Patient registration processes
@@ -220,7 +237,7 @@ Reference the complete scope of services from September 26, 2025 document
 - System security
 - Information governance
 
-### 10. OUTPUT FORMAT SPECIFICATIONS
+### 11. OUTPUT FORMAT SPECIFICATIONS
 
 #### A. REGISTER FORMAT
 \`\`\`
@@ -257,7 +274,7 @@ Reviewed by: Sonali       Date: [Date]
 Approved by: Gaurav/Dr. Shiraz    Date: [Date]
 \`\`\`
 
-### 11. VALIDATION CHECKLIST
+### 12. VALIDATION CHECKLIST
 
 Before submitting any evidence, verify:
 - [ ] Minimum 20 rows for registers
@@ -271,8 +288,9 @@ Before submitting any evidence, verify:
 - [ ] NABH compliance demonstrated
 - [ ] Proper hospital context
 - [ ] Clear documentation standards
+- [ ] NABH-compliant document control number in [DEPT]-[TYPE]-[NN] format
 
-### 12. EMERGENCY CONTACT INFORMATION
+### 13. EMERGENCY CONTACT INFORMATION
 For clarifications during evidence generation:
 - **Gaurav Agrawal** (NABH Lead): +91 98222 02396
 - **Sonali** (Clinical Audit): +91 72187 50394  
