@@ -930,8 +930,11 @@ export default function StationeryPage() {
     }
 
     try {
+      // Only pass id if it's a valid UUID (default items have non-UUID ids like 'form_006')
+      const existingId = selectedItem?.id;
+      const isUUID = existingId && /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(existingId);
       const savedItem = await stationeryStorage.save({
-        id: selectedItem?.id, // If re-processing, keep same ID
+        ...(isUUID ? { id: existingId } : {}),
         name: newItemName,
         category: newItemCategory,
         description: newItemDescription,
@@ -1002,11 +1005,19 @@ export default function StationeryPage() {
 
   const handleUpdateDocsLink = async (item: any, link: string) => {
     try {
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id);
       const updatedItem = await stationeryStorage.save({
-        ...item,
-        documents_link: link
+        ...(isUUID ? { id: item.id } : {}),
+        name: item.name,
+        category: item.category,
+        description: item.description,
+        documents_link: link,
+        status: item.status || 'pending',
+        user_suggestions: item.user_suggestions || [],
+        hospital_id: selectedHospital,
       });
-      setStationeryItems(prev => prev.map(i => i.id === item.id ? updatedItem : i));
+      const oldId = item.id;
+      setStationeryItems(prev => prev.map(i => i.id === oldId ? updatedItem : i));
     } catch (error) {
       setSnackbar({ open: true, message: 'Update failed', severity: 'error' });
     }
@@ -1039,20 +1050,24 @@ export default function StationeryPage() {
       const publicUrl = await stationeryStorage.uploadFile(stampedFile);
 
       // 4. Update item in database (only send snake_case DB fields)
+      // Default items have non-UUID ids (e.g. 'form_006') — omit id so DB auto-generates a UUID
+      const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(item.id);
       const updatedItem = await stationeryStorage.save({
-        id: item.id,
+        ...(isUUID ? { id: item.id } : {}),
         name: item.name,
         category: item.category,
         description: item.description,
         original_file_url: publicUrl,
         original_file_name: file.name,
-        original_file_type: file.type,
+        original_file_type: 'application/pdf', // stamped output is always PDF
         status: 'approved',
         user_suggestions: [],
+        hospital_id: selectedHospital,
       });
 
-      // 5. Update local state
-      setStationeryItems(prev => prev.map(i => i.id === item.id ? updatedItem : i));
+      // 5. Update local state (replace the old default/DB item with the saved one)
+      const oldId = item.id;
+      setStationeryItems(prev => prev.map(i => i.id === oldId ? updatedItem : i));
       setSnackbar({ open: true, message: `Uploaded & stamped: ${controlNumber}`, severity: 'success' });
     } catch (error) {
       console.error('Card upload error:', error);
@@ -1288,8 +1303,15 @@ export default function StationeryPage() {
                     </Box>
                   )}
                   {item.original_file_url && (
-                    <Box sx={{ mt: 1, height: 80, overflow: 'hidden', borderRadius: 1, bgcolor: 'grey.100' }}>
-                      <img src={item.original_file_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                    <Box sx={{ mt: 1, height: 80, overflow: 'hidden', borderRadius: 1, bgcolor: 'grey.100', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      {item.original_file_url?.toLowerCase().endsWith('.pdf') ? (
+                        <Box sx={{ textAlign: 'center', p: 1 }}>
+                          <Icon sx={{ fontSize: 32, color: 'error.main' }}>picture_as_pdf</Icon>
+                          <Typography variant="caption" display="block" color="text.secondary" noWrap>PDF Document</Typography>
+                        </Box>
+                      ) : (
+                        <img src={item.original_file_url} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                      )}
                     </Box>
                   )}
 
@@ -1631,7 +1653,11 @@ export default function StationeryPage() {
                 <Grid size={{ xs: 12, md: 4 }}>
                   <Typography variant="subtitle2" gutterBottom>Original Document</Typography>
                   <Paper variant="outlined" sx={{ p: 1 }}>
-                    <img src={selectedItem.original_file_url} alt="Original" style={{ width: '100%', borderRadius: 4 }} />
+                    {selectedItem.original_file_url?.toLowerCase().endsWith('.pdf') ? (
+                      <iframe src={selectedItem.original_file_url} title="Original Document" style={{ width: '100%', height: 400, border: 'none', borderRadius: 4 }} />
+                    ) : (
+                      <img src={selectedItem.original_file_url} alt="Original" style={{ width: '100%', borderRadius: 4 }} />
+                    )}
                   </Paper>
                 </Grid>
               )}
