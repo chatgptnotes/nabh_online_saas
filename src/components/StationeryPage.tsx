@@ -790,6 +790,7 @@ export default function StationeryPage() {
   const [stationeryItems, setStationeryItems] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [searchQuery, setSearchQuery] = useState('');
   const [pendingLinks, setPendingLinks] = useState<{[key: string]: string}>({});
   const [isUploadDialogOpen, setIsUploadDialogOpen] = useState(false);
   const [isViewDialogOpen, setIsViewDialogOpen] = useState(false);
@@ -1061,9 +1062,11 @@ export default function StationeryPage() {
     }
   };
 
-  const filteredItems = selectedCategory === 'all'
-    ? stationeryItems
-    : stationeryItems.filter(item => item.category === selectedCategory);
+  const filteredItems = stationeryItems.filter(item => {
+    const matchesCategory = selectedCategory === 'all' || item.category === selectedCategory;
+    const matchesSearch = !searchQuery || item.name.toLowerCase().includes(searchQuery.toLowerCase()) || item.description?.toLowerCase().includes(searchQuery.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -1165,7 +1168,23 @@ export default function StationeryPage() {
         </Typography>
       </Alert>
 
-      {/* Category Tabs */}
+      {/* Search + Category Tabs */}
+      <TextField
+        fullWidth
+        size="small"
+        placeholder="Search stationery by name..."
+        value={searchQuery}
+        onChange={(e) => setSearchQuery(e.target.value)}
+        slotProps={{
+          input: {
+            startAdornment: <Icon sx={{ mr: 1, color: 'text.secondary' }}>search</Icon>,
+            endAdornment: searchQuery ? (
+              <IconButton size="small" onClick={() => setSearchQuery('')}><Icon sx={{ fontSize: 18 }}>close</Icon></IconButton>
+            ) : null,
+          },
+        }}
+        sx={{ mb: 2 }}
+      />
       <Paper sx={{ mb: 3 }}>
         <Tabs
           value={selectedCategory}
