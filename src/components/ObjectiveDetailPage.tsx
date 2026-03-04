@@ -468,7 +468,7 @@ export default function ObjectiveDetailPage() {
                       itemText.toLowerCase() === docPrompt.toLowerCase();
 
                     if (exactMatch) {
-                      console.log(`  ✓ EXACT MATCH found:`, docTitle.substring(0, 60));
+                      console.log(`   EXACT MATCH found:`, docTitle.substring(0, 60));
                       return true;
                     }
 
@@ -476,13 +476,13 @@ export default function ObjectiveDetailPage() {
                   });
 
                   if (matchedDoc) {
-                    console.log(`  ✅ Matched document ID: ${matchedDoc.id}`);
+                    console.log(`   Matched document ID: ${matchedDoc.id}`);
                     console.log(`     Objective: ${matchedDoc.objective_code}`);
                     console.log(`     Title: ${matchedDoc.evidence_title?.substring(0, 80)}`);
                     documentMap[item.id] = matchedDoc.id;
                     matchedDocIds.add(matchedDoc.id); // Mark this document as matched
                   } else {
-                    console.log(`  ❌ No exact match found for this item`);
+                    console.log(`   No exact match found for this item`);
                   }
                 });
 
@@ -1511,7 +1511,7 @@ Start directly with the numbered list, no introduction or explanation.`;
     try {
       // Get evidence package (array of related documents)
       const documentsToGenerate = getEvidenceDocuments(item.text);
-      console.log(`📦 Evidence Package identified: ${documentsToGenerate.length} document(s) to generate`);
+      console.log(` Evidence Package identified: ${documentsToGenerate.length} document(s) to generate`);
 
       // Get database context for this evidence
       const contentPrompt = await getEvidenceDocumentPrompt(item.text);
@@ -1554,7 +1554,7 @@ TOTAL DOCUMENTS: ${documentsToGenerate.length}`;
 
     // Get evidence package (array of related documents)
     const documentsToGenerate = getEvidenceDocuments(item.text);
-    console.log(`📦 Executing generation for ${documentsToGenerate.length} document(s)`);
+    console.log(` Executing generation for ${documentsToGenerate.length} document(s)`);
 
     setIsExecutingGeneration(true);
 
@@ -1573,7 +1573,7 @@ TOTAL DOCUMENTS: ${documentsToGenerate.length}`;
         setSnackbarMessage(`Generating document ${docIndex + 1}/${documentsToGenerate.length}: ${doc.title}...`);
         setSnackbarOpen(true);
 
-        console.log(`\n📄 Generating: ${doc.title} (${doc.documentType})`);
+        console.log(`\n Generating: ${doc.title} (${doc.documentType})`);
 
         // Use the custom edited prompt from modal
         const generationPrompt = `${editablePromptAndData}
@@ -1590,13 +1590,13 @@ Description: ${doc.description}
 CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 ═══════════════════════════════════════════════════════════════════
 
-🎯 DOCUMENT COMPLETENESS REQUIREMENTS:
+ DOCUMENT COMPLETENESS REQUIREMENTS:
 1. Generate a COMPLETE, FILLED, AUDITOR-READY document (NOT a blank template)
 2. Use ACTUAL data from ${hospitalConfig.name} database (patient records, staff records, equipment data provided above)
 3. Each document must be 2-4 pages long with COMPREHENSIVE detail
 4. Include ALL required sections, forms, registers, checklists as appropriate
 
-📊 FOR REGISTERS & LOG BOOKS:
+ FOR REGISTERS & LOG BOOKS:
 - Create FULL DATA TABLES with 15-25 rows of FILLED entries
 - Include ALL relevant columns with proper headers
 - Example columns for attendance: Sr No, Employee ID, Name, Designation, Department, Signature, Date, Time In, Time Out
@@ -1606,21 +1606,21 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Add proper table styling with alternating row colors, borders, headers
 - Include summary statistics at the bottom (Total entries: X, Completed: Y, Pending: Z)
 
-📝 FOR FORMS:
+ FOR FORMS:
 - Fill ALL fields with realistic data (no blank fields)
-- Include checkboxes (✓ checked where appropriate)
+- Include checkboxes ( checked where appropriate)
 - Add handwritten-style signatures using cursive fonts
 - Include stamps, dates, reference numbers
 - Add "Form No:", "Version:", "Page X of Y" in headers
 
-📋 FOR CHECKLISTS:
+ FOR CHECKLISTS:
 - Include 15-20 checklist items with YES/NO/NA columns
-- Add checkmarks (✓) or crosses (✗) for each item
+- Add checkmarks () or crosses () for each item
 - Include "Compliant/Non-Compliant" status
 - Add "Checked By" and "Verified By" signatures
 - Include compliance percentage calculation
 
-🏥 FOR ATTENDANCE SHEETS:
+ FOR ATTENDANCE SHEETS:
 - Minimum 20-30 employee entries
 - Columns: Sr No, Employee ID, Name, Designation, Department, Signature, Time In, Time Out
 - Use actual staff names from database
@@ -1628,7 +1628,7 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Include header: Training Topic, Date, Venue, Trainer Name
 - Add footer: Total Attendees, Present, Absent
 
-📝 FOR TRAINING ASSESSMENT (MCQ):
+ FOR TRAINING ASSESSMENT (MCQ):
 - Create 10 multiple-choice questions with 4 options each
 - Mark correct answers
 - Show employee responses for 5-10 employees
@@ -1636,7 +1636,7 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Add pass criteria (e.g., 70% or 7/10)
 - Include question categories (Knowledge, Application, Compliance)
 
-📊 FOR AUDIT REPORTS:
+ FOR AUDIT REPORTS:
 - Include detailed audit criteria table (15-20 items)
 - Columns: Sr No, Audit Criteria, Standard Requirement, Observation, Evidence Seen, Score, Remarks
 - Add scoring system (Compliant=2, Partial=1, Non-Compliant=0)
@@ -1644,14 +1644,14 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Include CAPA (Corrective Action) table with: Finding, Root Cause, Action, Responsible Person, Target Date, Status
 - Add auditor signatures and dates
 
-🔬 FOR EQUIPMENT CALIBRATION:
+ FOR EQUIPMENT CALIBRATION:
 - Include detailed calibration data table
 - Columns: Parameter, Standard Value, Measured Value, Deviation, Acceptance Criteria, Result (Pass/Fail)
 - Add equipment details: Make, Model, Serial No, Location, Last Calibration, Next Due
 - Include calibration certificate with standards used
 - Add technician signature and certification number
 
-💊 FOR MEDICATION CHARTS:
+ FOR MEDICATION CHARTS:
 - Create 7-day medication administration record
 - Columns for each day with time slots (Morning, Afternoon, Evening, Night)
 - Include: Drug Name, Dose, Route, Frequency, Start Date, Stop Date
@@ -1659,7 +1659,7 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Add PRN (as needed) medications separately
 - Include allergies section at top
 
-🦠 FOR INFECTION SURVEILLANCE:
+ FOR INFECTION SURVEILLANCE:
 - Monthly data table with daily entries
 - Columns: Date, Ward, Patient Name, UHID, Type of Infection, Site, Organism, Antibiotic, Outcome
 - Include infection rate calculation
@@ -1667,19 +1667,19 @@ CRITICAL INSTRUCTIONS - CREATE DETAILED, COMPREHENSIVE DOCUMENTS
 - Include preventive actions taken
 
 DETAILED FORMATTING REQUIREMENTS:
-✓ Professional hospital letterhead with logo
-✓ Document control: Doc No, Version, Effective Date, Review Date, Page X of Y
-✓ Proper section headings and sub-headings
-✓ Data tables with borders, headers, alternating row colors
-✓ Signature blocks: Prepared By, Reviewed By, Approved By (with names, designations, dates, signatures)
-✓ Hospital stamp/seal area
-✓ Footer with hospital name, address, document reference
-✓ Use realistic dates from 6-9 months ago
-✓ Include actual employee names, patient UHIDs, equipment IDs from database
-✓ Professional fonts: Arial, Calibri, or Segoe UI
-✓ Proper spacing, margins, and print-ready layout
+ Professional hospital letterhead with logo
+ Document control: Doc No, Version, Effective Date, Review Date, Page X of Y
+ Proper section headings and sub-headings
+ Data tables with borders, headers, alternating row colors
+ Signature blocks: Prepared By, Reviewed By, Approved By (with names, designations, dates, signatures)
+ Hospital stamp/seal area
+ Footer with hospital name, address, document reference
+ Use realistic dates from 6-9 months ago
+ Include actual employee names, patient UHIDs, equipment IDs from database
+ Professional fonts: Arial, Calibri, or Segoe UI
+ Proper spacing, margins, and print-ready layout
 
-🎨 CSS STYLING - MUST INCLUDE:
+ CSS STYLING - MUST INCLUDE:
 - Professional color scheme (blues/greens for headers)
 - Table borders and styling
 - Alternating row colors for readability
@@ -1688,7 +1688,7 @@ DETAILED FORMATTING REQUIREMENTS:
 - Responsive design
 - Professional spacing and padding
 
-⚠️ ABSOLUTE REQUIREMENTS:
+ ABSOLUTE REQUIREMENTS:
 - NO BLANK TEMPLATES - Everything must be FILLED
 - NO PLACEHOLDER TEXT - Use actual data
 - NO "Sample" or "Example" - Make it look REAL
@@ -1704,7 +1704,7 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
         let rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
         if (!rawContent) {
-          console.error(`❌ No content generated for: ${doc.title}`);
+          console.error(` No content generated for: ${doc.title}`);
           continue;
         }
 
@@ -1727,7 +1727,7 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
         }, selectedHospital);
 
         if (result.success && result.id) {
-          console.log(`✅ Saved: ${doc.title} (ID: ${result.id})`);
+          console.log(` Saved: ${doc.title} (ID: ${result.id})`);
 
           generatedDocs.push({ title: doc.title, html: htmlContent });
 
@@ -1745,21 +1745,21 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
           };
           setSavedEvidences(prev => [newEvidence, ...prev]);
         } else {
-          console.error(`❌ Failed to save: ${doc.title}`, result.error);
+          console.error(` Failed to save: ${doc.title}`, result.error);
         }
       }
 
-      setSnackbarMessage(`✅ Evidence package complete! Generated ${generatedDocs.length} document(s). Check "Generated Evidences" section below.`);
+      setSnackbarMessage(` Evidence package complete! Generated ${generatedDocs.length} document(s). Check "Generated Evidences" section below.`);
       setSnackbarOpen(true);
 
-      console.log(`\n🎉 Package generation complete! ${generatedDocs.length} documents saved.`);
+      console.log(`\n Package generation complete! ${generatedDocs.length} documents saved.`);
 
       // Close modal on success
       setShowEvidenceGenerationModal(false);
       setCurrentEvidenceToGenerate(null);
 
     } catch (error) {
-      console.error('❌ Error generating evidence package:', error);
+      console.error(' Error generating evidence package:', error);
       setSnackbarMessage(`Failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
       setSnackbarOpen(true);
     } finally {
@@ -2047,7 +2047,7 @@ SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
    - Audit Checklists with observations marked
 4. Include multiple entries/records to show consistent documentation
 5. Make it look like actual working hospital records, not examples
-6. Use proper formatting: tables, checkboxes (✓), signatures, stamps
+6. Use proper formatting: tables, checkboxes (), signatures, stamps
 7. Add realistic handwritten-style notes where appropriate
 8. Include serial numbers, page numbers, reference numbers
 `}
@@ -2496,7 +2496,7 @@ Generate complete, ready-to-use FILLED EVIDENCE with actual data from ${hospital
           }, selectedHospital);
 
           if (result.success && result.id) {
-            console.log('✓ Successfully saved evidence:', result.id);
+            console.log(' Successfully saved evidence:', result.id);
             successCount++;
 
             // Add to local state
@@ -2513,15 +2513,15 @@ Generate complete, ready-to-use FILLED EVIDENCE with actual data from ${hospital
             };
             setSavedEvidences(prev => [newEvidence, ...prev]);
           } else {
-            console.error('✗ Failed to save evidence:', result.error);
+            console.error(' Failed to save evidence:', result.error);
             failCount++;
           }
         } else {
-          console.error('✗ No content generated for:', item.text);
+          console.error(' No content generated for:', item.text);
           failCount++;
         }
       } catch (error) {
-        console.error('✗ Exception generating evidence:', error);
+        console.error(' Exception generating evidence:', error);
         failCount++;
         // Continue with next item even if this one fails
       }
@@ -2538,9 +2538,9 @@ Generate complete, ready-to-use FILLED EVIDENCE with actual data from ${hospital
     setIsGeneratingDocuments(false);
 
     if (successCount > 0) {
-      setSnackbarMessage(`✓ Generated ${successCount} of ${selectedItems.length} document(s). ${failCount > 0 ? `${failCount} failed.` : ''} Scroll down to see saved documents.`);
+      setSnackbarMessage(` Generated ${successCount} of ${selectedItems.length} document(s). ${failCount > 0 ? `${failCount} failed.` : ''} Scroll down to see saved documents.`);
     } else {
-      setSnackbarMessage(`✗ Failed to generate documents. Check console for errors.`);
+      setSnackbarMessage(` Failed to generate documents. Check console for errors.`);
     }
     setSnackbarOpen(true);
 

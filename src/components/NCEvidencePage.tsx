@@ -371,7 +371,7 @@ export default function NCEvidencePage() {
           </FormGroup>
           {staff.length > 0 && (
             <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
-              ✓ Loaded {staff.length} real staff members from master
+               Loaded {staff.length} real staff members from master
             </Typography>
           )}
         </Box>

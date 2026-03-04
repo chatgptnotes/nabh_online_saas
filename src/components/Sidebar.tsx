@@ -65,8 +65,8 @@ const MANAGEMENT_SECTIONS = [
   { id: 'equipment', label: 'Equipment', icon: 'medical_services', path: '/equipment', description: 'Medical equipment inventory' },
   { id: 'sops', label: 'SOPs', icon: 'description', path: '/sops', description: 'Standard Operating Procedures linked to NABH chapters with shareable URLs' },
   { id: 'signage-generator', label: 'Signage Generator', icon: 'signpost', path: '/signage-generator', description: 'Generate professional hospital signages, posters & infographics with AI' },
-  { id: 'image-generator', label: '🎨 AI Image Generator', icon: 'photo_camera', path: '/image-generator', description: 'Generate NABH evidence photos, training materials & facility visuals using Gemini 3 Pro' },
-  { id: 'call-center', label: '📞 Call Center', icon: 'phone', path: '/call-center', description: 'Voice calling system for NABH team coordination & audit reminders via Twilio' },
+  { id: 'image-generator', label: 'AI Image Generator', icon: 'photo_camera', path: '/image-generator', description: 'Generate NABH evidence photos, training materials & facility visuals using Gemini 3 Pro' },
+  { id: 'call-center', label: 'Call Center', icon: 'phone', path: '/call-center', description: 'Voice calling system for NABH team coordination & audit reminders via Twilio' },
   { id: 'emergency-codes', label: 'Emergency Codes', icon: 'emergency', path: '/emergency-codes', description: 'Code Blue, Code Red & Code Pink protocols and documentation' },
   { id: 'manuals', label: 'Hospital Manuals', icon: 'menu_book', path: '/manuals', description: 'Manage hospital policies, procedures & operational manuals' },
   { id: 'licenses', label: 'Licenses & Statutory', icon: 'gavel', path: '/licenses', description: 'Track hospital licenses, certificates & statutory requirements with expiry monitoring' },
@@ -190,7 +190,7 @@ export default function Sidebar({ mobileOpen, onClose }: SidebarProps) {
             </Icon>
           </ListItemIcon>
           <ListItemText
-            primary="🔍 GLOBAL SEARCH"
+            primary="GLOBAL SEARCH"
             secondary="Find anything in NABH system"
             slotProps={{
               primary: {

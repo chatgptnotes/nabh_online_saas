@@ -368,7 +368,7 @@ const generateModernPoster = (config: InfographicConfig, colors: ColorPalette): 
           <g transform="translate(${config.code.length * 14 + 100}, 130)">
             <rect width="100" height="36" rx="18" fill="${colorPalettes['alert-red'].primary}"/>
             <text x="50" y="24" font-family="'Segoe UI', Arial, sans-serif" font-size="12" font-weight="700" fill="${colors.textOnPrimary}" text-anchor="middle">
-              ⭐ CORE
+               CORE
             </text>
           </g>
         ` : ''}

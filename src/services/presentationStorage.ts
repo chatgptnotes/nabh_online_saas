@@ -251,9 +251,9 @@ export async function migrateLocalStoragePresentations() {
 
       if (result.success) {
         migrated++;
-        console.log(`✓ Migrated: ${pres.name}`);
+        console.log(` Migrated: ${pres.name}`);
       } else {
-        console.error(`✗ Failed to migrate: ${pres.name}`, result.error);
+        console.error(` Failed to migrate: ${pres.name}`, result.error);
       }
     }
 

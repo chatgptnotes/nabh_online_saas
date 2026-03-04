@@ -1,7 +1,7 @@
 export default function SearchPageTest() {
   return (
     <div style={{ padding: '20px' }}>
-      <h1>🔍 SEARCH FUNCTIONALITY TEST</h1>
+      <h1> SEARCH FUNCTIONALITY TEST</h1>
       <p>This is a test search page to verify the search functionality is working.</p>
       <input 
         type="text" 
@@ -22,7 +22,7 @@ export default function SearchPageTest() {
         <button style={{ margin: '5px', padding: '8px 16px' }}>quality committee</button>
       </div>
       <div style={{ marginTop: '30px', background: '#f0f8ff', padding: '15px', borderRadius: '5px' }}>
-        <strong>✅ Search page is working!</strong>
+        <strong> Search page is working!</strong>
         <br />
         If you can see this page, the search functionality has been successfully implemented.
       </div>

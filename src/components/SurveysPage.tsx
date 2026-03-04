@@ -612,7 +612,7 @@ export default function SurveysPage() {
   };
 
   const shareViaWhatsApp = (surveyURL: string, surveyTitle: string) => {
-    const message = `🏥 *${hospitalConfig.name} Survey*\n\n*${surveyTitle}*\n\nPlease take a few minutes to complete this survey. Your feedback is valuable to us.\n\n🔗 ${surveyURL}\n\nThank you for your participation!`;
+    const message = ` *${hospitalConfig.name} Survey*\n\n*${surveyTitle}*\n\nPlease take a few minutes to complete this survey. Your feedback is valuable to us.\n\n ${surveyURL}\n\nThank you for your participation!`;
     const whatsappURL = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappURL, '_blank');
   };

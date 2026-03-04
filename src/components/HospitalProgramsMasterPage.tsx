@@ -1,3 +1,4 @@
+import { BarChart3, Shield, Droplets, GraduationCap, Microscope, Home, ClipboardList } from "lucide-react";
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -323,13 +324,13 @@ export default function HospitalProgramsMasterPage() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Quality Improvement': return '📊';
-      case 'Patient Safety': return '🛡️';
-      case 'Infection Control': return '🧼';
-      case 'Training': return '🎓';
-      case 'Research': return '🔬';
-      case 'Community Health': return '🏘️';
-      default: return '📋';
+      case 'Quality Improvement': return <BarChart3 size={16} />;
+      case 'Patient Safety': return <Shield size={16} />;
+      case 'Infection Control': return <Droplets size={16} />;
+      case 'Training': return <GraduationCap size={16} />;
+      case 'Research': return <Microscope size={16} />;
+      case 'Community Health': return <Home size={16} />;
+      default: return <ClipboardList size={16} />;
     }
   };
 
@@ -484,7 +485,7 @@ export default function HospitalProgramsMasterPage() {
                     <Typography variant="subtitle2" gutterBottom>Recent Outcomes:</Typography>
                     {program.outcomes.slice(0, 2).map((outcome, index) => (
                       <Typography key={index} variant="body2" color="success.main" sx={{ fontSize: '0.85rem' }}>
-                        ✓ {outcome}
+                         {outcome}
                       </Typography>
                     ))}
                   </Box>

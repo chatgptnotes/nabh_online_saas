@@ -42,7 +42,7 @@ import {
   Warning as EmergencyIcon,
   CheckCircle as CheckIcon,
   Description as DocIcon,
-  Print as PrintIcon,
+ Print as PrintIcon,
   Add as AddIcon,
   Edit as EditIcon,
   Save as SaveIcon,
@@ -449,7 +449,7 @@ const EmergencyCodesPage: React.FC = () => {
   </style>
 </head>
 <body>
-  <button class="print-btn" onclick="window.print()">🖨️ Print</button>
+  <button class="print-btn" onclick="window.print()">Print</button>
   <div class="document">
     <div class="header">
       <img src="${window.location.origin}${hospitalConfig.logo}" alt="${hospitalConfig.name}">
@@ -1034,7 +1034,7 @@ const EmergencyCodesPage: React.FC = () => {
               startIcon={<PrintIcon />}
               variant="outlined"
             >
-              Print Documentation Package
+             Print Documentation Package
             </Button>
             <Button
               startIcon={<TrainingIcon />}
@@ -1072,7 +1072,7 @@ const EmergencyCodesPage: React.FC = () => {
             Add Document
           </Button>
           <Chip
-            label={dataSource === 'database' ? '📊 Database' : '📁 Mock Data'}
+            label={dataSource === 'database' ? 'Database' : 'Mock Data'}
             color={dataSource === 'database' ? 'success' : 'warning'}
             size="small"
           />

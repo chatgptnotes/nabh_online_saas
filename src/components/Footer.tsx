@@ -25,7 +25,7 @@ export default function Footer() {
           fontSize: '0.7rem',
         }}
       >
-        v{VERSION} | {LAST_UPDATED} | {REPO_NAME}
+        <a href="https://drmhope.com" target="_blank" rel="noopener noreferrer" style={{ color: 'inherit', textDecoration: 'none' }}>drmhope.com</a> | A Bettroi Product | v{VERSION} | {LAST_UPDATED} | {REPO_NAME}
       </Typography>
     </Box>
   );

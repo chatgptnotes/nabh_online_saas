@@ -44,7 +44,7 @@ const defaultPrompts: EvidencePrompt[] = [
     description: 'Comprehensive prompt for generating NABH Third Edition compliant evidence documents',
     prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant evidence documents for {{HOSPITAL_NAME}}. Follow these mandatory requirements:
 
-📋 REGISTER & DOCUMENTATION REQUIREMENTS
+ REGISTER & DOCUMENTATION REQUIREMENTS
 
 1. MINIMUM ROW REQUIREMENT
 - Every register evidence MUST contain at least 20 rows of data
@@ -75,7 +75,7 @@ const defaultPrompts: EvidencePrompt[] = [
 - Next review dates: Set 3-6 months from creation date
 - Use DD/MM/YYYY format consistently
 
-📊 FORM & EVIDENCE REQUIREMENTS
+ FORM & EVIDENCE REQUIREMENTS
 
 5. FILLED FORMS MANDATE
 - NO blank forms allowed as evidence
@@ -89,7 +89,7 @@ const defaultPrompts: EvidencePrompt[] = [
 - Show variety in dates, departments, staff involved
 - Demonstrate ongoing compliance, not one-time activity
 
-🎯 DATA SOURCE REQUIREMENTS
+ DATA SOURCE REQUIREMENTS
 All evidence data MUST be sourced from these masters:
 - Consultant Master (Dr. Murali BK, Dr. Ruby Ammon, Dr. Shiraz, Dr. Sachin, etc.)
 - Department Master (Emergency, Orthopedics, Surgery, Internal Medicine, etc.)
@@ -97,7 +97,7 @@ All evidence data MUST be sourced from these masters:
 - Equipment Master (Crash carts, Ventilators, Monitoring equipment, etc.)
 - Services Master (Emergency, Surgical, Diagnostic, Laboratory services, etc.)
 
-🚨 CRITICAL SUCCESS FACTORS
+ CRITICAL SUCCESS FACTORS
 This evidence generation is for NABH AUDIT FEB 13-14, 2026. Every piece of evidence must be audit-ready, professional, demonstrating active compliance, and meeting all technical requirements.`,
     category: 'NABH Compliance',
     tags: ['NABH', 'Evidence Generation', 'Audit', 'Third Edition'],

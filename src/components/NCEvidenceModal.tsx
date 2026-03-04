@@ -323,7 +323,7 @@ Generate a Training Record with these sections:
 1. Training Programme Details (data-table 2-col key-value: Training Topic | [topic directly addressing "${nc.nc_description}"] | Date | 15/03/2026 | Day | Sunday | Time | 10:00 AM – 11:30 AM | Duration | 90 minutes | Venue | Conference Hall, ${hospital.name} | Facilitator/Trainer | Dr. Shiraz Khan, NABH Coordinator | Co-Trainer | Jagruti Tembhare, Quality Manager | Target Audience | Staff from ${nc.chapter_code}-related departments | Total Enrolled | 15 | Total Attended | 14)
 
 2. Pre-Training MCQ Assessment — 10 Questions (BEFORE training)
-Test BASELINE awareness. Format: numbered questions each with 4 options (A/B/C/D), mark correct answer with ✓. Topics must relate directly to "${nc.nc_description}". Questions should reveal gaps (i.e. some questions that untrained staff likely don't know).
+Test BASELINE awareness. Format: numbered questions each with 4 options (A/B/C/D), mark correct answer with . Topics must relate directly to "${nc.nc_description}". Questions should reveal gaps (i.e. some questions that untrained staff likely don't know).
 
 3. Training Attendance Sheet (data-table: Sr | Employee ID | Name | Designation | Department | Present Y/N | Pre-Test Score /10 | Post-Test Score /10 | Signature — 15 rows using names from MASTER STAFF LIST relevant to NC chapter ${nc.chapter_code}. Pre-Test scores: 3–6/10. Post-Test scores: 7–10/10. Mark 14 Present, 1 Absent. Use realistic employee IDs like HH-001, HH-002...)
 
@@ -591,7 +591,7 @@ export default function NCEvidenceModal({ nc, open, onClose, onSaved }: NCEviden
             </FormGroup>
             {staff.length > 0 && (
               <Typography variant="caption" color="success.main" sx={{ mt: 1, display: 'block' }}>
-                ✓ Loaded {staff.length} real staff members from master
+                 Loaded {staff.length} real staff members from master
               </Typography>
             )}
           </Box>

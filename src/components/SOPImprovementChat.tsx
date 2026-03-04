@@ -73,22 +73,22 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
   const improvementPhases = [
     {
       category: 'hospital-specific',
-      question: `🏥 **${hospitalName} Context Review**\n\nI've analyzed this SOP for "${sopTitle}". Let me ask some specific questions:\n\n1. Does this SOP mention ${hospitalName}'s specific departments, staff roles, or locations?\n2. Are there any ${hospitalName}-specific policies or procedures that should be included?\n3. Do we need to reference specific equipment, software, or systems used at ${hospitalName}?\n4. Should we include contact information for specific personnel or departments?`,
+      question: ` **${hospitalName} Context Review**\n\nI've analyzed this SOP for "${sopTitle}". Let me ask some specific questions:\n\n1. Does this SOP mention ${hospitalName}'s specific departments, staff roles, or locations?\n2. Are there any ${hospitalName}-specific policies or procedures that should be included?\n3. Do we need to reference specific equipment, software, or systems used at ${hospitalName}?\n4. Should we include contact information for specific personnel or departments?`,
       followUp: 'Please share any ${hospitalName}-specific details that should be added to make this SOP more relevant to our operations.'
     },
     {
       category: 'previous-rules',
-      question: `📚 **Previous SOP Rules Analysis**\n\nNow let's check if we've missed any important rules from previous SOPs:\n\n1. Are there any specific approval workflows that ${hospitalName} has been following?\n2. Do we have established timeframes for processes that should be mentioned?\n3. Are there any safety protocols or emergency procedures specific to this process?\n4. Should we reference any existing forms, checklists, or documentation?`,
+      question: ` **Previous SOP Rules Analysis**\n\nNow let's check if we've missed any important rules from previous SOPs:\n\n1. Are there any specific approval workflows that ${hospitalName} has been following?\n2. Do we have established timeframes for processes that should be mentioned?\n3. Are there any safety protocols or emergency procedures specific to this process?\n4. Should we reference any existing forms, checklists, or documentation?`,
       followUp: 'What rules or procedures from previous SOPs should we incorporate?'
     },
     {
       category: 'compliance',
-      question: `✅ **NABH 3rd Edition Compliance Check**\n\nLet's ensure this SOP meets all NABH requirements:\n\n1. Does the SOP clearly define roles and responsibilities?\n2. Are all required documentation and records mentioned?\n3. Do we have proper monitoring and evaluation criteria?\n4. Are there clear escalation procedures for non-compliance?\n5. Is the training requirement for staff clearly defined?`,
+      question: ` **NABH 3rd Edition Compliance Check**\n\nLet's ensure this SOP meets all NABH requirements:\n\n1. Does the SOP clearly define roles and responsibilities?\n2. Are all required documentation and records mentioned?\n3. Do we have proper monitoring and evaluation criteria?\n4. Are there clear escalation procedures for non-compliance?\n5. Is the training requirement for staff clearly defined?`,
       followUp: 'Any NABH compliance requirements we should strengthen?'
     },
     {
       category: 'clarity',
-      question: `🎯 **Clarity and Usability Review**\n\nFinally, let's make sure this SOP is user-friendly:\n\n1. Are the steps clear and easy to follow for frontline staff?\n2. Do we need any flowcharts, diagrams, or visual aids?\n3. Should we add any examples or scenarios to clarify procedures?\n4. Are there any technical terms that need better explanation?\n5. Is the document structure logical and easy to navigate?`,
+      question: ` **Clarity and Usability Review**\n\nFinally, let's make sure this SOP is user-friendly:\n\n1. Are the steps clear and easy to follow for frontline staff?\n2. Do we need any flowcharts, diagrams, or visual aids?\n3. Should we add any examples or scenarios to clarify procedures?\n4. Are there any technical terms that need better explanation?\n5. Is the document structure logical and easy to navigate?`,
       followUp: 'How can we make this SOP clearer and more user-friendly?'
     }
   ];
@@ -110,7 +110,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
     const welcomeMessage: Message = {
       id: `bot-${Date.now()}`,
       type: 'bot',
-      content: `🤖 **SOP Improvement Assistant**\n\nHi! I'm here to help improve your SOP: **"${sopTitle}"**\n\nI'll guide you through a systematic review to ensure this SOP:\n✅ Includes ${hospitalName}-specific details\n✅ Incorporates relevant rules from previous SOPs\n✅ Meets NABH 3rd Edition standards\n✅ Is clear and user-friendly\n\nLet's start with the first review phase!`,
+      content: ` **SOP Improvement Assistant**\n\nHi! I'm here to help improve your SOP: **"${sopTitle}"**\n\nI'll guide you through a systematic review to ensure this SOP:\n Includes ${hospitalName}-specific details\n Incorporates relevant rules from previous SOPs\n Meets NABH 3rd Edition standards\n Is clear and user-friendly\n\nLet's start with the first review phase!`,
       timestamp: new Date(),
       category: 'hospital-specific'
     };
@@ -147,7 +147,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
     const summaryMessage: Message = {
       id: `bot-${Date.now()}`,
       type: 'bot',
-      content: `🎉 **Improvement Review Complete!**\n\nGreat job! We've completed the systematic review of your SOP. Based on your feedback, I can:\n\n1. **Generate an improved version** of the SOP\n2. **Update the master prompt** with your specific requirements\n3. **Save this feedback** to ${hospitalName}'s knowledge base\n\nWould you like me to create an improved version now?`,
+      content: ` **Improvement Review Complete!**\n\nGreat job! We've completed the systematic review of your SOP. Based on your feedback, I can:\n\n1. **Generate an improved version** of the SOP\n2. **Update the master prompt** with your specific requirements\n3. **Save this feedback** to ${hospitalName}'s knowledge base\n\nWould you like me to create an improved version now?`,
       timestamp: new Date(),
       suggestions: [
         'Generate improved SOP',
@@ -197,9 +197,9 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
       
       let response = '';
       if (userMessage.toLowerCase().includes('looks good') || userMessage.toLowerCase().includes('skip')) {
-        response = `✅ Got it! Moving on to the next review area...`;
+        response = ` Got it! Moving on to the next review area...`;
       } else {
-        response = `📝 Thank you for that feedback! I've noted:\n\n"${userMessage}"\n\nThis will help improve the SOP. Let's continue with the next review area...`;
+        response = ` Thank you for that feedback! I've noted:\n\n"${userMessage}"\n\nThis will help improve the SOP. Let's continue with the next review area...`;
       }
 
       const botResponse: Message = {
@@ -242,7 +242,7 @@ const SOPImprovementChat: React.FC<SOPImprovementChatProps> = ({
       const successMessage: Message = {
         id: `bot-${Date.now()}`,
         type: 'bot',
-        content: `✅ **SOP Successfully Improved!**\n\nI've generated an enhanced version of your SOP incorporating all the feedback. The improved SOP has been updated with:\n\n• ${hospitalName}-specific details\n• Previous SOP rules and procedures\n• Enhanced NABH compliance\n• Improved clarity and usability\n\nYou can now review and save the improved version!`,
+        content: ` **SOP Successfully Improved!**\n\nI've generated an enhanced version of your SOP incorporating all the feedback. The improved SOP has been updated with:\n\n• ${hospitalName}-specific details\n• Previous SOP rules and procedures\n• Enhanced NABH compliance\n• Improved clarity and usability\n\nYou can now review and save the improved version!`,
         timestamp: new Date()
       };
 

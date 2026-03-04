@@ -390,7 +390,7 @@ export default function CheatSheetsPage() {
                     {cheatSheet.googleDocLink ? (
                       <>
                         <Typography variant="body2" color="success.main" fontWeight="bold">
-                          {cheatSheet.linkTitle || 'Google Doc Linked ✓'}
+                          {cheatSheet.linkTitle || 'Google Doc Linked '}
                         </Typography>
                         {cheatSheet.linkMetadata && (
                           <Typography variant="caption" color="text.secondary" display="block">

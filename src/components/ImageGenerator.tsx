@@ -186,7 +186,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onImageGenerated }) => 
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            🚀 Quick Actions
+             Quick Actions
           </Typography>
           <Box sx={{ display: 'flex', gap: 1, flexWrap: 'wrap', mb: 2 }}>
             <Button
@@ -243,7 +243,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onImageGenerated }) => 
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            ✍️ Custom Generation
+             Custom Generation
           </Typography>
           <TextField
             fullWidth
@@ -303,7 +303,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onImageGenerated }) => 
         <Card sx={{ mt: 3 }}>
           <CardContent>
             <Typography variant="h6" gutterBottom>
-              📸 Recent Generations
+               Recent Generations
             </Typography>
             <Grid container spacing={2}>
               {generatedImages.slice(0, 6).map((image, index) => (
@@ -389,7 +389,7 @@ const ImageGenerator: React.FC<ImageGeneratorProps> = ({ onImageGenerated }) => 
               <MenuItem value="trainingMaterials">Training Materials (4 images)</MenuItem>
               <MenuItem value="certificates">Certificates (2 images)</MenuItem>
               <MenuItem value="facilityPlans">Facility Plans (2 images)</MenuItem>
-              <MenuItem value="auditEmergencyKit">🚨 Audit Emergency Kit (7 images)</MenuItem>
+              <MenuItem value="auditEmergencyKit"> Audit Emergency Kit (7 images)</MenuItem>
             </Select>
           </FormControl>
           <Typography variant="body2" color="text.secondary" sx={{ mt: 2 }}>

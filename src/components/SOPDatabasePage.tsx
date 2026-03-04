@@ -152,7 +152,7 @@ export default function SOPDatabasePage() {
             <BackIcon />
           </IconButton>
           <Typography variant="h5" fontWeight="bold">
-            📚 SOP Database
+             SOP Database
           </Typography>
           <Chip
             label={`${sops.length} SOPs`}

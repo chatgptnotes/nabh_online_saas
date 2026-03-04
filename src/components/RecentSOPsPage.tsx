@@ -261,7 +261,7 @@ export default function RecentSOPsPage() {
           if (data.sop_html_content) {
             setFinalSOP(data.sop_html_content);
           }
-          showSnackbar(`✅ Found existing SOP for ${objectiveCode}${data.pdf_url ? ' (PDF available)' : ''}`, 'success');
+          showSnackbar(` Found existing SOP for ${objectiveCode}${data.pdf_url ? ' (PDF available)' : ''}`, 'success');
         }
       } catch (err) {
         // No existing SOP found - this is normal
@@ -745,7 +745,7 @@ export default function RecentSOPsPage() {
               <MenuItem key={ch.id} value={ch.id}>{ch.name}</MenuItem>
             ))}
             <MenuItem value="__custom__" sx={{ borderTop: '1px solid #ddd', fontWeight: 600, color: '#1976d2' }}>
-              ✏️ Custom (Enter manually)
+               Custom (Enter manually)
             </MenuItem>
           </Select>
         </FormControl>
@@ -757,7 +757,7 @@ export default function RecentSOPsPage() {
           onClick={() => navigate('/sop-database')}
           sx={{ fontWeight: 600 }}
         >
-          📚 SOP Database
+           SOP Database
         </Button>
       </Box>
 
@@ -884,7 +884,7 @@ export default function RecentSOPsPage() {
               <Typography variant="subtitle2" fontWeight="bold">AI Filter Prompt (Extract relevant from F1)</Typography>
               {selectedFilterPromptId && (
                 <Typography variant="caption" color="success.main" sx={{ display: 'block', fontSize: '0.75rem' }}>
-                  ✅ Default filter prompt auto-applied
+                   Default filter prompt auto-applied
                 </Typography>
               )}
             </Box>
@@ -1048,7 +1048,7 @@ ${selectedCombinedPrompt?.prompt || ''}`;
               <Typography variant="subtitle2" fontWeight="bold">Final Prompt: SOP Generation Instructions</Typography>
               {selectedPromptId && (
                 <Typography variant="caption" color="success.main" sx={{ display: 'block', fontSize: '0.75rem' }}>
-                  ✅ Default prompt auto-applied
+                   Default prompt auto-applied
                 </Typography>
               )}
             </Box>
@@ -1132,7 +1132,7 @@ OUTPUT: Return ONLY the modified HTML content, no explanations or markdown.`;
                       modifiedContent = modifiedContent.replace(/```html/g, '').replace(/```/g, '').trim();
                       setFinalSOP(modifiedContent);
                       setModifyPrompt(''); // Clear prompt after successful modification
-                      showSnackbar('✅ SOP modified successfully!', 'success');
+                      showSnackbar(' SOP modified successfully!', 'success');
                     } else {
                       showSnackbar('AI did not return modified content', 'error');
                     }
@@ -1146,7 +1146,7 @@ OUTPUT: Return ONLY the modified HTML content, no explanations or markdown.`;
                 disabled={!modifyPrompt.trim() || !finalSOP || applyingChanges}
                 sx={{ fontSize: '0.75rem' }}
               >
-                {applyingChanges ? 'Applying...' : '🔄 Apply Changes'}
+                {applyingChanges ? 'Applying...' : ' Apply Changes'}
               </Button>
               <IconButton size="small" onClick={() => setModifyPrompt('')} disabled={!modifyPrompt}>
                 <CopyIcon fontSize="small" />
@@ -1181,7 +1181,7 @@ Examples:
               {existingSOP && (
                 <>
                   <Chip
-                    label="✅ Existing SOP Found"
+                    label=" Existing SOP Found"
                     size="small"
                     color="info"
                     sx={{ height: 24 }}
@@ -1390,7 +1390,7 @@ Examples:
             <Box sx={{ p: 2, bgcolor: 'success.50', borderBottom: 1, borderColor: 'divider' }}>
               <Box display="flex" alignItems="center" justifyContent="space-between">
                 <Typography variant="h6" color="success.main">
-                  🤖 SOP Improvement Assistant
+                   SOP Improvement Assistant
                 </Typography>
                 <Box display="flex" alignItems="center" gap={1}>
                   {sopVersions.length > 1 && (

@@ -200,14 +200,14 @@ const TwilioCallCenter: React.FC = () => {
       </Typography>
 
       <Alert severity="info" sx={{ mb: 3 }}>
-        🎯 <strong>10 days to NABH audit!</strong> Use voice calls for urgent coordination with department heads.
+         <strong>10 days to NABH audit!</strong> Use voice calls for urgent coordination with department heads.
       </Alert>
 
       {/* Quick Actions */}
       <Card sx={{ mb: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            🚀 Quick Actions
+             Quick Actions
           </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} md={6}>
@@ -322,7 +322,7 @@ const TwilioCallCenter: React.FC = () => {
           <Card>
             <CardContent>
               <Typography variant="h6" gutterBottom>
-                📞 Recent Calls
+                 Recent Calls
               </Typography>
               {callRecords.length === 0 ? (
                 <Typography color="text.secondary">No calls made yet</Typography>
@@ -355,7 +355,7 @@ const TwilioCallCenter: React.FC = () => {
       <Card sx={{ mt: 3 }}>
         <CardContent>
           <Typography variant="h6" gutterBottom>
-            📝 Message Templates
+             Message Templates
           </Typography>
           <Grid container spacing={2}>
             {Object.entries(messageTemplates).map(([key, template]) => (

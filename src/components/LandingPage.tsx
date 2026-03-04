@@ -1,3 +1,5 @@
+import React from 'react';
+import { ClipboardList, FileText, GraduationCap, CheckCircle, BookOpen, BarChart3, Building2, Users, FileWarning, XCircle, RefreshCw, Star, ChevronDown, Mail, Phone, MapPin, Search } from "lucide-react";
 import { useNavigate } from 'react-router-dom';
 import Box from '@mui/material/Box';
 import Container from '@mui/material/Container';
@@ -14,15 +16,30 @@ import Stack from '@mui/material/Stack';
 import Divider from '@mui/material/Divider';
 import { alpha } from '@mui/material/styles';
 
+
+const iconMap: Record<string, React.ReactNode> = {
+  clipboard: <ClipboardList size={32} />,
+  file: <FileText size={32} />,
+  graduation: <GraduationCap size={32} />,
+  check: <CheckCircle size={32} />,
+  book: <BookOpen size={32} />,
+  chart: <BarChart3 size={32} />,
+  building: <Building2 size={32} />,
+  users: <Users size={32} />,
+  warn: <FileWarning size={32} />,
+  fail: <XCircle size={32} />,
+  refresh: <RefreshCw size={32} />,
+};
+
 const features = [
-  { icon: '📋', title: 'NC Tracker', desc: 'Track non-conformities from identification to closure. Never miss a deadline with automated alerts and escalation workflows.' },
-  { icon: '📄', title: 'Evidence Generator', desc: 'AI-powered evidence document generation aligned to NABH standards. Create audit-ready documents in minutes, not days.' },
-  { icon: '🎓', title: 'Staff Training', desc: 'Manage training records, schedule sessions, track completion. Ensure every staff member meets NABH competency requirements.' },
-  { icon: '✅', title: 'Audit Preparation', desc: 'Mock audit checklists, readiness scores, and gap analysis. Walk into your NABH assessment with complete confidence.' },
-  { icon: '📚', title: 'Chapter Management', desc: 'All 10 NABH chapters, 71 standards, 408 objective elements organized and trackable. See your progress at a glance.' },
-  { icon: '📊', title: 'Dashboard Analytics', desc: 'Real-time compliance dashboards, chapter-wise progress, trend analysis. Make data-driven decisions for accreditation.' },
-  { icon: '🏥', title: 'Multi-Hospital', desc: 'Manage accreditation across multiple facilities from one dashboard. Perfect for hospital chains and healthcare groups.' },
-  { icon: '👥', title: 'Team Collaboration', desc: 'Assign elements to departments, track ownership, enable cross-functional collaboration. Everyone knows their responsibility.' },
+  { icon: 'clipboard', title: 'NC Tracker', desc: 'Track non-conformities from identification to closure. Never miss a deadline with automated alerts and escalation workflows.' },
+  { icon: 'file', title: 'Evidence Generator', desc: 'AI-powered evidence document generation aligned to NABH standards. Create audit-ready documents in minutes, not days.' },
+  { icon: 'graduation', title: 'Staff Training', desc: 'Manage training records, schedule sessions, track completion. Ensure every staff member meets NABH competency requirements.' },
+  { icon: 'check', title: 'Audit Preparation', desc: 'Mock audit checklists, readiness scores, and gap analysis. Walk into your NABH assessment with complete confidence.' },
+  { icon: 'book', title: 'Chapter Management', desc: 'All 10 NABH chapters, 71 standards, 408 objective elements organized and trackable. See your progress at a glance.' },
+  { icon: 'chart', title: 'Dashboard Analytics', desc: 'Real-time compliance dashboards, chapter-wise progress, trend analysis. Make data-driven decisions for accreditation.' },
+  { icon: 'building', title: 'Multi-Hospital', desc: 'Manage accreditation across multiple facilities from one dashboard. Perfect for hospital chains and healthcare groups.' },
+  { icon: 'users', title: 'Team Collaboration', desc: 'Assign elements to departments, track ownership, enable cross-functional collaboration. Everyone knows their responsibility.' },
 ];
 
 const pricingPlans = [
@@ -117,7 +134,7 @@ export default function LandingPage() {
         '&::before': { content: '""', position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, background: 'radial-gradient(circle at 20% 50%, rgba(21,101,192,0.08) 0%, transparent 50%), radial-gradient(circle at 80% 50%, rgba(46,125,50,0.08) 0%, transparent 50%)' }
       }}>
         <Container maxWidth="md" sx={{ textAlign: 'center', position: 'relative' }}>
-          <Chip label="🏥 Trusted by Hospitals Across India" sx={{ mb: 3, fontWeight: 600, bgcolor: 'rgba(21,101,192,0.1)', color: '#1565C0', fontSize: '0.85rem' }} />
+          <Chip icon={<Building2 size={16} />} label="Trusted by Hospitals Across India" sx={{ mb: 3, fontWeight: 600, bgcolor: 'rgba(21,101,192,0.1)', color: '#1565C0', fontSize: '0.85rem' }} />
           <Typography variant="h2" sx={{ fontWeight: 900, mb: 3, fontSize: { xs: '2rem', md: '3.2rem' }, lineHeight: 1.2, color: '#0D47A1' }}>
             NABH Accreditation<br />Made Simple
           </Typography>
@@ -166,14 +183,14 @@ export default function LandingPage() {
           </Typography>
           <Grid container spacing={3}>
             {[
-              { emoji: '😰', title: 'Drowning in Paperwork', desc: 'Hundreds of evidence documents across 408 elements. Excel sheets everywhere. No single source of truth.' },
-              { emoji: '❌', title: 'Failed Audits', desc: 'Missing evidence, incomplete NCs, untrained staff. Failed assessments mean wasted time and money.' },
-              { emoji: '🔄', title: 'No Tracking System', desc: 'Who is responsible for what? Which elements are complete? Without a system, things fall through the cracks.' },
+              { emoji: 'warn', title: 'Drowning in Paperwork', desc: 'Hundreds of evidence documents across 408 elements. Excel sheets everywhere. No single source of truth.' },
+              { emoji: 'fail', title: 'Failed Audits', desc: 'Missing evidence, incomplete NCs, untrained staff. Failed assessments mean wasted time and money.' },
+              { emoji: 'refresh', title: 'No Tracking System', desc: 'Who is responsible for what? Which elements are complete? Without a system, things fall through the cracks.' },
             ].map((p) => (
               <Grid size={{ xs: 12, md: 4 }} key={p.title}>
                 <Card sx={{ height: '100%', borderRadius: 3, border: '1px solid #eee', boxShadow: 'none', '&:hover': { boxShadow: '0 4px 20px rgba(0,0,0,0.08)' }, transition: 'all 0.3s' }}>
                   <CardContent sx={{ p: 4 }}>
-                    <Typography sx={{ fontSize: '2.5rem', mb: 2 }}>{p.emoji}</Typography>
+                    <Box sx={{ mb: 2 }}>{iconMap[p.emoji] || p.emoji}</Box>
                     <Typography variant="h6" sx={{ fontWeight: 700, mb: 1 }}>{p.title}</Typography>
                     <Typography sx={{ color: '#666' }}>{p.desc}</Typography>
                   </CardContent>
@@ -198,7 +215,7 @@ export default function LandingPage() {
               <Grid size={{ xs: 12, sm: 6, md: 3 }} key={f.title}>
                 <Card sx={{ height: '100%', borderRadius: 3, border: '1px solid #eee', boxShadow: 'none', '&:hover': { boxShadow: '0 8px 30px rgba(0,0,0,0.08)', transform: 'translateY(-4px)' }, transition: 'all 0.3s', cursor: 'default' }}>
                   <CardContent sx={{ p: 3 }}>
-                    <Typography sx={{ fontSize: '2rem', mb: 1.5 }}>{f.icon}</Typography>
+                    <Box sx={{ mb: 1.5 }}>{iconMap[f.icon] || f.icon}</Box>
                     <Typography variant="subtitle1" sx={{ fontWeight: 700, mb: 1 }}>{f.title}</Typography>
                     <Typography variant="body2" sx={{ color: '#666', lineHeight: 1.6 }}>{f.desc}</Typography>
                   </CardContent>
@@ -270,7 +287,7 @@ export default function LandingPage() {
                     <Stack spacing={1.5} sx={{ mb: 3 }}>
                       {plan.features.map((f) => (
                         <Stack key={f} direction="row" spacing={1} alignItems="center">
-                          <Typography sx={{ color: '#4CAF50', fontSize: '1rem' }}>✓</Typography>
+                          <Typography sx={{ color: '#4CAF50', fontSize: '1rem' }}></Typography>
                           <Typography variant="body2" sx={{ color: '#444' }}>{f}</Typography>
                         </Stack>
                       ))}
@@ -310,7 +327,7 @@ export default function LandingPage() {
               <Grid size={{ xs: 12, md: 4 }} key={t.name}>
                 <Card sx={{ height: '100%', borderRadius: 3, border: '1px solid #eee', boxShadow: 'none' }}>
                   <CardContent sx={{ p: 4 }}>
-                    <Typography sx={{ color: '#1565C0', fontSize: '2rem', mb: 2 }}>★★★★★</Typography>
+                    <Typography sx={{ color: '#1565C0', fontSize: '2rem', mb: 2 }}></Typography>
                     <Typography sx={{ color: '#444', lineHeight: 1.7, mb: 3, fontStyle: 'italic' }}>"{t.quote}"</Typography>
                     <Typography sx={{ fontWeight: 700, color: '#1a1a1a' }}>{t.name}</Typography>
                     <Typography variant="body2" sx={{ color: '#666' }}>{t.role}</Typography>
@@ -331,7 +348,7 @@ export default function LandingPage() {
           </Typography>
           {faqs.map((faq) => (
             <Accordion key={faq.q} sx={{ borderRadius: '12px !important', border: '1px solid #eee', boxShadow: 'none', mb: 1.5, '&:before': { display: 'none' }, '&.Mui-expanded': { mb: 1.5 } }}>
-              <AccordionSummary expandIcon={<Typography sx={{ fontSize: '1.2rem' }}>▼</Typography>} sx={{ fontWeight: 600 }}>
+              <AccordionSummary expandIcon={<ChevronDown size={16} />} sx={{ fontWeight: 600 }}>
                 <Typography sx={{ fontWeight: 600 }}>{faq.q}</Typography>
               </AccordionSummary>
               <AccordionDetails>
@@ -387,9 +404,9 @@ export default function LandingPage() {
             <Grid size={{ xs: 12, md: 4 }}>
               <Typography sx={{ fontWeight: 700, color: '#fff', mb: 2 }}>Contact</Typography>
               <Stack spacing={1}>
-                <Typography variant="body2">📧 support@nabh.online</Typography>
-                <Typography variant="body2">📞 +91 98765 43210</Typography>
-                <Typography variant="body2">📍 India</Typography>
+                <Typography variant="body2"><Mail size={14} style={{display:'inline',marginRight:4}} /> support@nabh.online</Typography>
+                <Typography variant="body2"><Phone size={14} style={{display:'inline',marginRight:4}} /> +91 98765 43210</Typography>
+                <Typography variant="body2"><MapPin size={14} style={{display:'inline',marginRight:4}} /> India</Typography>
               </Stack>
             </Grid>
           </Grid>

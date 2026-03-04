@@ -46,7 +46,7 @@ const defaultPrompt: Omit<SOPPromptUI, 'id' | 'createdAt' | 'lastModified'> = {
   description: 'Comprehensive prompt for generating NABH compliant Standard Operating Procedures',
   prompt: `You are an AI coding agent responsible for generating NABH Third Edition compliant Standard Operating Procedures (SOPs) for {{HOSPITAL_NAME}}. Follow these mandatory requirements:
 
-📋 SOP DOCUMENT STRUCTURE
+ SOP DOCUMENT STRUCTURE
 
 1. HEADER SECTION (MANDATORY)
 - Document Title: Clear, descriptive SOP title
@@ -110,7 +110,7 @@ const defaultPrompt: Omit<SOPPromptUI, 'id' | 'createdAt' | 'lastModified'> = {
 - Checklists
 - Flowcharts
 
-🎯 FORMATTING REQUIREMENTS
+ FORMATTING REQUIREMENTS
 
 - Use professional medical document formatting
 - Include {{HOSPITAL_NAME}} logo placeholder
@@ -119,7 +119,7 @@ const defaultPrompt: Omit<SOPPromptUI, 'id' | 'createdAt' | 'lastModified'> = {
 - Tables for complex information
 - Flowcharts for processes with decision points
 
-🚨 MANDATORY STAFF NAMES
+ MANDATORY STAFF NAMES
 - Sonali (Clinical Audit Coordinator) - For review/preparation
 - Gaurav (NABH Coordination Lead) - For approval
 - Dr. Shiraz Sheikh (Quality Coordinator) - For medical SOPs

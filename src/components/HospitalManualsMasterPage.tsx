@@ -1,3 +1,4 @@
+import { ClipboardList, Siren, Droplets, BarChart3, Shield, Users, Stethoscope, Wrench, BookOpen } from "lucide-react";
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -388,15 +389,15 @@ export default function HospitalManualsMasterPage() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Policy & Procedures': return '📋';
-      case 'Emergency Response': return '🚨';
-      case 'Infection Control': return '🧼';
-      case 'Quality Management': return '📊';
-      case 'Safety & Security': return '🛡️';
-      case 'HR & Admin': return '👥';
-      case 'Clinical Protocols': return '⚕️';
-      case 'Equipment & Technology': return '🔧';
-      default: return '📚';
+      case 'Policy & Procedures': return <ClipboardList size={16} />;
+      case 'Emergency Response': return <Siren size={16} />;
+      case 'Infection Control': return <Droplets size={16} />;
+      case 'Quality Management': return <BarChart3 size={16} />;
+      case 'Safety & Security': return <Shield size={16} />;
+      case 'HR & Admin': return <Users size={16} />;
+      case 'Clinical Protocols': return <Stethoscope size={16} />;
+      case 'Equipment & Technology': return <Wrench size={16} />;
+      default: return <BookOpen size={16} />;
     }
   };
 

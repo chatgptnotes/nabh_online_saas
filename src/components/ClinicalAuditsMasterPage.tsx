@@ -1,3 +1,4 @@
+import { Shield, BarChart3, Droplets, Pill, ClipboardList, CheckCircle, Search } from "lucide-react";
 import { useState, useEffect } from 'react';
 import {
   Box,
@@ -359,13 +360,13 @@ export default function ClinicalAuditsMasterPage() {
 
   const getCategoryIcon = (category: string) => {
     switch (category) {
-      case 'Patient Safety': return '🛡️';
-      case 'Quality Indicators': return '📊';
-      case 'Infection Control': return '🧼';
-      case 'Medication Safety': return '💊';
-      case 'Documentation': return '📋';
-      case 'Compliance': return '✅';
-      default: return '🔍';
+      case 'Patient Safety': return <Shield size={16} />;
+      case 'Quality Indicators': return <BarChart3 size={16} />;
+      case 'Infection Control': return <Droplets size={16} />;
+      case 'Medication Safety': return <Pill size={16} />;
+      case 'Documentation': return <ClipboardList size={16} />;
+      case 'Compliance': return <CheckCircle size={16} />;
+      default: return <Search size={16} />;
     }
   };
 
@@ -547,7 +548,7 @@ export default function ClinicalAuditsMasterPage() {
                     <Typography variant="subtitle2" gutterBottom>Recommendations:</Typography>
                     {audit.recommendations.slice(0, 2).map((rec, index) => (
                       <Typography key={index} variant="body2" color="info.main" sx={{ fontSize: '0.85rem' }}>
-                        ➤ {rec}
+                         {rec}
                       </Typography>
                     ))}
                     {audit.recommendations.length > 2 && (
