@@ -2197,10 +2197,10 @@ SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
       );
     }
 
-    // 5. Fix hospital-address div to have correct phone
+    // 5. Fix hospital-address div to have correct address with underline
     processed = processed.replace(
       /<div[^>]*class="hospital-address"[^>]*>[\s\S]*?<\/div>/gi,
-      `<div class="hospital-address" style="font-size: 11px; color: #666;">${hospitalConfig.address} | Phone: ${hospitalConfig.phone}</div>`
+      `<div class="hospital-address" style="font-size: 11px; color: #444; text-align: center; padding-bottom: 8px; border-bottom: 2px solid #1565C0;">2, Teka Naka, Nagpur, Maharashtra 440022 | Phone: +91 9823555053 | Email: info@hopehospital.com</div>`
     );
 
     // 6. Fix dates

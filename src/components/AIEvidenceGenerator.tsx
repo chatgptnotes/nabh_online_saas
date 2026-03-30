@@ -188,7 +188,7 @@ Use this HTML template structure:
 <body>
   <div class="header">
     <div class="logo-area"><img src="${getLogoUrl(config)}" alt="${config.name} Logo" style="width:100%;height:auto;object-fit:contain;" /></div>
-    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:0;">${config.address}<br>Phone: ${config.phone} &nbsp;|&nbsp; Email: ${config.email}<br><strong>SPOC: Dr. B.K. Murali</strong> — CMD &amp; Chairman</div>
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:2px;padding-bottom:8px;border-bottom:2px solid #1565C0;">2, Teka Naka, Nagpur, Maharashtra 440022 | Phone: +91 9823555053 | Email: info@hopehospital.com</div>
   </div>
 
   <div class="objective-line">[OBJECTIVE_CODE_AND_TITLE]</div>
@@ -831,19 +831,32 @@ export default function AIEvidenceGenerator() {
     processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
     processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
 
-    // Nuclear fix: replace ANY <img> tag in the first 2000 chars (header area) that doesn't already have the correct logo URL
-    const headerEnd = Math.min(processed.length, 2000);
-    const headerPart = processed.substring(0, headerEnd);
-    const restPart = processed.substring(headerEnd);
-    const fixedHeader = headerPart.replace(/<img[^>]*\/?>/gi, (match) => {
-      if (match.includes(correctLogoUrl)) return match; // already correct
-      return logoImg;
-    });
-    processed = fixedHeader + restPart;
+    // Replace the entire header with a clean, correct one
+    const cleanHeaderContent = `<div class="header">
+    <div class="logo-area" style="text-align:center;">${logoImg}</div>
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:2px;padding-bottom:8px;border-bottom:2px solid #1565C0;">2, Teka Naka, Nagpur, Maharashtra 440022 | Phone: +91 9823555053 | Email: info@hopehospital.com</div>
+  </div>`;
 
-    // Fix garbled patterns like `* class="logo">`
+    // Find and replace the header div by tracking nested div depth
+    const headerIdx = processed.search(/<div[^>]*class="header"/i);
+    if (headerIdx !== -1) {
+      let depth = 0;
+      let headerEndPos = headerIdx;
+      for (let i = headerIdx; i < processed.length; i++) {
+        if (processed.substring(i, i + 4) === '<div') depth++;
+        if (processed.substring(i, i + 6) === '</div>') {
+          depth--;
+          if (depth === 0) {
+            headerEndPos = i + 6;
+            break;
+          }
+        }
+      }
+      processed = processed.substring(0, headerIdx) + cleanHeaderContent + processed.substring(headerEndPos);
+    }
+
+    // Fallback: fix any remaining broken img tags and garbled patterns
     processed = processed.replace(/\*\s*class="logo">/gi, logoImg);
-    // Replace logo-area divs with broken content
     processed = processed.replace(/<div[^>]*class="logo-area"[^>]*>[\s\S]*?<\/div>/gi, `<div class="logo-area" style="text-align:center;">${logoImg}</div>`);
 
     return processed;
