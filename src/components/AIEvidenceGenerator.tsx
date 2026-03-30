@@ -88,7 +88,10 @@ const nabhCoordinator = getNABHCoordinator();
 
 const getLogoUrl = (config: HospitalConfig) => {
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online';
-  return `${base}${config.logo}`;
+  // Use production URL for logo to ensure it works in iframes, preview windows, and PDFs
+  const productionBase = 'https://www.nabh.online';
+  const logoBase = base.includes('localhost') ? base : productionBase;
+  return `${logoBase}${config.logo}`;
 };
 
 const getContentPrompt = (config: HospitalConfig, objectiveCode: string, evidenceText: string = '', sequenceNumber: number = 1) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.
@@ -828,15 +831,16 @@ export default function AIEvidenceGenerator() {
     processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
     processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
 
-    // Replace the entire header div with a clean one (AI often garbles the img tag)
-    const cleanHeader = `<div class="header">
-    <div class="logo-area">${logoImg}</div>
-    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:0;">${hospitalConfig.address}<br>Phone: ${hospitalConfig.phone} &nbsp;|&nbsp; Email: ${hospitalConfig.email}</div>
-  </div>`;
-    processed = processed.replace(/<div[^>]*class="header"[^>]*>[\s\S]*?<\/div>\s*<\/div>/i, cleanHeader);
+    // Nuclear fix: replace ANY <img> tag in the first 2000 chars (header area) that doesn't already have the correct logo URL
+    const headerEnd = Math.min(processed.length, 2000);
+    const headerPart = processed.substring(0, headerEnd);
+    const restPart = processed.substring(headerEnd);
+    const fixedHeader = headerPart.replace(/<img[^>]*\/?>/gi, (match) => {
+      if (match.includes(correctLogoUrl)) return match; // already correct
+      return logoImg;
+    });
+    processed = fixedHeader + restPart;
 
-    // Also catch any remaining broken img tags with logo/hospital references
-    processed = processed.replace(/<img[^>]*(?:src|alt)="[^"]*(?:logo|hospital)[^"]*"[^>]*\/?>/gi, logoImg);
     // Fix garbled patterns like `* class="logo">`
     processed = processed.replace(/\*\s*class="logo">/gi, logoImg);
     // Replace logo-area divs with broken content
