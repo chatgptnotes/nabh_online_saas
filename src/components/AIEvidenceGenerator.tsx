@@ -828,6 +828,20 @@ export default function AIEvidenceGenerator() {
     processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
     processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
 
+    // Replace the entire header div with a clean one (AI often garbles the img tag)
+    const cleanHeader = `<div class="header">
+    <div class="logo-area">${logoImg}</div>
+    <div style="font-size:11px;color:#444;text-align:center;line-height:1.5;margin-top:0;">${hospitalConfig.address}<br>Phone: ${hospitalConfig.phone} &nbsp;|&nbsp; Email: ${hospitalConfig.email}</div>
+  </div>`;
+    processed = processed.replace(/<div[^>]*class="header"[^>]*>[\s\S]*?<\/div>\s*<\/div>/i, cleanHeader);
+
+    // Also catch any remaining broken img tags with logo/hospital references
+    processed = processed.replace(/<img[^>]*(?:src|alt)="[^"]*(?:logo|hospital)[^"]*"[^>]*\/?>/gi, logoImg);
+    // Fix garbled patterns like `* class="logo">`
+    processed = processed.replace(/\*\s*class="logo">/gi, logoImg);
+    // Replace logo-area divs with broken content
+    processed = processed.replace(/<div[^>]*class="logo-area"[^>]*>[\s\S]*?<\/div>/gi, `<div class="logo-area" style="text-align:center;">${logoImg}</div>`);
+
     return processed;
   };
 
