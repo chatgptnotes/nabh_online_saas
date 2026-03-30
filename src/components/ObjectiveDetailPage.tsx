@@ -1755,8 +1755,8 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
   const effectiveDate = getFormattedDate(documentDate);
   const reviewDate = getFormattedDate(new Date(documentDate.getFullYear() + 1, documentDate.getMonth(), documentDate.getDate()));
 
-  // Logo URL - use hospital config's logo path (supports absolute URLs)
-  const logoUrl = (hospitalConfig.logo || '').startsWith('http')
+  // Logo URL - use hospital config's logo path (supports absolute URLs and data URLs)
+  const logoUrl = (hospitalConfig.logo || '').startsWith('http') || (hospitalConfig.logo || '').startsWith('data:')
     ? hospitalConfig.logo
     : window.location.hostname === 'localhost'
       ? `${window.location.origin}${hospitalConfig.logo || '/hospital-logo.png'}`

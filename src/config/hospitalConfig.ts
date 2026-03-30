@@ -5,6 +5,7 @@
 
 import { supabase } from '../lib/supabase';
 import type { Hospital } from '../types/auth';
+import { HOPE_HOSPITAL_LOGO_BASE64 } from './logoData';
 
 export interface TeamMember {
   name: string;
@@ -33,7 +34,7 @@ export const HOSPITALS: Record<string, HospitalInfo> = {
     phone: '+91 9823555053',
     email: 'info@hopehospital.com',
     website: 'www.hopehospital.com',
-    logo: 'https://hopehospital.com/images/hope-hospital-og.png',
+    logo: HOPE_HOSPITAL_LOGO_BASE64,
   },
   ayushman: {
     id: 'ayushman',

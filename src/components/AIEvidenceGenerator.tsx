@@ -87,8 +87,8 @@ const nabhCoordinator = getNABHCoordinator();
 // Instead, we initialize state in the component.
 
 const getLogoUrl = (config: HospitalConfig) => {
-  // If logo is already an absolute URL, use it directly
-  if (config.logo.startsWith('http')) {
+  // If logo is already an absolute URL or data URL, use it directly
+  if (config.logo.startsWith('http') || config.logo.startsWith('data:')) {
     return config.logo;
   }
   // Fallback for relative paths
