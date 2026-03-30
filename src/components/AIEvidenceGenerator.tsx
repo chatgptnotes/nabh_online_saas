@@ -37,7 +37,7 @@ import DialogContent from '@mui/material/DialogContent';
 import DialogActions from '@mui/material/DialogActions';
 import { useNABHStore } from '../store/nabhStore';
 import { getHospitalInfo, getNABHCoordinator, getAssessorPrompt } from '../config/hospitalConfig';
-import { getClaudeApiKey, callGeminiAPI, getGeminiApiKey } from '../lib/supabase';
+import { callGeminiAPI, getGeminiApiKey } from '../lib/supabase';
 import { generateDocumentNumber, getFormattedDate, getReviewDate } from '../utils/documentNumbering';
 import {
   generateInfographic,
@@ -681,58 +681,6 @@ async function callGeminiText(apiKey: string, prompt: string, userMessage: strin
   }
 }
 
-// Claude API call for text generation
-async function callClaudeText(apiKey: string, prompt: string, userMessage: string): Promise<string> {
-  // Validate API key
-  if (!apiKey || apiKey.trim() === '') {
-    throw new Error('Claude API key is not configured. Please add VITE_CLAUDE_API_KEY to your .env file and restart the development server.');
-  }
-
-  try {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20241022',
-        max_tokens: 4096,
-        messages: [
-          {
-            role: 'user',
-            content: `${prompt}\n\n${userMessage}`,
-          },
-        ],
-      }),
-    });
-
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      const errorMessage = errorData.error?.message || `API request failed with status ${response.status}`;
-
-      if (response.status === 401) {
-        throw new Error('Invalid API key. Please check your VITE_CLAUDE_API_KEY in the .env file.');
-      } else if (response.status === 403) {
-        throw new Error('API access forbidden. The API key may not have the required permissions or CORS may be blocking the request.');
-      } else if (response.status === 429) {
-        throw new Error('Rate limit exceeded. Please wait a moment and try again.');
-      }
-
-      throw new Error(errorMessage);
-    }
-
-    const data = await response.json();
-    return data.content?.[0]?.text || '';
-  } catch (err) {
-    if (err instanceof TypeError && err.message.includes('fetch')) {
-      throw new Error('Network error: Unable to connect to Claude API. Please check your internet connection.');
-    }
-    throw err;
-  }
-}
 
 export default function AIEvidenceGenerator() {
   const { chapters, selectedHospital, selectedEvidenceForCreation, selectedEvidenceObjectiveCode, clearSelectedEvidenceForCreation } = useNABHStore();
@@ -775,7 +723,6 @@ export default function AIEvidenceGenerator() {
   }
 
   // API keys from environment variables
-  const claudeApiKey = getClaudeApiKey();
   const geminiApiKey = getGeminiApiKey();
   const [evidenceItems, setEvidenceItems] = useState<EvidenceItem[]>([]);
   const [generatedContents, setGeneratedContents] = useState<GeneratedContent[]>([]);
@@ -959,34 +906,15 @@ export default function AIEvidenceGenerator() {
     try {
       let generatedText: string;
 
-      // Try Gemini first, fallback to Claude
+      // Use Gemini API
       if (geminiApiKey) {
-        try {
-          generatedText = await callGeminiText(
-            geminiApiKey,
-            listPrompt,
-            `Objective Element Description:\n\n${description}`
-          );
-        } catch (geminiErr) {
-          console.warn('Gemini failed, trying Claude:', geminiErr);
-          if (claudeApiKey) {
-            generatedText = await callClaudeText(
-              claudeApiKey,
-              listPrompt,
-              `Objective Element Description:\n\n${description}`
-            );
-          } else {
-            throw geminiErr;
-          }
-        }
-      } else if (claudeApiKey) {
-        generatedText = await callClaudeText(
-          claudeApiKey,
+        generatedText = await callGeminiText(
+          geminiApiKey,
           listPrompt,
           `Objective Element Description:\n\n${description}`
         );
       } else {
-        throw new Error('No API key configured. Please configure either Gemini or Claude API key.');
+        throw new Error('No API key configured. Please configure VITE_GEMINI_API_KEY in your .env file.');
       }
 
       const items = parseEvidenceList(generatedText);
@@ -1133,22 +1061,11 @@ Generate complete, ready-to-use content/template for this evidence in ENGLISH ON
 
           let content: string;
 
-          // Try Gemini first, fallback to Claude
+          // Use Gemini API
           if (geminiApiKey) {
-            try {
-              content = await callGeminiText(geminiApiKey, contentPrompt, userMessage);
-            } catch (geminiErr) {
-              console.warn('Gemini failed for content generation, trying Claude:', geminiErr);
-              if (claudeApiKey) {
-                content = await callClaudeText(claudeApiKey, contentPrompt, userMessage);
-              } else {
-                throw geminiErr;
-              }
-            }
-          } else if (claudeApiKey) {
-            content = await callClaudeText(claudeApiKey, contentPrompt, userMessage);
+            content = await callGeminiText(geminiApiKey, contentPrompt, userMessage);
           } else {
-            throw new Error('No API key configured.');
+            throw new Error('No API key configured. Please configure VITE_GEMINI_API_KEY in your .env file.');
           }
 
           // Post-process to ensure correct hospital branding
@@ -1919,16 +1836,7 @@ ${trimmed}
               size="small"
             />
           )}
-          {claudeApiKey && (
-            <Chip
-              icon={<Icon>check_circle</Icon>}
-              label="Claude"
-              color="primary"
-              variant="outlined"
-              size="small"
-            />
-          )}
-          {!geminiApiKey && !claudeApiKey && (
+          {!geminiApiKey && (
             <Chip
               icon={<Icon>warning</Icon>}
               label="API Key Missing"
@@ -1947,17 +1855,10 @@ ${trimmed}
         </Box>
 
         {/* API Key Warning */}
-        {!geminiApiKey && !claudeApiKey && (
+        {!geminiApiKey && (
           <Alert severity="error" sx={{ mb: 2 }}>
             <Typography variant="body2">
-              <strong>No API keys configured.</strong> Add <code>VITE_GEMINI_API_KEY</code> or <code>VITE_CLAUDE_API_KEY</code> to your <code>.env</code> file.
-            </Typography>
-          </Alert>
-        )}
-        {geminiApiKey && !claudeApiKey && (
-          <Alert severity="info" sx={{ mb: 2 }}>
-            <Typography variant="body2">
-              Using <strong>Gemini</strong> for content generation. Claude available as backup if configured.
+              <strong>No API key configured.</strong> Add <code>VITE_GEMINI_API_KEY</code> to your <code>.env</code> file.
             </Typography>
           </Alert>
         )}

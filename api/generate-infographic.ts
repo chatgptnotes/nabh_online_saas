@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
 /**
- * Secure backend proxy for Claude API (Anthropic)
+ * Secure backend proxy for Gemini API (Google)
  * This keeps the API key hidden from the client
  * Used for generating infographics
  */
@@ -12,57 +12,52 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    // Get the API key from environment variables (server-side only, no VITE_ prefix)
-    const apiKey = process.env.CLAUDE_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
 
     if (!apiKey) {
-      console.error('CLAUDE_API_KEY not configured');
+      console.error('GEMINI_API_KEY not configured');
       return res.status(500).json({ error: 'API key not configured' });
     }
 
-    // Get the prompt and parameters from request body
-    const { prompt, model = 'claude-3-5-sonnet-20241022', maxTokens = 4096, temperature = 0.7 } = req.body;
+    const { prompt, maxTokens = 4096, temperature = 0.7 } = req.body;
 
     if (!prompt) {
       return res.status(400).json({ error: 'Prompt is required' });
     }
 
-    // Log request (for debugging)
-    console.log('Generating infographic with Claude API');
+    console.log('Generating infographic with Gemini API');
     console.log('Prompt length:', prompt.length);
-    console.log('Model:', model);
 
-    // Call Claude API from backend
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model,
-        max_tokens: maxTokens,
-        temperature,
-        messages: [{ role: 'user', content: prompt }],
-      }),
-    });
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            temperature,
+            maxOutputTokens: maxTokens,
+          },
+        }),
+      }
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error('Claude API error:', response.status, errorText);
+      console.error('Gemini API error:', response.status, errorText);
       return res.status(response.status).json({
-        error: `Claude API error: ${response.status}`,
+        error: `Gemini API error: ${response.status}`,
         details: errorText,
       });
     }
 
     const data = await response.json();
+    console.log('Gemini API response received successfully');
 
-    // Log success
-    console.log('Claude API response received successfully');
-
-    // Return the response to the client
+    // Return in the same format the frontend expects
     return res.status(200).json(data);
   } catch (error) {
     console.error('Error in generate-infographic API:', error);

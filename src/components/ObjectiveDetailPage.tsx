@@ -42,7 +42,7 @@ import DialogActions from '@mui/material/DialogActions';
 import { useNABHStore } from '../store/nabhStore';
 import type { Status, Priority, ElementCategory, EvidenceFile, YouTubeVideo, TrainingMaterial, SOPDocument } from '../types/nabh';
 import { ASSIGNEE_OPTIONS, getHospitalInfo, getNABHCoordinator } from '../config/hospitalConfig';
-import { getClaudeApiKey, callGeminiAPI } from '../lib/supabase';
+import { callGeminiAPI } from '../lib/supabase';
 import {
   saveObjectiveToSupabase,
   loadObjectiveFromSupabase,
@@ -1022,26 +1022,7 @@ Prefer Indian healthcare context videos. Return ONLY valid JSON array.`;
     setGeneratedSOPContent('');
 
     try {
-      const apiKey = await getClaudeApiKey();
-      if (!apiKey) {
-        throw new Error('API key not configured');
-      }
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 4096,
-          messages: [
-            {
-              role: 'user',
-              content: `Generate a Standard Operating Procedure (SOP) document for NABH accreditation compliance.
+      const prompt = `Generate a Standard Operating Procedure (SOP) document for NABH accreditation compliance.
 
 Objective Code: ${objective.code}
 Objective Title: ${objective.description}
@@ -1057,18 +1038,10 @@ Generate a comprehensive SOP that includes:
 6. Quality Indicators
 7. References
 
-Format it professionally with clear sections and bullet points.`,
-            },
-          ],
-        }),
-      });
+Format it professionally with clear sections and bullet points.`;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate SOP');
-      }
-
-      const data = await response.json();
-      const content = data.content[0]?.text || 'Failed to generate SOP';
+      const data = await callGeminiAPI(prompt, 0.7, 4096);
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text || 'Failed to generate SOP';
       setGeneratedSOPContent(content);
     } catch (error) {
       console.error('Error generating SOP:', error);
@@ -2409,9 +2382,6 @@ SPECIFIC INSTRUCTIONS FOR ${hospitalConfig.name.toUpperCase()} EVIDENCE:
     setSnackbarMessage(`Starting generation of ${selectedItems.length} document(s)...`);
     setSnackbarOpen(true);
 
-    const claudeApiKey = getClaudeApiKey();
-    console.log('API keys:', { claude: !!claudeApiKey });
-
     let successCount = 0;
     let failCount = 0;
 
@@ -2437,41 +2407,14 @@ Generate complete, ready-to-use FILLED EVIDENCE with actual data from ${hospital
 
         let rawContent: string = '';
 
-        // Try Gemini first, fallback to Claude
+        // Use Gemini API
         try {
           console.log('Calling Gemini API via backend proxy...');
           const data = await callGeminiAPI(`${contentPrompt}\n\n${userMessage}`, 0.7, 8192);
           rawContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
           console.log('Gemini response received, content length:', rawContent.length);
         } catch (geminiErr) {
-          console.error('Gemini exception:', geminiErr);
-        }
-
-        if (!rawContent && claudeApiKey) {
-          console.log('Trying Claude API...');
-          const response = await fetch('https://api.anthropic.com/v1/messages', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'x-api-key': claudeApiKey,
-              'anthropic-version': '2023-06-01',
-              'anthropic-dangerous-direct-browser-access': 'true',
-            },
-            body: JSON.stringify({
-              model: 'claude-3-5-sonnet-20241022',
-              max_tokens: 4096,
-              messages: [{ role: 'user', content: `${contentPrompt}\n\n${userMessage}` }],
-            }),
-          });
-
-          if (response.ok) {
-            const data = await response.json();
-            rawContent = data.content?.[0]?.text || '';
-            console.log('Claude response received, content length:', rawContent.length);
-          } else {
-            const errorText = await response.text();
-            console.error('Claude API error:', response.status, errorText);
-          }
+          console.error('Gemini API error:', geminiErr);
         }
 
         if (rawContent) {
@@ -2941,43 +2884,16 @@ Generate complete HTML with embedded CSS. Do NOT use markdown or code blocks. St
     setIsGeneratingHindi(true);
 
     try {
-      const apiKey = await getClaudeApiKey();
-      if (!apiKey) {
-        throw new Error('API key not configured');
-      }
-
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 1024,
-          messages: [
-            {
-              role: 'user',
-              content: `Translate and explain the following NABH accreditation standard interpretation into Hindi. The explanation should be detailed and accurate. You may use complex sentences if necessary, but the meaning must not be changed. This is for hospital staff training purposes.
+      const prompt = `Translate and explain the following NABH accreditation standard interpretation into Hindi. The explanation should be detailed and accurate. You may use complex sentences if necessary, but the meaning must not be changed. This is for hospital staff training purposes.
 
 Objective Code: ${objective.code}
 English Interpretation: ${interpretation}
 ${objective.isCore ? 'Note: This is a CORE element which is critical for patient safety.' : ''}
 
-Provide only the Hindi explanation, no English text. The explanation should be comprehensive and explain what the hospital needs to do to comply with this standard.`,
-            },
-          ],
-        }),
-      });
+Provide only the Hindi explanation, no English text. The explanation should be comprehensive and explain what the hospital needs to do to comply with this standard.`;
 
-      if (!response.ok) {
-        throw new Error('Failed to generate Hindi explanation');
-      }
-
-      const data = await response.json();
-      const hindiContent = data.content[0]?.text || '';
+      const data = await callGeminiAPI(prompt, 0.7, 1024);
+      const hindiContent = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
       if (hindiContent.trim()) {
         updateObjective(chapter.id, objective.id, { hindiExplanation: hindiContent.trim() });

@@ -29,7 +29,7 @@ import CircularProgress from '@mui/material/CircularProgress';
 import { useNABHStore } from '../store/nabhStore';
 import type { Status, Priority, ElementCategory, EvidenceFile, YouTubeVideo, TrainingMaterial, SOPDocument } from '../types/nabh';
 import { ASSIGNEE_OPTIONS, getHospitalInfo } from '../config/hospitalConfig';
-import { getClaudeApiKey } from '../lib/supabase';
+import { callGeminiAPI } from '../lib/supabase';
 
 interface ObjectiveDetailProps {
   open: boolean;
@@ -302,12 +302,6 @@ export default function ObjectiveDetail({
   };
 
   const handleGenerateSOP = async () => {
-    const apiKey = getClaudeApiKey();
-    if (!apiKey) {
-      alert('Claude API key not configured. Please add VITE_CLAUDE_API_KEY to your .env file.');
-      return;
-    }
-
     setIsGeneratingSOP(true);
     setGeneratedSOPContent('');
 
@@ -456,33 +450,8 @@ Generate a complete, valid HTML document with embedded CSS:
 
 Fill in all sections with relevant content based on the NABH objective element description provided.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 8192,
-          messages: [
-            {
-              role: 'user',
-              content: prompt,
-            },
-          ],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to generate SOP');
-      }
-
-      const data = await response.json();
-      const content = data.content?.[0]?.text || '';
+      const data = await callGeminiAPI(prompt, 0.7, 8192);
+      const content = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
       setGeneratedSOPContent(content);
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate SOP. Please try again.');
@@ -498,10 +467,6 @@ Fill in all sections with relevant content based on the NABH objective element d
 
   // Training Document Generators
   const handleGenerateTrainingNotice = async () => {
-    const apiKey = getClaudeApiKey();
-    if (!apiKey) {
-      alert('Claude API key not configured. Please add VITE_CLAUDE_API_KEY to your .env file.');
-      return;
     }
 
     if (!trainingDate || !trainerName) {
@@ -614,28 +579,8 @@ Generate a complete HTML document for this Training Notice with modern, professi
 
 Fill in the notice body with appropriate content explaining why this training is important and who should attend.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to generate notice');
-      }
-
-      const data = await response.json();
-      setGeneratedNotice(data.content?.[0]?.text || '');
+      const data = await callGeminiAPI(prompt, 0.7, 4096);
+      setGeneratedNotice(data.candidates?.[0]?.content?.parts?.[0]?.text || '');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate notice.');
     } finally {
@@ -644,12 +589,6 @@ Fill in the notice body with appropriate content explaining why this training is
   };
 
   const handleGenerateAttendanceSheet = async () => {
-    const apiKey = getClaudeApiKey();
-    if (!apiKey) {
-      alert('Claude API key not configured.');
-      return;
-    }
-
     setIsGeneratingAttendance(true);
     setGeneratedAttendance('');
 
@@ -757,28 +696,8 @@ Generate a complete HTML document for this Training Attendance Sheet with modern
 
 Generate the complete HTML with all 20 attendance rows filled in with empty cells.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 4096,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to generate attendance sheet');
-      }
-
-      const data = await response.json();
-      setGeneratedAttendance(data.content?.[0]?.text || '');
+      const data = await callGeminiAPI(prompt, 0.7, 4096);
+      setGeneratedAttendance(data.candidates?.[0]?.content?.parts?.[0]?.text || '');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate attendance sheet.');
     } finally {
@@ -787,12 +706,6 @@ Generate the complete HTML with all 20 attendance rows filled in with empty cell
   };
 
   const handleGenerateMCQTest = async () => {
-    const apiKey = getClaudeApiKey();
-    if (!apiKey) {
-      alert('Claude API key not configured.');
-      return;
-    }
-
     setIsGeneratingMCQ(true);
     setGeneratedMCQ('');
 
@@ -941,28 +854,8 @@ Generate a complete HTML document for this MCQ Test with modern, professional st
 
 Generate the complete HTML with all ${mcqQuestionCount} MCQ questions filled in with proper questions and options related to the training topic.`;
 
-      const response = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-api-key': apiKey,
-          'anthropic-version': '2023-06-01',
-          'anthropic-dangerous-direct-browser-access': 'true',
-        },
-        body: JSON.stringify({
-          model: 'claude-3-5-sonnet-20241022',
-          max_tokens: 8192,
-          messages: [{ role: 'user', content: prompt }],
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error?.message || 'Failed to generate MCQ test');
-      }
-
-      const data = await response.json();
-      setGeneratedMCQ(data.content?.[0]?.text || '');
+      const data = await callGeminiAPI(prompt, 0.7, 8192);
+      setGeneratedMCQ(data.candidates?.[0]?.content?.parts?.[0]?.text || '');
     } catch (err) {
       alert(err instanceof Error ? err.message : 'Failed to generate MCQ test.');
     } finally {

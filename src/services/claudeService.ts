@@ -1,14 +1,14 @@
 import type { InfographicConfig } from './infographicGenerator';
+import { callGeminiAPI } from '../lib/supabase';
 
 /**
- * Generate SVG infographic using Claude API via backend proxy
- * This keeps the API key secure on the server side
+ * Generate SVG infographic using Gemini API via backend proxy
  */
 export const generateClaudeInfographic = async (config: InfographicConfig): Promise<string> => {
   const prompt = `
     You are an expert graphic designer and SVG artist.
     Create a modern, stylish, professional SVG infographic for a hospital accreditation objective.
-    
+
     Data:
     - Title: ${config.title}
     - Objective Code: ${config.code}
@@ -27,7 +27,7 @@ export const generateClaudeInfographic = async (config: InfographicConfig): Prom
     - Style: Modern, clean, flat design with gradients and soft shadows (using SVG defs/filters).
     - Color Palette: Professional Healthcare (Teals, Blues, Clean Greens). Use 'Red' only for "Core" compliance alerts.
     - Typography: Use standard sans-serif fonts (Arial, Roboto, Segoe UI). Ensure text is readable.
-    
+
     Structure:
     - **Header**: Hospital Name (Bilingual), Objective Code (Badge style).
     - **Main Title**: Bilingual Title.
@@ -36,31 +36,8 @@ export const generateClaudeInfographic = async (config: InfographicConfig): Prom
   `;
 
   try {
-    // Use backend proxy in production, fallback to direct API in development if proxy fails
-    const backendUrl = import.meta.env.VITE_SITE_URL
-      ? `${import.meta.env.VITE_SITE_URL}/api/generate-infographic`
-      : '/api/generate-infographic';
-
-    const response = await fetch(backendUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        prompt,
-        model: 'claude-3-5-sonnet-20241022',
-        maxTokens: 4096,
-        temperature: 0.7,
-      }),
-    });
-
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(`Claude API error: ${error.error || response.statusText}`);
-    }
-
-    const data = await response.json();
-    const text = data.content[0].text;
+    const data = await callGeminiAPI(prompt, 0.7, 4096);
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
 
     // Extract SVG
     const svgStart = text.indexOf('<svg');
@@ -69,10 +46,10 @@ export const generateClaudeInfographic = async (config: InfographicConfig): Prom
     if (svgStart !== -1 && svgEnd !== -1) {
       return text.substring(svgStart, svgEnd + 6);
     } else {
-      throw new Error('Claude did not return valid SVG code.');
+      throw new Error('API did not return valid SVG code.');
     }
   } catch (error) {
-    console.error('Error generating Claude infographic:', error);
+    console.error('Error generating infographic:', error);
     throw error;
   }
 };
