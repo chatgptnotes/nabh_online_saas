@@ -33,7 +33,7 @@ export const HOSPITALS: Record<string, HospitalInfo> = {
     phone: '+91 9823555053',
     email: 'info@hopehospital.com',
     website: 'www.hopehospital.com',
-    logo: '/assets/hope-hospital-logo.png',
+    logo: 'https://hopehospital.com/images/hope-hospital-og.png',
   },
   ayushman: {
     id: 'ayushman',

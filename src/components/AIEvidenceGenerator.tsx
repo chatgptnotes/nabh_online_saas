@@ -87,11 +87,13 @@ const nabhCoordinator = getNABHCoordinator();
 // Instead, we initialize state in the component.
 
 const getLogoUrl = (config: HospitalConfig) => {
+  // If logo is already an absolute URL, use it directly
+  if (config.logo.startsWith('http')) {
+    return config.logo;
+  }
+  // Fallback for relative paths
   const base = typeof window !== 'undefined' ? window.location.origin : 'https://www.nabh.online';
-  // Use production URL for logo to ensure it works in iframes, preview windows, and PDFs
-  const productionBase = 'https://www.nabh.online';
-  const logoBase = base.includes('localhost') ? base : productionBase;
-  return `${logoBase}${config.logo}`;
+  return `${base}${config.logo}`;
 };
 
 const getContentPrompt = (config: HospitalConfig, objectiveCode: string, evidenceText: string = '', sequenceNumber: number = 1) => `You are an expert in NABH (National Accreditation Board for Hospitals and Healthcare Providers) accreditation documentation for ${config.name}.

@@ -1755,10 +1755,12 @@ Generate complete HTML document with embedded CSS. Output ONLY the HTML, nothing
   const effectiveDate = getFormattedDate(documentDate);
   const reviewDate = getFormattedDate(new Date(documentDate.getFullYear() + 1, documentDate.getMonth(), documentDate.getDate()));
 
-  // Logo URL - use hospital config's logo path
-  const logoUrl = window.location.hostname === 'localhost'
-    ? `${window.location.origin}${hospitalConfig.logo || '/hospital-logo.png'}`
-    : `https://www.nabh.online${hospitalConfig.logo || '/hospital-logo.png'}`;
+  // Logo URL - use hospital config's logo path (supports absolute URLs)
+  const logoUrl = (hospitalConfig.logo || '').startsWith('http')
+    ? hospitalConfig.logo
+    : window.location.hostname === 'localhost'
+      ? `${window.location.origin}${hospitalConfig.logo || '/hospital-logo.png'}`
+      : `https://www.nabh.online${hospitalConfig.logo || '/hospital-logo.png'}`;
 
   // Get the HTML template for evidence documents
   const getEvidenceDocumentPrompt = async (evidenceItem?: string) => {
