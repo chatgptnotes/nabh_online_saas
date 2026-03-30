@@ -828,13 +828,6 @@ export default function AIEvidenceGenerator() {
     processed = processed.replace(/HOSPITAL\s*(<br\s*\/?>)?\s*LOGO/gi, logoImg);
     processed = processed.replace(/\[(?:HOSPITAL\s*)?LOGO\]/gi, logoImg);
 
-    // Fix broken/garbled logo tags from AI (e.g. `* class="logo">`)
-    processed = processed.replace(/\*\s*class="logo">/gi, logoImg);
-    // Replace logo-area divs containing broken content with proper logo
-    processed = processed.replace(/<div[^>]*class="logo-area"[^>]*>[\s\S]*?<\/div>/gi, `<div class="logo-area" style="text-align:center;">${logoImg}</div>`);
-    // Replace any img with class="logo" that has broken/missing src
-    processed = processed.replace(/<img[^>]*class="logo"[^>]*>/gi, logoImg);
-
     return processed;
   };
 
