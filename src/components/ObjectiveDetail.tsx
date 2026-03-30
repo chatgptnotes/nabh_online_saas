@@ -325,7 +325,7 @@ Generate a complete, valid HTML document with embedded CSS:
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, sans-serif; font-size: 12px; line-height: 1.6; color: #333; padding: 20px; max-width: 800px; margin: 0 auto; }
     .header { text-align: center; border-bottom: 3px solid #2E7D32; padding-bottom: 15px; margin-bottom: 20px; }
-    .logo-area { width: 100px; height: 100px; margin: 0 auto 10px; border: 2px solid #2E7D32; border-radius: 50%; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; font-size: 12px; font-weight: bold; }
+    .logo-area { width: 100px; height: 100px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
     .hospital-name { font-size: 22px; font-weight: bold; color: #2E7D32; margin: 10px 0 5px; }
     .hospital-address { font-size: 11px; color: #666; }
     .doc-title { background: linear-gradient(135deg, #2E7D32, #1B5E20); color: white; padding: 12px; font-size: 16px; font-weight: bold; text-align: center; margin: 20px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
@@ -357,7 +357,7 @@ Generate a complete, valid HTML document with embedded CSS:
 </head>
 <body>
   <div class="header">
-    <div class="logo-area">HOSPITAL<br>LOGO</div>
+    <div class="logo-area"><img src="${window.location.origin}${hospitalInfo.logo}" alt="${hospitalInfo.name}" style="width:80px;height:auto;object-fit:contain;" onerror="this.style.display='none'"></div>
     <div class="hospital-name">${hospitalInfo.name}</div>
     <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
@@ -501,7 +501,7 @@ Generate a complete HTML document for this Training Notice with modern, professi
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
     .header { text-align: center; border-bottom: 3px solid #9C27B0; padding-bottom: 15px; margin-bottom: 20px; }
-    .logo-area { width: 100px; height: 100px; margin: 0 auto 10px; border: 2px solid #9C27B0; border-radius: 10px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; font-weight: bold; font-size: 12px; }
+    .logo-area { width: 100px; height: 100px; margin: 0 auto 10px; display: flex; align-items: center; justify-content: center; }
     .hospital-name { font-size: 22px; font-weight: bold; color: #9C27B0; margin: 5px 0; }
     .hospital-address { font-size: 12px; color: #666; }
     .doc-title { background: linear-gradient(135deg, #9C27B0, #7B1FA2); color: white; padding: 12px 20px; text-align: center; font-size: 18px; font-weight: bold; margin: 20px 0; border-radius: 5px; }
@@ -526,7 +526,7 @@ Generate a complete HTML document for this Training Notice with modern, professi
 </head>
 <body>
   <div class="header">
-    <div class="logo-area">HOSPITAL<br>LOGO</div>
+    <div class="logo-area"><img src="${window.location.origin}${hospitalInfo.logo}" alt="${hospitalInfo.name}" style="width:80px;height:auto;object-fit:contain;" onerror="this.style.display='none'"></div>
     <div class="hospital-name">${hospitalInfo.name}</div>
     <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
@@ -610,7 +610,7 @@ Generate a complete HTML document for this Training Attendance Sheet with modern
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 12px; line-height: 1.5; color: #333; max-width: 850px; margin: 0 auto; padding: 15px; }
     .header { text-align: center; border-bottom: 3px solid #1976D2; padding-bottom: 12px; margin-bottom: 15px; }
-    .logo-area { width: 80px; height: 80px; margin: 0 auto 8px; border: 2px solid #1976D2; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #1976D2, #1565C0); color: white; font-weight: bold; font-size: 10px; }
+    .logo-area { width: 80px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .hospital-name { font-size: 20px; font-weight: bold; color: #1976D2; margin: 3px 0; }
     .hospital-address { font-size: 11px; color: #666; }
     .doc-title { background: linear-gradient(135deg, #1976D2, #1565C0); color: white; padding: 10px 15px; text-align: center; font-size: 16px; font-weight: bold; margin: 15px 0; border-radius: 5px; }
@@ -640,7 +640,7 @@ Generate a complete HTML document for this Training Attendance Sheet with modern
 </head>
 <body>
   <div class="header">
-    <div class="logo-area">HOSPITAL<br>LOGO</div>
+    <div class="logo-area"><img src="${window.location.origin}${hospitalInfo.logo}" alt="${hospitalInfo.name}" style="width:80px;height:auto;object-fit:contain;" onerror="this.style.display='none'"></div>
     <div class="hospital-name">${hospitalInfo.name}</div>
     <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
@@ -729,7 +729,7 @@ Generate a complete HTML document for this MCQ Test with modern, professional st
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; line-height: 1.6; color: #333; max-width: 800px; margin: 0 auto; padding: 20px; }
     .header { text-align: center; border-bottom: 3px solid #D32F2F; padding-bottom: 15px; margin-bottom: 15px; }
-    .logo-area { width: 80px; height: 80px; margin: 0 auto 8px; border: 2px solid #D32F2F; border-radius: 8px; display: flex; align-items: center; justify-content: center; background: linear-gradient(135deg, #D32F2F, #C62828); color: white; font-weight: bold; font-size: 10px; }
+    .logo-area { width: 80px; height: 80px; margin: 0 auto 8px; display: flex; align-items: center; justify-content: center; }
     .hospital-name { font-size: 20px; font-weight: bold; color: #D32F2F; margin: 3px 0; }
     .hospital-address { font-size: 11px; color: #666; }
     .doc-title { background: linear-gradient(135deg, #D32F2F, #C62828); color: white; padding: 10px 15px; text-align: center; font-size: 16px; font-weight: bold; margin: 15px 0; border-radius: 5px; }
@@ -773,7 +773,7 @@ Generate a complete HTML document for this MCQ Test with modern, professional st
 </head>
 <body>
   <div class="header">
-    <div class="logo-area">HOSPITAL<br>LOGO</div>
+    <div class="logo-area"><img src="${window.location.origin}${hospitalInfo.logo}" alt="${hospitalInfo.name}" style="width:80px;height:auto;object-fit:contain;" onerror="this.style.display='none'"></div>
     <div class="hospital-name">${hospitalInfo.name}</div>
     <div class="hospital-address">${hospitalInfo.address}</div>
   </div>
